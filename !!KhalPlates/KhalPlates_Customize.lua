@@ -1,5 +1,5 @@
 
-local KP = select(2, ...) -- namespace
+local AddonFile, KP = ... -- namespace
 
 ----------------------------- API -----------------------------
 local ipairs, unpack, select, math_floor, CreateFrame, UnitCastingInfo, UnitChannelInfo, UnitName =
@@ -8,7 +8,7 @@ local ipairs, unpack, select, math_floor, CreateFrame, UnitCastingInfo, UnitChan
 ------------------------- Core Variables -------------------------
 local VirtualPlates = {} -- Storage table for Virtual nameplate frames
 local RealPlates = {} -- Storage table for real nameplate frames
-local texturePath = "Interface\\AddOns\\!!KhalPlates\\Textures\\"
+local texturePath = "Interface\\AddOns\\" .. AddonFile .. "\\Textures\\"
 local NP_WIDTH = 156.65118520899 -- Nameplate original width (don't modify)
 local NP_HEIGHT = 39.162796302247 -- Nameplate original height (don't modify)
 
@@ -65,6 +65,13 @@ local raidTargetIcon_Yoffset = -9
 local totemSize = 23 -- Size of the totem (or NPC) icon replacing the nameplate
 local totemOffSet = -5 -- Vertical offset for totem icon
 local totemGlowSize = 128 * totemSize / 88 -- Ratio 128:88 comes from texture pixels
+-- Class Icon (in Arenas and BGs)
+local showClassOnFriends = true
+local showClassOnEnemies = true
+local classIcon_size = 26
+local classIcon_anchor = "LEFT"
+local classIcon_Xoffset = -9.6
+local classIcon_Yoffset = -9
 
 ---------------------------- Customization Functions ----------------------------
 local function CreateHealthBorder(healthBar)
@@ -191,6 +198,14 @@ local function CreateCastTimer(castBar)
 	end)
 end
 
+local function CreateClassIcon(Virtual)
+	if Virtual.classIcon then return end
+	Virtual.classIcon = Virtual:CreateTexture(nil, "ARTWORK")	
+	Virtual.classIcon:SetSize(classIcon_size, classIcon_size)
+	Virtual.classIcon:SetPoint(classIcon_anchor, classIcon_Xoffset, classIcon_Yoffset + globalYoffset)
+	Virtual.classIcon:Hide()
+end
+
 local function CustomizePlate(Virtual)
 	local threatGlow, healthBarBorder, castBarBorder, shieldCastBarBorder, spellIcon, healthBarHighlight, nameText, levelText, bossIcon, raidTargetIcon, eliteIcon = Virtual:GetRegions()
 	Virtual.castBarBorder = castBarBorder
@@ -208,6 +223,7 @@ local function CustomizePlate(Virtual)
 	CreateBarBackground(Virtual.castBar)
 	CreateCastText(Virtual.castBar)
 	CreateCastTimer(Virtual.castBar)
+	CreateClassIcon(Virtual)
 	healthBarBorder:Hide()
 	nameText:Hide()
 	threatGlow:SetTexture(nil)
@@ -276,5 +292,7 @@ KP.nameText_color = nameText_color
 KP.targetGlow_alpha = targetGlow_alpha
 KP.mouseoverGlow_alpha = mouseoverGlow_alpha
 KP.UpdateTargetGlow = UpdateTargetGlow
+KP.showClassOnFriends = showClassOnFriends
+KP.showClassOnEnemies = showClassOnEnemies
 KP.CustomizePlate = CustomizePlate
 KP.SetupTotemPlate = SetupTotemPlate

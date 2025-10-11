@@ -3,8 +3,8 @@
 local AddOnName, KP = ...
 
 -- API
-local tonumber, select, sort, wipe, pairs, ipairs, unpack, tremove, tinsert, CreateFrame, UnitName, UnitExists =
-      tonumber, select, sort, wipe, pairs, ipairs, unpack, tremove, tinsert, CreateFrame, UnitName, UnitExists
+local math_floor, tonumber, select, sort, wipe, pairs, ipairs, unpack, tremove, tinsert, CreateFrame, UnitName, UnitExists, IsInInstance, GetNumRaidMembers, GetRaidRosterInfo =
+      math.floor, tonumber, select, sort, wipe, pairs, ipairs, unpack, tremove, tinsert, CreateFrame, UnitName, UnitExists, IsInInstance, GetNumRaidMembers, GetRaidRosterInfo
 
 -- Localized namespace definitions
 local NP_WIDTH = KP.NP_WIDTH
@@ -18,6 +18,8 @@ local globalYoffset = KP.globalYoffset
 local NPminLevel = KP.NPminLevel
 local nameText_colorR, nameText_colorG, nameText_colorB = unpack(KP.nameText_color)
 local UpdateTargetGlow = KP.UpdateTargetGlow
+local showClassOnFriends = KP.showClassOnFriends
+local showClassOnEnemies = KP.showClassOnEnemies
 local CustomizePlate = KP.CustomizePlate
 local SetupTotemPlate = KP.SetupTotemPlate
 
@@ -29,6 +31,8 @@ local KPframe = CreateFrame("Frame", nil, WorldFrame) -- Main addon frame (event
 local NPwidth = NP_WIDTH * VPscale * 0.9
 local NPheight = NP_HEIGHT * VPscale * 0.7
 local InCombat = false
+local inPvPInstance = false
+local ClassByFriendName = {}
 
 -- Sensitive Settings
 local PlateLevels = 3 	-- Frame level difference between plates so one plate's children don't overlap the next closest plate
@@ -41,6 +45,28 @@ local SetFrameLevel = KPframe.SetFrameLevel
 -- Main plate handling and updating	
 do
 	local SortOrder, Depths = {}, {}
+
+	-- Hash table mapping custom color keys to class names
+	local ClassByKey = {
+		[761122] = "DEATHKNIGHT",
+		[994803] = "DRUID",
+		[668244] = "HUNTER",
+		[407993] = "MAGE",
+		[955472] = "PALADIN",
+		[999999] = "PRIEST",
+		[999540] = "ROGUE",
+		[004386] = "SHAMAN",
+		[575078] = "WARLOCK",
+		[776042] = "WARRIOR",
+		[000099] = "FRIENDLY", -- identifies friendly players
+	}
+
+	-- Converts normalized RGB from nameplates into a custom color key and returns the class name
+	local function ClassByPlateColor(Virtual)
+		local r, g, b = Virtual.healthBar:GetStatusBarColor()
+		local key = math_floor(r * 100) * 10000 + math_floor(g * 100) * 100 + math_floor(b * 100)
+		return ClassByKey[key]
+	end
 
 	--- If an anchor ataches to the original plate (by WoW), re-anchor to the Virtual.
 	local function ResetPoint(Plate, Region, Point, RelFrame, ...)
@@ -64,7 +90,8 @@ do
 			end
 		end
 		------------------------ TotemPlates Handling ------------------------
-		local totemTex = TotemTexs[Virtual.nameText:GetText()]
+		local name = Virtual.nameText:GetText()
+		local totemTex = TotemTexs[name]
 		if totemTex then
 			if not Plate.totemPlate then
 				SetupTotemPlate(Plate) -- Setup TotemPlate on the fly
@@ -80,6 +107,17 @@ do
 			local level = tonumber(Virtual.levelText:GetText())
 			if level and level < NPminLevel then
 				Virtual:Hide() -- Hide low level nameplates
+			elseif inPvPInstance then
+				--------------- Show class icons in PvP instances --------------
+				local class = ClassByPlateColor(Virtual)
+				if class == "FRIENDLY" and showClassOnFriends then
+					class = ClassByFriendName[name] or ""
+					Virtual.classIcon:SetTexture(texturePath .. "Classes\\" .. class)
+					Virtual.classIcon:Show()
+				elseif class and showClassOnEnemies then
+					Virtual.classIcon:SetTexture(texturePath .. "Classes\\" .. class)
+					Virtual.classIcon:Show()
+				end
 			end	
 		end
 		if not InCombat then
@@ -94,9 +132,10 @@ do
 	--- Removes the plate from the visible list when hidden.
 	local function PlateOnHide(Plate)
 		PlatesVisible[Plate] = nil
-		local Virtual = VirtualPlates[Plate]
-		if Plate.totemPlate then Plate.totemPlate:Hide() end
+		local Virtual = VirtualPlates[Plate]		
+		Virtual.classIcon:Hide()
 		Virtual:Hide(); -- Explicitly hide so IsShown returns false.
+		if Plate.totemPlate then Plate.totemPlate:Hide() end
 	end
 
 	--- Subroutine for table.sort to depth-sort plate virtuals.
@@ -292,6 +331,36 @@ function KPframe:PLAYER_TARGET_CHANGED()
 	end
 end
 
+local function UpdateClassByFriendName()
+	ClassByFriendName = {}
+	for i = 1 , GetNumRaidMembers() do
+		local name, _, _, _, _, class = GetRaidRosterInfo(i)
+		if name and class then
+			name = name:match("([^%-]+).*") -- remove realm suffix
+			ClassByFriendName[name] = class
+		end
+	end
+end
+
+function KPframe:PLAYER_ENTERING_WORLD()
+	local _, instanceType = IsInInstance()
+	if instanceType == "pvp" or instanceType == "arena" then
+		inPvPInstance = true
+		UpdateClassByFriendName()
+		self:RegisterEvent("PARTY_MEMBERS_CHANGED")
+	elseif inPvPInstance then
+		inPvPInstance = false
+		self:UnregisterEvent("PARTY_MEMBERS_CHANGED")
+		ClassByFriendName = {}
+	end
+end
+
+function KPframe:PARTY_MEMBERS_CHANGED()
+	if inPvPInstance then 
+		UpdateClassByFriendName() 
+	end
+end
+
 --- Global event handler.
 function KPframe:OnEvent(Event, ...)
 	if self[Event] then
@@ -305,6 +374,8 @@ KPframe:RegisterEvent("ADDON_LOADED")
 KPframe:RegisterEvent("PLAYER_REGEN_DISABLED")
 KPframe:RegisterEvent("PLAYER_REGEN_ENABLED")
 KPframe:RegisterEvent("PLAYER_TARGET_CHANGED")
+KPframe:RegisterEvent("PLAYER_ENTERING_WORLD")
+KPframe:RegisterEvent("PARTY_MEMBERS_CHANGED")
 
 local GetParent = KPframe.GetParent;
 do

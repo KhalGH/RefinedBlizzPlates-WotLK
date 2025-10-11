@@ -1,7 +1,7 @@
 ## Interface: 30300
 ## Title: KhalPlates
-## Version: 1.0
-## Notes: Customized nameplates
+## Version: 1.1
+## Notes: Lightweight custom nameplates
 ## Author: Khal
 
 Totems.xml
