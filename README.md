@@ -11,7 +11,11 @@
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/KhalGH/KhalPlates-WotLK/refs/heads/assets/assets/KhalPlatesIMG2.jpg" 
-       alt="ItemLevel UI Preview" width="90%">
+       alt="KhalPlatesIMG2" width="90%">
+</p>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/KhalGH/KhalPlates-WotLK/refs/heads/assets/assets/KhalPlatesIMG3.jpg" 
+       alt="KhalPlatesIMG3" width="90%">
 </p>
 
 ## Installation  
