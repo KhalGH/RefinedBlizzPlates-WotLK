@@ -1,9 +1,0 @@
-<Ui xmlns="http://www.blizzard.com/wow/ui/">
-    <Script file="Totems\Totems-enUS.lua"/>
-    <Script file="Totems\Totems-deDE.lua"/>
-    <Script file="Totems\Totems-esES.lua"/>
-    <Script file="Totems\Totems-esMX.lua"/>
-    <Script file="Totems\Totems-ruRU.lua"/>
-    <Script file="Totems\Totems-frFR.lua"/>
-    <Script file="Totems\Totems-zhCN.lua"/>
-</Ui>
