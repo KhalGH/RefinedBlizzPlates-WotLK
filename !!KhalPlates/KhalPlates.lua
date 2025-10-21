@@ -3,8 +3,8 @@
 local AddOnName, KP = ...
 
 -- API
-local tonumber, select, sort, wipe, pairs, ipairs, unpack, tremove, tinsert, CreateFrame, UnitName, UnitExists, IsInInstance, GetNumRaidMembers, GetRaidRosterInfo, floor =
-      tonumber, select, sort, wipe, pairs, ipairs, unpack, tremove, tinsert, CreateFrame, UnitName, UnitExists, IsInInstance, GetNumRaidMembers, GetRaidRosterInfo, math.floor
+local tonumber, select, sort, wipe, next, pairs, ipairs, unpack, tremove, tinsert, CreateFrame, UnitName, UnitExists, IsInInstance, GetNumRaidMembers, GetRaidRosterInfo, floor =
+      tonumber, select, sort, wipe, next, pairs, ipairs, unpack, tremove, tinsert, CreateFrame, UnitName, UnitExists, IsInInstance, GetNumRaidMembers, GetRaidRosterInfo, math.floor
 
 -- Localized namespace definitions
 local NP_WIDTH = KP.NP_WIDTH
@@ -17,6 +17,7 @@ local TotemTexs = KP.TotemTexs
 local globalYoffset = KP.globalYoffset
 local NPminLevel = KP.NPminLevel
 local nameText_colorR, nameText_colorG, nameText_colorB = unpack(KP.nameText_color)
+local levelText_forceHide = KP.levelText_forceHide
 local UpdateTargetGlow = KP.UpdateTargetGlow
 local showClassOnFriends = KP.showClassOnFriends
 local showClassOnEnemies = KP.showClassOnEnemies
@@ -367,6 +368,31 @@ function KPframe:PARTY_MEMBERS_CHANGED()
 	end
 end
 
+local firstChecked
+local delayFrame = CreateFrame("Frame")
+delayFrame:Hide()
+delayFrame:SetScript("OnUpdate", function(self)
+	firstChecked = false
+	for _, Virtual in pairs(PlatesVisible) do
+		if not firstChecked then
+			firstChecked = true
+			if not Virtual.levelText:IsShown() then
+				break
+			else
+				self:Hide()
+			end
+		end
+		Virtual.levelText:Hide()
+	end
+	if not firstChecked then
+		self:Hide()
+	end
+end)
+
+function KPframe:PLAYER_PVP_RANK_CHANGED()
+	delayFrame:Show()
+end
+
 --- Global event handler.
 function KPframe:OnEvent(Event, ...)
 	if self[Event] then
@@ -382,6 +408,9 @@ KPframe:RegisterEvent("PLAYER_REGEN_ENABLED")
 KPframe:RegisterEvent("PLAYER_TARGET_CHANGED")
 KPframe:RegisterEvent("PLAYER_ENTERING_WORLD")
 KPframe:RegisterEvent("PARTY_MEMBERS_CHANGED")
+if levelText_forceHide then
+	KPframe:RegisterEvent("PLAYER_PVP_RANK_CHANGED")
+end
 
 local GetParent = KPframe.GetParent;
 do

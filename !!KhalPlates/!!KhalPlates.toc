@@ -1,6 +1,6 @@
 ## Interface: 30300
 ## Title: KhalPlates
-## Version: 1.1
+## Version: 1.2
 ## Notes: Lightweight custom nameplates
 ## Author: Khal
 

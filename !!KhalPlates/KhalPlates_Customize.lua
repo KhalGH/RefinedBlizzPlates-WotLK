@@ -15,7 +15,7 @@ local NP_HEIGHT = 39.162796302247 -- Nameplate original height (don't modify)
 -------------------- Customization Parameters --------------------
 local globalYoffset = 22 -- Global vertical offset for nameplates
 local VPscale = 1        -- Global scale for nameplates
-local NPminLevel = 1     -- Minimum unit level to show its nameplate
+local NPminLevel = 1    -- Minimum unit level to show its nameplate
 local fontPath = "Fonts\\ARIALN.TTF" -- Font used for nameplate text
 -- Name Text
 local nameText_fontSize = 9
@@ -25,6 +25,15 @@ local nameText_Xoffset = 0.2
 local nameText_Yoffset = 0.7
 local nameText_width = 85 -- max text width before truncation (...)
 local nameText_color = {1, 1, 1} -- white
+-- Level Text
+local levelText_hide = true
+local levelText_forceHide = false -- forces hiding when the drunk effect updates the level text
+local levelText_fontSize = 12
+local levelText_fontFlags = nil
+local levelText_anchor1 = "TOPLEFT"
+local levelText_anchor2 = "TOPRIGHT"
+local levelText_Xoffset = -11.2
+local levelText_Yoffset = -0.6
 -- Health Text
 local healthText_fontSize = 8.8
 local healthText_fontFlags = nil
@@ -226,6 +235,7 @@ local function CustomizePlate(Virtual)
 	CreateClassIcon(Virtual)
 	healthBarBorder:Hide()
 	nameText:Hide()
+	levelText:SetFont(fontPath, levelText_fontSize, levelText_fontFlags)
 	threatGlow:SetTexture(texturePath .. "HealthBar-ThreatGlow")
 	castBarBorder:SetTexture(texturePath .. "CastBar-Border")
 	healthBarHighlight:SetTexture(texturePath .. "HealthBar-MouseoverGlow")
@@ -248,7 +258,11 @@ local function CustomizePlate(Virtual)
 		shieldCastBarBorder:SetWidth(145)
 		healthBarHighlight:ClearAllPoints()
 		healthBarHighlight:SetPoint("CENTER", 1.2, -8.7 + globalYoffset)
-		levelText:Hide()
+		if levelText_hide then 
+			levelText:Hide()
+		else
+			levelText:SetPoint(levelText_anchor1, Virtual, levelText_anchor2, levelText_Xoffset, levelText_Yoffset)
+		end
 		Virtual.healthBar.nameText:SetText(nameText:GetText())
 		UpdateTargetGlow(Virtual.healthBar)
 	end
@@ -289,6 +303,7 @@ KP.globalYoffset = globalYoffset
 KP.VPscale = VPscale
 KP.NPminLevel = NPminLevel
 KP.nameText_color = nameText_color
+KP.levelText_forceHide = levelText_forceHide
 KP.targetGlow_alpha = targetGlow_alpha
 KP.mouseoverGlow_alpha = mouseoverGlow_alpha
 KP.UpdateTargetGlow = UpdateTargetGlow
