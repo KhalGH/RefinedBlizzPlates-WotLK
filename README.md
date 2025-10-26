@@ -1,6 +1,6 @@
 # KhalPlates-WotLK
 **KhalPlates** is a lightweight nameplates addon for WoW 3.3.5a.  
-It preserves the original Blizzlike look while adding functional and visual improvements.
+It preserves a Blizzlike appearance while adding functional and visual improvements.
 
 ## Features  
 - Blizzlike nameplates with adjustable visual parameters.
