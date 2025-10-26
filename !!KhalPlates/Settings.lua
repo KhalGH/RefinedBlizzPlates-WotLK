@@ -308,7 +308,7 @@ KP.MainOptionTable = {
 					name = "",
 				},
 				blank11 = {
-					order = 165,
+					order = 16,
 					type = "description",
 					name = "",
 				},
@@ -646,7 +646,7 @@ KP.MainOptionTable = {
 					disabled = function() return KP.dbp.nameText_hide end
 				},
 				nameText_classColorFriends = {
-					order = 10.1,
+					order = 11,
 					type = "toggle",
 					name = "Class Colors on Friends",
 					desc = "Use class colors for friendly player names (only works for party or raid members).",
@@ -656,7 +656,7 @@ KP.MainOptionTable = {
 					end,
 				},
 				nameText_classColorEnemies = {
-					order = 10.2,
+					order = 12,
 					type = "toggle",
 					name = "Class Colors on Enemies",
 					desc = "Use class colors for enemy player names. 'Class Colors in Nameplates' must be enabled.",
@@ -666,7 +666,7 @@ KP.MainOptionTable = {
 					end,
 				},
 				nameText_width = {
-					order = 11,
+					order = 13,
 					type = "range",
 					name = "Width",
 					min = 50,
@@ -679,32 +679,32 @@ KP.MainOptionTable = {
 					disabled = function() return KP.dbp.nameText_hide end
 				},
 				nameText_hide = {
-					order = 12,
+					order = 14,
 					type = "toggle",
 					name = "Hide Name Text",
 				},
 				blank3 = {
-					order = 13,
+					order = 15,
 					type = "description",
 					name = "",
 				},
 				blank4 = {
-					order = 14,
-					type = "description",
-					name = "",
-				},
-				levelText_header = {
-					order = 15,
-					type = "header",
-					name = "Level Text",
-				},
-				blank5 = {
 					order = 16,
 					type = "description",
 					name = "",
 				},
-				levelText_font = {
+				levelText_header = {
 					order = 17,
+					type = "header",
+					name = "Level Text",
+				},
+				blank5 = {
+					order = 18,
+					type = "description",
+					name = "",
+				},
+				levelText_font = {
+					order = 19,
 					type = "select",
 					name = "Text Font",
 					values = KP.LSM:HashTable("font"),
@@ -712,7 +712,7 @@ KP.MainOptionTable = {
 					disabled = function() return KP.dbp.levelText_hide end
 				},
 				levelText_size = {
-					order = 18,
+					order = 20,
 					type = "range",
 					name = "Font Size",
 					min = 8,
@@ -721,7 +721,7 @@ KP.MainOptionTable = {
 					disabled = function() return KP.dbp.levelText_hide end
 				},
 				levelText_outline = {
-					order = 19,
+					order = 21,
 					type = "select", 
 					name = "Outline",
 					values = {
@@ -735,7 +735,7 @@ KP.MainOptionTable = {
 					disabled = function() return KP.dbp.levelText_hide end
 				},
 				levelText_anchor = {
-					order = 20,
+					order = 22,
 					type = "select", 
 					name = "Anchor",
 					values = {
@@ -752,7 +752,7 @@ KP.MainOptionTable = {
 					disabled = function() return KP.dbp.levelText_hide end
 				},
 				levelText_offsetX = {
-					order = 21,
+					order = 23,
 					type = "range",
 					name = "Offset X",
 					min = -50,
@@ -761,7 +761,7 @@ KP.MainOptionTable = {
 					disabled = function() return KP.dbp.levelText_hide end
 				},
 				levelText_offsetY = {
-					order = 22,
+					order = 24,
 					type = "range",
 					name = "Offset Y",
 					min = -50,
@@ -770,7 +770,7 @@ KP.MainOptionTable = {
 					disabled = function() return KP.dbp.levelText_hide end
 				},
 				levelText_hide = {
-					order = 23,
+					order = 25,
 					type = "toggle",
 					name = "Hide Level Text",
 				},
