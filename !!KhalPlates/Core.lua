@@ -1,5 +1,5 @@
 -------------------------------------------------------------
----------- Core based on "VirtualPlates" by Saiket ----------
+--------------- Core based on "VirtualPlates" ---------------
 -------------------------------------------------------------
 
 -- Namespace
@@ -33,8 +33,9 @@ local UpdateRate = 0.05	     -- Minimum time between plates are updated.
 -- Backup of native frame methods
 local WorldFrame_GetChildren = WorldFrame.GetChildren
 local SetFrameLevel = EventHandler.SetFrameLevel
+local GetParent = EventHandler.GetParent
 
--- Internal State
+-- Status Flags
 KP.inCombat = false
 KP.inPvPInstance = false
 
@@ -319,6 +320,75 @@ do
 	end
 end
 
+WorldFrame:HookScript("OnUpdate", KP.WorldFrameOnUpdate) -- First OnUpdate handler to run
+
+do
+	--- Add method overrides to be applied to plates' Virtuals.
+	local function AddPlateOverride(MethodName)
+		PlateOverrides[MethodName] = function(self, ...)
+			local Plate = GetParent(self)
+			return Plate[MethodName]( Plate, ... )
+		end
+	end
+	AddPlateOverride("GetParent")
+	AddPlateOverride("SetAlpha")
+	AddPlateOverride("GetAlpha")
+	AddPlateOverride("GetEffectiveAlpha")
+end
+
+-- Method overrides to use plates' OnUpdate script handlers instead of their Virtuals' to preserve handler execution order
+do
+	--- Wrapper for plate OnUpdate scripts to replace their self parameter with the plate's Virtual.
+	local function OnUpdateOverride(self, ...)
+		self.OnUpdate(VirtualPlates[self], ...)
+	end
+	local type = type
+
+	local SetScript = EventHandler.SetScript
+	--- Redirects all SetScript calls for the OnUpdate handler to the original plate.
+	function PlateOverrides:SetScript(Script, Handler, ...)
+		if type(Script) == "string" and Script:lower() == "onupdate" then
+			local Plate = GetParent(self)
+			Plate.OnUpdate = Handler
+			return Plate:SetScript(Script, Handler and OnUpdateOverride or nil, ...)
+		else
+			return SetScript(self, Script, Handler, ...)
+		end
+	end
+
+	local GetScript = EventHandler.GetScript
+	--- Redirects calls to GetScript for the OnUpdate handler to the original plate's script.
+	function PlateOverrides:GetScript(Script, ...)
+		if type(Script) == "string" and Script:lower() == "onupdate" then
+			return GetParent(self).OnUpdate
+		else
+			return GetScript(self, Script, ...)
+		end
+	end
+
+	local HookScript = EventHandler.HookScript
+	--- Redirects all HookScript calls for the OnUpdate handler to the original plate.
+	-- Also passes the virtual to the hook script instead of the plate.
+	function PlateOverrides:HookScript (Script, Handler, ...)
+		if type(Script) == "string" and Script:lower() == "onupdate" then
+			local Plate = GetParent(self)
+			if Plate.OnUpdate then
+				-- Hook old OnUpdate handler
+				local Backup = Plate.OnUpdate;
+				function Plate:OnUpdate(...)
+					Backup(self, ...) -- Technically we should return Backup's results to match HookScript's hook behavior,
+					return Handler(self, ...) -- but the overhead isn't worth it when these results get discarded.
+				end
+			else
+				Plate.OnUpdate = Handler
+			end
+			return Plate:SetScript(Script, OnUpdateOverride, ...)
+		else
+			return HookScript(self, Script, Handler, ...)
+		end
+	end
+end
+
 function KP:OnProfileChanged(...)
 	self.dbp = self.db.profile
 	self:MoveAllVisiblePlates(self.dbp.globalOffsetX - self.globalOffsetX, self.dbp.globalOffsetY - self.globalOffsetY)
@@ -456,7 +526,6 @@ function EventHandler:OnEvent(event, ...)
 	end
 end
 
-WorldFrame:HookScript("OnUpdate", KP.WorldFrameOnUpdate) -- First OnUpdate handler to run
 EventHandler:SetScript("OnEvent", EventHandler.OnEvent)
 EventHandler:RegisterEvent("ADDON_LOADED")
 EventHandler:RegisterEvent("PLAYER_REGEN_DISABLED")
@@ -466,71 +535,3 @@ EventHandler:RegisterEvent("PLAYER_ENTERING_WORLD")
 EventHandler:RegisterEvent("PARTY_MEMBERS_CHANGED")
 EventHandler:RegisterEvent("UNIT_FACTION")
 EventHandler:RegisterEvent("PLAYER_PVP_RANK_CHANGED")
-
-local GetParent = EventHandler.GetParent
-do
-	--- Add method overrides to be applied to plates' Virtuals.
-	local function AddPlateOverride(MethodName)
-		PlateOverrides[MethodName] = function(self, ...)
-			local Plate = GetParent(self)
-			return Plate[MethodName]( Plate, ... )
-		end
-	end
-	AddPlateOverride("GetParent")
-	AddPlateOverride("SetAlpha")
-	AddPlateOverride("GetAlpha")
-	AddPlateOverride("GetEffectiveAlpha")
-end
-
--- Method overrides to use plates' OnUpdate script handlers instead of their Virtuals' to preserve handler execution order
-do
-	--- Wrapper for plate OnUpdate scripts to replace their self parameter with the plate's Virtual.
-	local function OnUpdateOverride(self, ...)
-		self.OnUpdate(VirtualPlates[self], ...)
-	end
-	local type = type
-
-	local SetScript = EventHandler.SetScript
-	--- Redirects all SetScript calls for the OnUpdate handler to the original plate.
-	function PlateOverrides:SetScript(Script, Handler, ...)
-		if type(Script) == "string" and Script:lower() == "onupdate" then
-			local Plate = GetParent(self)
-			Plate.OnUpdate = Handler
-			return Plate:SetScript(Script, Handler and OnUpdateOverride or nil, ...)
-		else
-			return SetScript(self, Script, Handler, ...)
-		end
-	end
-
-	local GetScript = EventHandler.GetScript
-	--- Redirects calls to GetScript for the OnUpdate handler to the original plate's script.
-	function PlateOverrides:GetScript(Script, ...)
-		if type(Script) == "string" and Script:lower() == "onupdate" then
-			return GetParent(self).OnUpdate
-		else
-			return GetScript(self, Script, ...)
-		end
-	end
-
-	local HookScript = EventHandler.HookScript
-	--- Redirects all HookScript calls for the OnUpdate handler to the original plate.
-	-- Also passes the virtual to the hook script instead of the plate.
-	function PlateOverrides:HookScript (Script, Handler, ...)
-		if type(Script) == "string" and Script:lower() == "onupdate" then
-			local Plate = GetParent(self)
-			if Plate.OnUpdate then
-				-- Hook old OnUpdate handler
-				local Backup = Plate.OnUpdate;
-				function Plate:OnUpdate(...)
-					Backup(self, ...) -- Technically we should return Backup's results to match HookScript's hook behavior,
-					return Handler(self, ...) -- but the overhead isn't worth it when these results get discarded.
-				end
-			else
-				Plate.OnUpdate = Handler
-			end
-			return Plate:SetScript(Script, OnUpdateOverride, ...)
-		else
-			return HookScript(self, Script, Handler, ...)
-		end
-	end
-end

@@ -58,6 +58,7 @@ local function SetupBarBackground(Bar)
 	Bar.BackgroundTex:SetTexture(ASSETS .. "PlateBorders\\NamePlate-Background")
 	Bar.BackgroundTex:SetSize(KP.NP_WIDTH, KP.NP_HEIGHT)
 	Bar.BackgroundTex:SetPoint("CENTER", 10.5, 9)
+	Bar.BackgroundTex:Hide()
 end
 
 local function SetupNameText(healthBar)
@@ -144,7 +145,8 @@ local function UpdateTargetGlow(Virtual)
 	Virtual.healthBar.targetBorderDelay:Show()
 end
 
-local function SetupCastText(castBar)
+local function SetupCastText(Virtual)
+	local castBar = Virtual.castBar
 	if castBar.castText then return end
 	castBar.castText = castBar:CreateFontString(nil, "OVERLAY")
 	castBar.castText:SetFont(KP.LSM:Fetch("font", KP.dbp.castText_font), KP.dbp.castText_size, KP.dbp.castText_outline)
@@ -159,16 +161,33 @@ local function SetupCastText(castBar)
 	else
 		castBar.castText:SetPoint(KP.dbp.castText_anchor, KP.dbp.castText_offsetX - 9.3, KP.dbp.castText_offsetY + 1.6)
 	end
-	if KP.dbp.castText_hide then
-		castBar.castText:Hide()
-	end
+	castBar.castText:Hide()
 	castBar.castTextDelay = castBar.castTextDelay or CreateFrame("Frame")
 	castBar.castTextDelay:Hide()
 	castBar.castTextDelay:SetScript("OnUpdate", function(self)
 		self:Hide()
-		local unit = "target"
-		local spellName = UnitCastingInfo(unit) or UnitChannelInfo(unit)
-		castBar.castText:SetText(spellName)
+		local spellName = UnitCastingInfo("target") or UnitChannelInfo("target")
+ 		if spellName then
+			castBar.BackgroundTex:Show()
+			if not KP.dbp.castText_hide then
+				castBar.castText:SetText(spellName)
+				castBar.castText:Show()
+			else
+				castBar.castText:Hide()
+			end
+			if not KP.dbp.castTimerText_hide then
+				castBar.castTimerText:Show()
+			else
+				castBar.castTimerText:Hide()
+			end
+		else
+			Virtual.castBarBorder:Hide()
+			Virtual.shieldCastBarBorder:Hide()
+			Virtual.spellIcon:Hide()
+			castBar.BackgroundTex:Hide()
+			castBar.castText:Hide()
+			castBar.castTimerText:Hide()
+		end
 	end)
 	local function UpdateCastTextValue()
 		castBar.castTextDelay:Show()
@@ -184,6 +203,7 @@ local function SetupCastTimer(castBar)
 	castBar.castTimerText:SetTextColor(unpack(KP.dbp.castTimerText_color))
 	castBar.castTimerText:SetShadowOffset(0.5, -0.5)
 	castBar.castTimerText:SetPoint(KP.dbp.castTimerText_anchor, KP.dbp.castTimerText_offsetX - 2, KP.dbp.castTimerText_offsetY + 1)
+	castBar.castTimerText:Hide()
 	castBar:HookScript("OnValueChanged", function(self, val)
 		local min, max = self:GetMinMaxValues()
 		if max and val then
@@ -292,6 +312,7 @@ local function SetupKhalPlate(Virtual)
 	Virtual.threatGlow = threatGlow
 	Virtual.castBarBorder = castBarBorder
 	Virtual.shieldCastBarBorder = shieldCastBarBorder
+	Virtual.spellIcon = spellIcon
 	Virtual.healthBarHighlight = healthBarHighlight
 	Virtual.nameText = nameText
 	Virtual.levelText = levelText
@@ -307,7 +328,7 @@ local function SetupKhalPlate(Virtual)
 	SetupHealthText(Virtual.healthBar)
 	SetupBarBackground(Virtual.healthBar)
 	SetupBarBackground(Virtual.castBar)
-	SetupCastText(Virtual.castBar)
+	SetupCastText(Virtual)
 	SetupCastTimer(Virtual.castBar)
 	SetupBossIcon(Virtual)
 	SetupRaidTargetIcon(Virtual)
@@ -541,13 +562,9 @@ end
 function KP:UpdateAllCastBars()
 	for _, Virtual in pairs(VirtualPlates) do
 		local castBar = Virtual.castBar
-		local castText = castBar.castText
-		local castTimerText = castBar.castTimerText
 		castBar.barTex:SetTexture(KP.LSM:Fetch("statusbar", KP.dbp.castBar_Tex))
-		if KP.dbp.castText_hide then
-			castText:Hide()
-		else
-			castText:Show()
+		if not KP.dbp.castText_hide then
+			local castText = castBar.castText
 			castText:SetFont(KP.LSM:Fetch("font", KP.dbp.castText_font), KP.dbp.castText_size, KP.dbp.castText_outline)
 			castText:SetTextColor(unpack(KP.dbp.castText_color))
 			castText:SetJustifyH(KP.dbp.castText_anchor)
@@ -558,15 +575,23 @@ function KP:UpdateAllCastBars()
 			else
 				castText:SetPoint(KP.dbp.castText_anchor, KP.dbp.castText_offsetX - 9.3, KP.dbp.castText_offsetY + 1.6)
 			end
-		end
-		if KP.dbp.castTimerText_hide then
-			castTimerText:Hide()
+			if castBar:IsShown() then
+				castText:Show()
+			end
 		else
-			castTimerText:Show()
+			castBar.castText:Hide()
+		end
+		if not KP.dbp.castTimerText_hide then
+			local castTimerText = castBar.castTimerText
 			castTimerText:SetFont(KP.LSM:Fetch("font", KP.dbp.castTimerText_font), KP.dbp.castTimerText_size, KP.dbp.castTimerText_outline)
 			castTimerText:SetTextColor(unpack(KP.dbp.castTimerText_color))
 			castTimerText:ClearAllPoints()
 			castTimerText:SetPoint(KP.dbp.castTimerText_anchor, KP.dbp.castTimerText_offsetX - 2, KP.dbp.castTimerText_offsetY + 1)
+			if castBar:IsShown() then
+				castTimerText:Show()
+			end
+		else
+			castBar.castTimerText:Hide()
 		end
 	end
 end
