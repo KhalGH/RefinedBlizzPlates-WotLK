@@ -3,14 +3,14 @@ if GetLocale() ~= "esES" then return end
 
 select(2, ...).NPCs = {
 	-- NPC's plates as icons
-	["Confalón de batalla de la Alianza"] = "Alliance Battle Standard", 
-	["Confalón de batalla de Pico Tormenta"] = "Alliance Battle Standard", 
-	["Confalón de batalla de la Horda"] = "Horde Battle Standard",
-	["Confalón de batalla Lobo Gélido"] = "Horde Battle Standard",
-	["Maligno de las Sombras"] = "Shadowfiend",
-	["Espíritu de lobo"] = "Spirit Wolf",
-	["Elemental de agua"] = "Water Elemental",
-	["Antárbol"] = "Treant",
+	["Confalón de batalla de la Alianza"] = "Interface\\AddOns\\!!KhalPlates\\Assets\\Icons\\Alliance_Battle_Standard",
+	["Confalón de batalla de Pico Tormenta"] = "Interface\\AddOns\\!!KhalPlates\\Assets\\Icons\\Alliance_Battle_Standard",
+	["Confalón de batalla de la Horda"] = "Interface\\AddOns\\!!KhalPlates\\Assets\\Icons\\Horde_Battle_Standard",
+	["Confalón de batalla Lobo Gélido"] = "Interface\\AddOns\\!!KhalPlates\\Assets\\Icons\\Horde_Battle_Standard",
+	["Maligno de las Sombras"] = "Interface\\AddOns\\!!KhalPlates\\Assets\\Icons\\Shadowfiend",
+	["Espíritu de lobo"] = "Interface\\AddOns\\!!KhalPlates\\Assets\\Icons\\Spirit_Wolf",
+	["Elemental de agua"] = "Interface\\AddOns\\!!KhalPlates\\Assets\\Icons\\Water_Elemental",
+	["Antárbol"] = "Interface\\AddOns\\!!KhalPlates\\Assets\\Icons\\Treant",
 	-- NPC's plates hidden
 	["Necrófago del Ejército de muertos"] = "",
 	["Clarividente de la Luna Negra"] = "",

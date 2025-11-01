@@ -92,16 +92,16 @@ do
 		------------------------ TotemPlates Handling ------------------------
 		local totemKey = KP.Totems[name]
 		local totemCheck = KP.dbp.TotemsCheck[totemKey]
-		local npcKey = KP.NPCs[name]
-		if totemCheck or npcKey then
+		local npcIcon = KP.NPCs[name]
+		if totemCheck or npcIcon then
 			if not Plate.totemPlate then
 				SetupTotemPlate(Plate) -- Setup TotemPlate on the fly
 			end
 			Virtual:Hide()
-			local textureKey = (totemCheck == 1 and totemKey) or (npcKey ~= "" and npcKey)
-			if textureKey then
+			local iconTexture = (totemCheck == 1 and ASSETS .. "Icons\\" .. totemKey) or (npcIcon ~= "" and npcIcon)
+			if iconTexture then
 				Plate.totemPlate:Show()
-				Plate.totemPlate.icon:SetTexture(ASSETS .. "Icons\\" .. textureKey)
+				Plate.totemPlate.icon:SetTexture(iconTexture)
 				Plate.totemPlateIsShown = true
 			end
 		else

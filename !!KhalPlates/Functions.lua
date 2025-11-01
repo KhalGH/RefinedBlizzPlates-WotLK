@@ -452,8 +452,8 @@ function KP:UpdateLevelFilter()
 	for Plate, Virtual in pairs(PlatesVisible) do
 		local name = Virtual.nameString
 		local totemCheck = KP.dbp.TotemsCheck[KP.Totems[name]]
-		local npcKey = KP.NPCs[name]
-		if totemCheck or npcKey then
+		local npcIcon = KP.NPCs[name]
+		if totemCheck or npcIcon then
 			Virtual:Hide()
 		else
 			local level = tonumber(Virtual.levelText:GetText())
@@ -660,9 +660,9 @@ function KP:UpdateClassIconsShown()
 	for Plate, Virtual in pairs(PlatesVisible) do
 		local name =  Virtual.nameString
 		local totemCheck = KP.dbp.TotemsCheck[KP.Totems[name]]
-		local npcKey = KP.NPCs[name]
+		local npcIcon = KP.NPCs[name]
 		Virtual.classIcon:Hide()
-		if not (totemCheck or npcKey) and KP.inPvPInstance then
+		if not (totemCheck or npcIcon) and KP.inPvPInstance then
 			local class = Virtual.classKey
 			if class then
 				if class == "FRIENDLY" and KP.dbp.showClassOnFriends then
@@ -706,16 +706,16 @@ function KP:UpdateAllTotemPlates()
 		local name = Virtual.nameString
 		local totemKey = KP.Totems[name]
 		local totemCheck = KP.dbp.TotemsCheck[totemKey]
-		local npcKey = KP.NPCs[name]
-		if totemCheck or npcKey then
+		local npcIcon = KP.NPCs[name]
+		if totemCheck or npcIcon then
 			if not Plate.totemPlate then
 				SetupTotemPlate(Plate)
 			end
 			Virtual:Hide()
-			local textureKey = (totemCheck == 1 and totemKey) or (npcKey ~= "" and npcKey)
-			if textureKey then
+			local iconTexture = (totemCheck == 1 and ASSETS .. "Icons\\" .. totemKey) or (npcIcon ~= "" and npcIcon)
+			if iconTexture then
 				Plate.totemPlate:Show()
-				Plate.totemPlate.icon:SetTexture(ASSETS .. "Icons\\" .. textureKey)
+				Plate.totemPlate.icon:SetTexture(iconTexture)
 				Plate.totemPlateIsShown = true
 			end
 		else

@@ -3,14 +3,14 @@ if GetLocale() ~= "zhCN" then return end
 
 select(2, ...).NPCs = {
 	-- NPC's plates as icons
-	["联盟军旗"] = "Alliance Battle Standard",
-	["雷矛军旗"] = "Alliance Battle Standard",
-	["部落军旗"] = "Horde Battle Standard",
-	["霜狼军旗"] = "Horde Battle Standard",
-	["暗影魔"] = "Shadowfiend",
-	["幽灵狼"] = "Spirit Wolf",
-	["水元素"] = "Water Elemental",
-	["树人"] = "Treant",
+	["联盟军旗"] = "Interface\\AddOns\\!!KhalPlates\\Assets\\Icons\\Alliance_Battle_Standard",
+	["雷矛军旗"] = "Interface\\AddOns\\!!KhalPlates\\Assets\\Icons\\Alliance_Battle_Standard",
+	["部落军旗"] = "Interface\\AddOns\\!!KhalPlates\\Assets\\Icons\\Horde_Battle_Standard",
+	["霜狼军旗"] = "Interface\\AddOns\\!!KhalPlates\\Assets\\Icons\\Horde_Battle_Standard",
+	["暗影魔"] = "Interface\\AddOns\\!!KhalPlates\\Assets\\Icons\\Shadowfiend",
+	["幽灵狼"] = "Interface\\AddOns\\!!KhalPlates\\Assets\\Icons\\Spirit_Wolf",
+	["水元素"] = "Interface\\AddOns\\!!KhalPlates\\Assets\\Icons\\Water_Elemental",
+	["树人"] = "Interface\\AddOns\\!!KhalPlates\\Assets\\Icons\\Treant",
 	-- NPC's plates hidden
 	["亡者军团食尸鬼"] = "",
 	["暗月占卜师"] = "",

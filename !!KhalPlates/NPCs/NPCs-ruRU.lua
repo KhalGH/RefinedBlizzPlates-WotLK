@@ -3,14 +3,14 @@ if GetLocale() ~= "ruRU" then return end
 
 select(2, ...).NPCs = {
 	-- NPC's plates as icons
-	["Боевой штандарт Альянса"] = "Alliance Battle Standard", 
-	["Боевой штандарт клана Грозовой Вершины"] = "Alliance Battle Standard", 
-	["Боевой штандарт Орды"] = "Horde Battle Standard",
-	["Боевой штандарт клана Северного Волка"] = "Horde Battle Standard",
-	["Исчадие Тьмы"] = "Shadowfiend",
-	["Дух волка"] = "Spirit Wolf",
-	["Элементаль воды"] = "Water Elemental",
-	["Древень"] = "Treant",
+	["Боевой штандарт Альянса"] = "Interface\\AddOns\\!!KhalPlates\\Assets\\Icons\\Alliance_Battle_Standard",
+	["Боевой штандарт клана Грозовой Вершины"] = "Interface\\AddOns\\!!KhalPlates\\Assets\\Icons\\Alliance_Battle_Standard",
+	["Боевой штандарт Орды"] = "Interface\\AddOns\\!!KhalPlates\\Assets\\Icons\\Horde_Battle_Standard",
+	["Боевой штандарт клана Северного Волка"] = "Interface\\AddOns\\!!KhalPlates\\Assets\\Icons\\Horde_Battle_Standard",
+	["Исчадие Тьмы"] = "Interface\\AddOns\\!!KhalPlates\\Assets\\Icons\\Shadowfiend",
+	["Дух волка"] = "Interface\\AddOns\\!!KhalPlates\\Assets\\Icons\\Spirit_Wolf",
+	["Элементаль воды"] = "Interface\\AddOns\\!!KhalPlates\\Assets\\Icons\\Water_Elemental",
+	["Древень"] = "Interface\\AddOns\\!!KhalPlates\\Assets\\Icons\\Treant",
 	-- NPC's plates hidden
 	["Вурдалак из войска мертвых"] = "",
 	["Предсказательница ярмарки Новолуния"] = "",

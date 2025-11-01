@@ -3,14 +3,14 @@ if GetLocale() ~= "koKR" then return end
 
 select(2, ...).NPCs = {
 	-- NPC's plates as icons
-	["얼라이언스 전투 깃발"] = "Alliance Battle Standard",
-	["스톰파이크 전투깃발"] = "Alliance Battle Standard",
-	["호드 전투 깃발"] = "Horde Battle Standard",
-	["서리늑대 전투깃발"] = "Horde Battle Standard",
-	["어둠의 마귀"] = "Shadowfiend",
-	["늑대 정령"] = "Spirit Wolf",
-	["물의 정령"] = "Water Elemental",
-	["나무정령"] = "Treant",
+	["얼라이언스 전투 깃발"] = "Interface\\AddOns\\!!KhalPlates\\Assets\\Icons\\Alliance_Battle_Standard",
+	["스톰파이크 전투깃발"] = "Interface\\AddOns\\!!KhalPlates\\Assets\\Icons\\Alliance_Battle_Standard",
+	["호드 전투 깃발"] = "Interface\\AddOns\\!!KhalPlates\\Assets\\Icons\\Horde_Battle_Standard",
+	["서리늑대 전투깃발"] = "Interface\\AddOns\\!!KhalPlates\\Assets\\Icons\\Horde_Battle_Standard",
+	["어둠의 마귀"] = "Interface\\AddOns\\!!KhalPlates\\Assets\\Icons\\Shadowfiend",
+	["늑대 정령"] = "Interface\\AddOns\\!!KhalPlates\\Assets\\Icons\\Spirit_Wolf",
+	["물의 정령"] = "Interface\\AddOns\\!!KhalPlates\\Assets\\Icons\\Water_Elemental",
+	["나무정령"] = "Interface\\AddOns\\!!KhalPlates\\Assets\\Icons\\Treant",
 	-- NPC's plates hidden
 	["사자의 군대"] = "",
 	["다크문 점술사"] = "",
