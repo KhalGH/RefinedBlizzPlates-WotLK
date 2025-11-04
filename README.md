@@ -10,7 +10,7 @@ It preserves a Blizzlike appearance while adding functional and visual improveme
 - Optional class icons in battlegrounds and arenas.
 - Integrated TotemPlates system with in-game configuration.
 - Option to hide or replace specific NPC nameplates with icons (editable list in the NPCs folder)
-- Enables click-through behavior for hidden and, optionally, friendly nameplates
+- Enables click-through behavior for hidden and, optionally, friendly nameplates.
 
 
 <p align="center">
