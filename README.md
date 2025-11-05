@@ -9,8 +9,8 @@ It preserves a Blizzlike appearance while adding functional and visual improveme
 - Custom glow for the target and mouseover nameplates.
 - Optional class icons in battlegrounds and arenas.
 - Integrated TotemPlates system with in-game configuration.
-- Option to hide or replace specific NPC nameplates with icons (editable list in the NPCs folder)
-- Added click-through behavior for hidden and, optionally, friendly nameplates inside instances.
+- Implemented a Blacklist to hide specific nameplates or replace them with icons.
+- Added click-through behavior for totems, blacklist and, optionally, friendly nameplates.
 
 
 <p align="center">
@@ -31,11 +31,11 @@ It preserves a Blizzlike appearance while adding functional and visual improveme
 </p>
 
 ## Installation  
-1. [Download](https://github.com/KhalGH/KhalPlates-WotLK/releases/download/v1.4/KhalPlates-v1.4.zip) the addon
+1. [Download](https://github.com/KhalGH/KhalPlates-WotLK/releases/download/v1.5/KhalPlates-v1.5.zip) the addon
 2. Extract the **!!KhalPlates** folder into `World of Warcraft/Interface/AddOns/`.  
 3. Restart the game and enable the addon.  
 
 ## Information  
-- **Addon Version:** 1.4  
+- **Addon Version:** 1.5  
 - **Game Version:** 3.3.5a (WotLK)  
 - **Author:** Khal  
