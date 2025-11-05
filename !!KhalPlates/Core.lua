@@ -6,8 +6,8 @@
 local AddonFile, KP = ...
 
 -- API
-local tonumber, select, sort, wipe, pairs, ipairs, unpack, CreateFrame, UnitName, UnitExists, IsInInstance, GetNumRaidMembers, GetRaidRosterInfo, RAID_CLASS_COLORS, ToggleFrame, UIPanelWindows =
-      tonumber, select, sort, wipe, pairs, ipairs, unpack, CreateFrame, UnitName, UnitExists, IsInInstance, GetNumRaidMembers, GetRaidRosterInfo, RAID_CLASS_COLORS, ToggleFrame, UIPanelWindows
+local tonumber, tostring, select, sort, wipe, pairs, ipairs, unpack, CreateFrame, UnitName, UnitExists, IsInInstance, GetNumRaidMembers, GetNumArenaOpponents, GetRaidRosterInfo, RAID_CLASS_COLORS, ToggleFrame, UIPanelWindows =
+      tonumber, tostring, select, sort, wipe, pairs, ipairs, unpack, CreateFrame, UnitName, UnitExists, IsInInstance, GetNumRaidMembers, GetNumArenaOpponents, GetRaidRosterInfo, RAID_CLASS_COLORS, ToggleFrame, UIPanelWindows
 
 -- Localized namespace definitions
 local VirtualPlates = KP.VirtualPlates
@@ -18,6 +18,7 @@ local NP_WIDTH = KP.NP_WIDTH
 local NP_HEIGHT = KP.NP_HEIGHT
 local ASSETS = KP.ASSETS
 local UpdateTargetGlow = KP.UpdateTargetGlow
+local SetupLevelText = KP.SetupLevelText
 local ClassByPlateColor = KP.ClassByPlateColor
 local ReactionByPlateColor = KP.ReactionByPlateColor
 local SetupKhalPlate = KP.SetupKhalPlate
@@ -26,6 +27,7 @@ local SetupTotemPlate = KP.SetupTotemPlate
 -- Local definitions
 local EventHandler = CreateFrame("Frame", nil, WorldFrame) -- Main addon frame (event handler + access to native frame methods)
 local PlateOverrides = {}	 -- Storage table: [MethodName] = override function for virtual plates
+local ArenaID = {}           -- Storage table: maps arena enemy names to their ID number
 local PlateLevels = 3 	     -- Frame level difference between plates so one plate's children don't overlap the next closest plate
 local NextUpdate = 0.05		 -- Time controller for PlatesUpdate
 local UpdateRate = 0.05	     -- Minimum time between plates are updated.
@@ -39,6 +41,7 @@ local GetParent = EventHandler.GetParent
 KP.inCombat = false
 KP.inInstance = false
 KP.inPvPInstance = false
+KP.inArena = false
 
 -- SecureHandlers System: Manages nameplate hitbox resizing while in combat
 local TriggerFrames = {}
@@ -165,8 +168,21 @@ do
 		if classColor then
 			Virtual.nameColorR, Virtual.nameColorG, Virtual.nameColorB = classColor.r, classColor.g, classColor.b
 		end
-		Virtual.healthBar.nameText:SetTextColor(Virtual.nameColorR, Virtual.nameColorG, Virtual.nameColorB)
+		local nameText = Virtual.healthBar.nameText
+		nameText:SetTextColor(Virtual.nameColorR, Virtual.nameColorG, Virtual.nameColorB)
 		Virtual.nameTextIsYellow = false
+		if KP.dbp.nameText_hide then
+			nameText:Hide()
+		else
+			nameText:Show()	
+		end
+		local levelText = Virtual.levelText
+		if KP.dbp.levelText_hide then
+			levelText:Hide()
+		else
+			SetupLevelText(Virtual)
+			levelText:Show()
+		end
 
 		------------------------ TotemPlates Handling ------------------------
 		local totemKey = KP.Totems[name]
@@ -189,6 +205,21 @@ do
 			if level and level < KP.dbp.levelFilter then
 				Virtual:Hide() -- Hide low level nameplates
 			elseif class and KP.inPvPInstance then
+				------------------------ Show Arena IDs ------------------------
+				if class ~= "FRIENDLY PLAYER" and KP.inArena then
+					local arenaID = ArenaID[name]
+					Virtual.arenaID = arenaID
+					if arenaID and not KP.dbp.ArenaIDText_hide then
+						healthBar.ArenaIDText:SetText(arenaID)
+						healthBar.ArenaIDText:Show()
+						if KP.dbp.hideLevelTextInArena then
+							levelText:Hide()
+						end
+						if KP.dbp.hideNameTextInArena then
+							nameText:Hide()
+						end
+					end
+				end
 				--------------- Show class icons in PvP instances --------------
 				if class == "FRIENDLY PLAYER" and KP.dbp.showClassOnFriends then
 					class = ClassByFriendName[name] or ""
@@ -228,9 +259,11 @@ do
 		Virtual.classIcon:Hide()
 		Virtual.nameString = nil
 		Virtual.classKey = nil
+		Virtual.arenaID = nil
 		Virtual:Hide() -- Explicitly hide so IsShown returns false.
 		if Plate.totemPlate then Plate.totemPlate:Hide() end
 		Plate.totemPlateIsShown = nil
+		Virtual.healthBar.ArenaIDText:Hide()
 		if KP.inCombat then
 			ExecuteHitboxSecureScript()
 		end
@@ -572,14 +605,24 @@ local function UpdateClassByFriendName()
 	end
 end
 
+local function UpdateArenaIDList()
+	for i = 1, GetNumArenaOpponents() do
+		local arenaName = UnitName("arena" .. i)
+		if arenaName then
+			ArenaID[arenaName] = tostring(i)
+		end
+	end
+end
+
 function EventHandler:PLAYER_ENTERING_WORLD()
 	local inInstance, instanceType = IsInInstance()
 	KP.inInstance = inInstance == 1
+	KP.inPvPInstance = instanceType == "pvp" or instanceType == "arena"
+	KP.inArena = instanceType == "arena"
 	UpdateClassByFriendName()
-	if instanceType == "pvp" or instanceType == "arena" then
-		KP.inPvPInstance = true	
-	else
-		KP.inPvPInstance = false
+	wipe(ArenaID)
+	if KP.inArena then
+		UpdateArenaIDList()
 	end
 end
 
@@ -628,6 +671,18 @@ function EventHandler:PLAYER_PVP_RANK_CHANGED()
 	end
 end
 
+function EventHandler:ARENA_OPPONENT_UPDATE(event, unitToken, updateReason)
+	local arenaID = unitToken:match("^arena(%d+)$")
+	if not arenaID then return end
+	local arenaName = UnitName(unitToken)
+	if not arenaName then return end
+	if updateReason == "seen" then
+		ArenaID[arenaName] = arenaID
+	elseif updateReason == "destroyed" then
+		ArenaID[arenaName] = nil
+	end
+end
+
 --- Global event handler.
 function EventHandler:OnEvent(event, ...)
 	if self[event] then
@@ -645,3 +700,4 @@ EventHandler:RegisterEvent("PLAYER_ENTERING_WORLD")
 EventHandler:RegisterEvent("PARTY_MEMBERS_CHANGED")
 EventHandler:RegisterEvent("UNIT_FACTION")
 EventHandler:RegisterEvent("PLAYER_PVP_RANK_CHANGED")
+EventHandler:RegisterEvent("ARENA_OPPONENT_UPDATE")

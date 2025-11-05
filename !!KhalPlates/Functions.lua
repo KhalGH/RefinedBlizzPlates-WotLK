@@ -6,8 +6,8 @@ local ipairs, unpack, tonumber, CreateFrame, UnitCastingInfo, UnitChannelInfo, U
       ipairs, unpack, tonumber, CreateFrame, UnitCastingInfo, UnitChannelInfo, UnitName, math.floor
 
 ------------------------- Core Variables -------------------------
-local VirtualPlates = {}     -- Storage table for Virtual nameplate frames
-local RealPlates = {}        -- Storage table for real nameplate frames
+local VirtualPlates = {}     -- Storage table: Virtual nameplate frames
+local RealPlates = {}        -- Storage table: Real nameplate frames
 local PlatesVisible = {}     -- Storage table: currently active nameplates
 local ClassByFriendName = {} -- Storage table: maps friendly player names (party/raid) to their class
 local ASSETS = "Interface\\AddOns\\" .. AddonFile .. "\\Assets\\"
@@ -72,21 +72,81 @@ local function SetupBarBackground(Bar, hide)
 	end
 end
 
+local function UpdateNameText(nameText)
+	if not nameText then return end
+	nameText:SetFont(KP.LSM:Fetch("font", KP.dbp.nameText_font), KP.dbp.nameText_size, KP.dbp.nameText_outline)
+	nameText:ClearAllPoints()
+	nameText:SetPoint(KP.dbp.nameText_anchor, KP.dbp.nameText_offsetX + 0.2, KP.dbp.nameText_offsetY + 0.7)
+	nameText:SetWidth(KP.dbp.nameText_width)
+	nameText:SetJustifyH(KP.dbp.nameText_anchor)
+	nameText:SetTextColor(unpack(KP.dbp.nameText_color))
+end
+
 local function SetupNameText(healthBar)
 	if healthBar.nameText then return end
 	healthBar.nameText = healthBar:CreateFontString(nil, "OVERLAY")
-	healthBar.nameText:SetFont(KP.LSM:Fetch("font", KP.dbp.nameText_font), KP.dbp.nameText_size, KP.dbp.nameText_outline)
-	healthBar.nameText:ClearAllPoints()
-	healthBar.nameText:SetPoint(KP.dbp.nameText_anchor, KP.dbp.nameText_offsetX + 0.2, KP.dbp.nameText_offsetY + 0.7)
-	healthBar.nameText:SetWidth(KP.dbp.nameText_width)
-	healthBar.nameText:SetJustifyH(KP.dbp.nameText_anchor)
-	healthBar.nameText:SetTextColor(unpack(KP.dbp.nameText_color))
 	healthBar.nameText:SetShadowOffset(0.5, -0.5)
 	healthBar.nameText:SetNonSpaceWrap(false)
 	healthBar.nameText:SetWordWrap(false)
-	if KP.dbp.nameText_hide then
-		healthBar.nameText:Hide()
+	healthBar.nameText:Hide()
+	UpdateNameText(healthBar.nameText)
+end
+
+local function SetupLevelText(Virtual)
+	if not Virtual.levelText then return end
+	local levelText = Virtual.levelText
+	local healthBar = Virtual.healthBar
+	levelText:SetFont(KP.LSM:Fetch("font", KP.dbp.levelText_font), KP.dbp.levelText_size, KP.dbp.levelText_outline)
+	levelText:ClearAllPoints()
+	if KP.dbp.healthBar_border == "KhalPlates" then
+		if KP.dbp.levelText_anchor == "Left" then
+			levelText:SetPoint("CENTER", healthBar, "LEFT", KP.dbp.levelText_offsetX - 10 , KP.dbp.levelText_offsetY + 0.3)
+		elseif KP.dbp.levelText_anchor == "Center" then
+			levelText:SetPoint("CENTER", healthBar, "CENTER", KP.dbp.levelText_offsetX, KP.dbp.levelText_offsetY + 0.3)
+		else
+			levelText:SetPoint("CENTER", healthBar, "RIGHT", KP.dbp.levelText_offsetX + 10, KP.dbp.levelText_offsetY + 0.3)
+		end
+	else
+		if KP.dbp.levelText_anchor == "Left" then
+			levelText:SetPoint("CENTER", healthBar, "LEFT", KP.dbp.levelText_offsetX - 13.5, KP.dbp.levelText_offsetY + 0.3)
+		elseif KP.dbp.levelText_anchor == "Center" then
+			levelText:SetPoint("CENTER", healthBar, "CENTER", KP.dbp.levelText_offsetX + 11, KP.dbp.levelText_offsetY + 0.3)
+		else
+			levelText:SetPoint("CENTER", healthBar, "RIGHT", KP.dbp.levelText_offsetX + 11.2, KP.dbp.levelText_offsetY + 0.3)
+		end
 	end
+end
+
+local function UpdateArenaIDText(healthBar)
+	local ArenaIDText = healthBar.ArenaIDText
+	ArenaIDText:SetFont(KP.LSM:Fetch("font", KP.dbp.ArenaIDText_font), KP.dbp.ArenaIDText_size, KP.dbp.ArenaIDText_outline)
+	ArenaIDText:SetTextColor(unpack(KP.dbp.ArenaIDText_color))
+	ArenaIDText:ClearAllPoints()
+	if KP.dbp.healthBar_border == "KhalPlates" then
+		if KP.dbp.ArenaIDText_anchor == "Left" then
+			ArenaIDText:SetPoint("CENTER", healthBar, "LEFT", KP.dbp.ArenaIDText_offsetX - 8, KP.dbp.ArenaIDText_offsetY + 0.4)
+		elseif KP.dbp.ArenaIDText_anchor == "Center" then
+			ArenaIDText:SetPoint("CENTER", healthBar, "CENTER", KP.dbp.ArenaIDText_offsetX, KP.dbp.ArenaIDText_offsetY + 0.4)
+		else
+			ArenaIDText:SetPoint("CENTER", healthBar, "RIGHT", KP.dbp.ArenaIDText_offsetX + 8, KP.dbp.ArenaIDText_offsetY + 0.4)
+		end
+	else
+		if KP.dbp.ArenaIDText_anchor == "Left" then
+			ArenaIDText:SetPoint("CENTER", healthBar, "LEFT", KP.dbp.ArenaIDText_offsetX - 8, KP.dbp.ArenaIDText_offsetY + 0.4)
+		elseif KP.dbp.ArenaIDText_anchor == "Center" then
+			ArenaIDText:SetPoint("CENTER", healthBar, "CENTER", KP.dbp.ArenaIDText_offsetX + 11, KP.dbp.ArenaIDText_offsetY + 0.4)
+		else
+			ArenaIDText:SetPoint("CENTER", healthBar, "RIGHT", KP.dbp.ArenaIDText_offsetX + 12, KP.dbp.ArenaIDText_offsetY + 0.4)
+		end
+	end
+end
+
+local function SetupArenaIDText(healthBar)
+	if healthBar.ArenaIDText then return end
+	healthBar.ArenaIDText = healthBar:CreateFontString(nil, "OVERLAY")
+	healthBar.ArenaIDText:SetShadowOffset(0.5, -0.5)
+	healthBar.ArenaIDText:Hide()
+	UpdateArenaIDText(healthBar)
 end
 
 local function UpdateHealthTextValue(healthBar)
@@ -334,6 +394,8 @@ local function SetupKhalPlate(Virtual)
 	Virtual.castBar.barTex = Virtual.castBar:GetRegions()
 	SetupHealthBorder(Virtual.healthBar)
 	SetupNameText(Virtual.healthBar)
+	SetupLevelText(Virtual)
+	SetupArenaIDText(Virtual.healthBar)
 	SetupTargetGlow(Virtual)
 	SetupHealthText(Virtual.healthBar)
 	SetupBarBackground(Virtual.healthBar)
@@ -346,7 +408,6 @@ local function SetupKhalPlate(Virtual)
 	SetupClassIcon(Virtual)
 	healthBarBorder:Hide()
 	nameText:Hide()
-	levelText:SetFont(KP.LSM:Fetch("font", KP.dbp.levelText_font), KP.dbp.levelText_size, KP.dbp.levelText_outline)
 	castBarBorder:SetTexture(ASSETS .. "PlateBorders\\CastBar-Border")
 	if KP.dbp.healthBar_border == "KhalPlates" then
 		threatGlow:SetTexture(ASSETS .. "PlateBorders\\HealthBar-ThreatGlow")
@@ -373,35 +434,11 @@ local function SetupKhalPlate(Virtual)
 			castBarBorder:SetWidth(145)
 			shieldCastBarBorder:SetWidth(145)
 			healthBarHighlight:SetPoint("CENTER", 1.2 + KP.dbp.globalOffsetX, -8.7 + KP.dbp.globalOffsetY)
-			if KP.dbp.levelText_hide then
-				levelText:Hide()
-			else
-				levelText:ClearAllPoints()
-				if KP.dbp.levelText_anchor == "Left" then
-					levelText:SetPoint("CENTER", Virtual.healthBar, "LEFT", KP.dbp.levelText_offsetX - 10 , KP.dbp.levelText_offsetY + 0.3)
-				elseif KP.dbp.levelText_anchor == "Center" then
-					levelText:SetPoint("CENTER", Virtual.healthBar, "CENTER", KP.dbp.levelText_offsetX, KP.dbp.levelText_offsetY + 0.3)
-				else
-					levelText:SetPoint("CENTER", Virtual.healthBar, "RIGHT", KP.dbp.levelText_offsetX + 10, KP.dbp.levelText_offsetY + 0.3)
-				end
-			end
 		else
 			castBarBorder:SetPoint("CENTER", KP.dbp.globalOffsetX + 10.3, KP.dbp.globalOffsetY -19)
 			castBarBorder:SetWidth(157)
 			shieldCastBarBorder:SetWidth(157)
 			healthBarHighlight:SetPoint("CENTER", 11.83 + KP.dbp.globalOffsetX, -8.7 + KP.dbp.globalOffsetY)
-			if KP.dbp.levelText_hide then
-				levelText:Hide()
-			else
-				levelText:ClearAllPoints()
-				if KP.dbp.levelText_anchor == "Left" then
-					levelText:SetPoint("CENTER", Virtual.healthBar, "LEFT", KP.dbp.levelText_offsetX - 13.5, KP.dbp.levelText_offsetY + 0.3)
-				elseif KP.dbp.levelText_anchor == "Center" then
-					levelText:SetPoint("CENTER", Virtual.healthBar, "CENTER", KP.dbp.levelText_offsetX + 11, KP.dbp.levelText_offsetY + 0.3)
-				else
-					levelText:SetPoint("CENTER", Virtual.healthBar, "RIGHT", KP.dbp.levelText_offsetX + 11.2, KP.dbp.levelText_offsetY + 0.3)
-				end
-			end
 		end
 		Virtual.healthBar.nameText:SetText(nameText:GetText())
 		UpdateTargetGlow(Virtual)
@@ -475,6 +512,40 @@ function KP:UpdateLevelFilter()
 	end
 end
 
+function KP:UpdateAllTexts()
+	for _, Virtual in pairs(VirtualPlates) do
+		local healthBar = Virtual.healthBar
+		local nameText = healthBar.nameText
+		UpdateNameText(nameText)
+		if self.dbp.nameText_hide then
+			nameText:Hide()
+		else
+			nameText:Show()
+		end
+		local levelText = Virtual.levelText
+		SetupLevelText(Virtual)
+		if self.dbp.levelText_hide then
+			levelText:Hide()
+		else
+			levelText:Show()
+		end
+		local ArenaIDText = healthBar.ArenaIDText
+		UpdateArenaIDText(healthBar)
+		if Virtual.arenaID and not self.dbp.ArenaIDText_hide then
+			ArenaIDText:SetText(Virtual.arenaID)
+			ArenaIDText:Show()
+			if self.dbp.hideLevelTextInArena then
+				levelText:Hide()
+			end
+			if self.dbp.hideNameTextInArena then
+				nameText:Hide()
+			end
+		else
+			ArenaIDText:Hide()
+		end
+	end
+end
+
 function KP:UpdateAllHealthBars()
 	for _, Virtual in pairs(VirtualPlates) do
 		local healthBar = Virtual.healthBar
@@ -499,53 +570,6 @@ function KP:UpdateAllHealthBars()
 			healthText:ClearAllPoints()
 			healthText:SetPoint(self.dbp.healthText_anchor, self.dbp.healthText_offsetX, self.dbp.healthText_offsetY + 0.3)
 			healthText:SetTextColor(unpack(self.dbp.healthText_color))
-		end
-	end
-end
-
-function KP:UpdateAllNameTexts()
-	for _, Virtual in pairs(VirtualPlates) do
-		local nameText = Virtual.healthBar.nameText
-		if self.dbp.nameText_hide then
-			nameText:Hide()
-		else
-			nameText:Show()
-			nameText:SetFont(self.LSM:Fetch("font", self.dbp.nameText_font), self.dbp.nameText_size, self.dbp.nameText_outline)
-			nameText:ClearAllPoints()
-			nameText:SetPoint(self.dbp.nameText_anchor, self.dbp.nameText_offsetX + 0.2, self.dbp.nameText_offsetY + 0.7)
-			nameText:SetWidth(self.dbp.nameText_width)
-			nameText:SetJustifyH(self.dbp.nameText_anchor)
-			nameText:SetTextColor(unpack(self.dbp.nameText_color))
-		end
-	end
-end
-
-function KP:UpdateAllLevelTexts()
-	for _, Virtual in pairs(VirtualPlates) do
-		local levelText = Virtual.levelText
-		if self.dbp.levelText_hide then
-			levelText:Hide()
-		else
-			levelText:SetFont(self.LSM:Fetch("font", self.dbp.levelText_font), self.dbp.levelText_size, self.dbp.levelText_outline)
-			levelText:ClearAllPoints()
-			if self.dbp.healthBar_border == "KhalPlates" then
-				if self.dbp.levelText_anchor == "Left" then
-					levelText:SetPoint("CENTER", Virtual.healthBar, "LEFT", self.dbp.levelText_offsetX - 10, self.dbp.levelText_offsetY + 0.3)
-				elseif self.dbp.levelText_anchor == "Center" then
-					levelText:SetPoint("CENTER", Virtual.healthBar, "CENTER", self.dbp.levelText_offsetX, self.dbp.levelText_offsetY + 0.3)
-				else
-					levelText:SetPoint("CENTER", Virtual.healthBar, "RIGHT", self.dbp.levelText_offsetX + 10, self.dbp.levelText_offsetY + 0.3)
-				end
-			else
-				if self.dbp.levelText_anchor == "Left" then
-					levelText:SetPoint("CENTER", Virtual.healthBar, "LEFT", self.dbp.levelText_offsetX - 13.5, self.dbp.levelText_offsetY + 0.3)
-				elseif self.dbp.levelText_anchor == "Center" then
-					levelText:SetPoint("CENTER", Virtual.healthBar, "CENTER", self.dbp.levelText_offsetX + 11, self.dbp.levelText_offsetY + 0.3)
-				else
-					levelText:SetPoint("CENTER", Virtual.healthBar, "RIGHT", self.dbp.levelText_offsetX + 11.2, self.dbp.levelText_offsetY + 0.3)
-				end
-			end
-			levelText:Show()
 		end
 	end
 end
@@ -764,9 +788,8 @@ end
 function KP:UpdateProfile()
 	self:UpdateAllVirtualsScale()
 	self:UpdateLevelFilter()
+	self:UpdateAllTexts()
 	self:UpdateAllHealthBars()
-	self:UpdateAllNameTexts()
-	self:UpdateAllLevelTexts()
 	self:UpdateAllCastBarBorders()
 	self:UpdateAllCastBars()
 	self:UpdateAllGlows()
@@ -788,6 +811,7 @@ KP.NP_WIDTH = NP_WIDTH
 KP.NP_HEIGHT = NP_HEIGHT
 KP.ASSETS = ASSETS
 KP.UpdateTargetGlow = UpdateTargetGlow
+KP.SetupLevelText = SetupLevelText
 KP.ClassByPlateColor = ClassByPlateColor
 KP.ReactionByPlateColor = ReactionByPlateColor
 KP.SetupKhalPlate = SetupKhalPlate

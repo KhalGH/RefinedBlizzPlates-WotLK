@@ -35,6 +35,17 @@ KP.dbp.levelText_outline = ""
 KP.dbp.levelText_anchor = "Right"
 KP.dbp.levelText_offsetX = 0
 KP.dbp.levelText_offsetY = 0
+-- ArenaID Text
+KP.dbp.ArenaIDText_hide = false
+KP.dbp.ArenaIDText_font = "Arial Narrow"
+KP.dbp.ArenaIDText_size = 12
+KP.dbp.ArenaIDText_outline = "OUTLINE"
+KP.dbp.ArenaIDText_anchor = "Right"
+KP.dbp.ArenaIDText_offsetX = 0
+KP.dbp.ArenaIDText_offsetY = 0
+KP.dbp.ArenaIDText_color = {1, 1, 1} -- white
+KP.dbp.hideLevelTextInArena = true
+KP.dbp.hideNameTextInArena = false
 -- HealthBar
 KP.dbp.healthBar_border = "KhalPlates"
 KP.dbp.healthBar_borderTint = {1, 1, 1} -- This a tint overlay, not a regular color
@@ -168,6 +179,8 @@ KP.MainOptionTable = {
 							KP.dbp.levelText_font = "Arial Narrow"
 							KP.dbp.levelText_size = 12				
 							KP.dbp.healthText_font = "Arial Narrow"
+							KP.dbp.ArenaIDText_font = "Arial Narrow"
+							KP.dbp.ArenaIDText_size = 12
 							KP.dbp.healthText_size = 8.8
 							KP.dbp.healthText_anchor = "RIGHT"
 							KP.dbp.healthText_offsetX = 0
@@ -195,6 +208,8 @@ KP.MainOptionTable = {
 							KP.dbp.levelText_hide = false
 							KP.dbp.levelText_font = "Friz Quadrata TT"
 							KP.dbp.levelText_size = 14
+							KP.dbp.ArenaIDText_font = "Friz Quadrata TT"
+							KP.dbp.ArenaIDText_size = 13
 							KP.dbp.healthText_font = "Friz Quadrata TT"
 							KP.dbp.healthText_size = 9.5
 							KP.dbp.healthText_anchor = "CENTER"
@@ -219,6 +234,10 @@ KP.MainOptionTable = {
 						KP.dbp.levelText_anchor = "Right"
 						KP.dbp.levelText_offsetX = 0
 						KP.dbp.levelText_offsetY = 0
+						KP.dbp.ArenaIDText_anchor = "Right"
+						KP.dbp.ArenaIDText_offsetX = 0
+						KP.dbp.ArenaIDText_offsetY = 0
+						KP.dbp.hideLevelTextInArena = true
 						KP.dbp.castText_anchor = "CENTER"
 						KP.dbp.castText_outline = ""
 						KP.dbp.castText_width = 90
@@ -236,8 +255,7 @@ KP.MainOptionTable = {
 						KP.dbp.classIcon_offsetX = 0
 						KP.dbp.classIcon_offsetY = 0
 						KP:MoveAllVisiblePlates(KP.dbp.globalOffsetX - KP.globalOffsetX, 0)
-						KP:UpdateAllNameTexts()
-						KP:UpdateAllLevelTexts()
+						KP:UpdateAllTexts()
 						KP:UpdateAllHealthBars()
 						KP:UpdateAllCastBarBorders()
 						KP:UpdateAllCastBars()
@@ -327,8 +345,8 @@ KP.MainOptionTable = {
 			type = "group",
 			set = function(info, val)
 				KP.dbp[info[#info]] = val
-				KP:UpdateAllNameTexts()
-				KP:UpdateAllLevelTexts()
+				KP:UpdateAllTexts()
+				KP:UpdateClassColorNames()
 			end,
 			args = {
 				lineBreak1 = {order = 1, type = "description", name = ""},
@@ -382,7 +400,8 @@ KP.MainOptionTable = {
 						KP.dbp[info[#info]] = val
 						KP.dbp.nameText_offsetX = 0
 						KP.dbp.nameText_offsetY = 0
-						KP:UpdateAllNameTexts()
+						KP:UpdateAllTexts()
+						KP:UpdateClassColorNames()
 					end,
 					disabled = function() return KP.dbp.nameText_hide end
 				},
@@ -414,7 +433,7 @@ KP.MainOptionTable = {
 					end,
 					set = function(info, r, g, b)
 						KP.dbp[info[#info]] = {r, g, b}
-						KP:UpdateAllNameTexts()
+						KP:UpdateAllTexts()
 						KP:UpdateClassColorNames()
 					end,
 					disabled = function() return KP.dbp.nameText_hide end
@@ -424,20 +443,12 @@ KP.MainOptionTable = {
 					type = "toggle",
 					name = "Class Colors on Friends",
 					desc = "Use class colors for friendly player names (only works for party or raid members).",
-					set = function(info, val)
-						KP.dbp[info[#info]] = val
-						KP:UpdateClassColorNames()
-					end,
 				},
 				nameText_classColorEnemies = {
 					order = 12,
 					type = "toggle",
 					name = "Class Colors on Enemies",
 					desc = "Use class colors for enemy player names. 'Class Colors in Nameplates' must be enabled.",
-					set = function(info, val)
-						KP.dbp[info[#info]] = val
-						KP:UpdateClassColorNames()
-					end,
 				},
 				nameText_width = {
 					order = 13,
@@ -446,10 +457,6 @@ KP.MainOptionTable = {
 					min = 50,
 					max = 250,
 					step = 1,
-					set = function(info, val)
-						KP.dbp[info[#info]] = val
-						KP:UpdateAllNameTexts()
-					end,
 					disabled = function() return KP.dbp.nameText_hide end
 				},
 				nameText_hide = {
@@ -509,7 +516,8 @@ KP.MainOptionTable = {
 						KP.dbp[info[#info]] = val
 						KP.dbp.levelText_offsetX = 0
 						KP.dbp.levelText_offsetY = 0
-						KP:UpdateAllLevelTexts()
+						KP:UpdateAllTexts()
+						KP:UpdateClassColorNames()
 					end,
 					disabled = function() return KP.dbp.levelText_hide end
 				},
@@ -535,6 +543,116 @@ KP.MainOptionTable = {
 					order = 25,
 					type = "toggle",
 					name = "Hide Level Text",
+				},
+				lineBreak6 = {order = 26, type = "description", name = ""},
+				lineBreak7 = {order = 27, type = "description", name = ""},
+				ArenaIDText_header = {
+					order = 28,
+					type = "header",
+					name = "ArenaID Text",
+				},
+				lineBreak8 = {order = 29, type = "description", name = ""},
+				ArenaIDText_font = {
+					order = 30,
+					type = "select",
+					name = "Text Font",
+					values = KP.LSM:HashTable("font"),
+					dialogControl = "LSM30_Font",
+					disabled = function() return KP.dbp.ArenaIDText_hide end
+				},
+				ArenaIDText_size = {
+					order = 31,
+					type = "range",
+					name = "Font Size",
+					min = 8,
+					max = 20,
+					step = 0.1,
+					disabled = function() return KP.dbp.ArenaIDText_hide end
+				},
+				ArenaIDText_outline = {
+					order = 32,
+					type = "select", 
+					name = "Outline",
+					values = {
+						[""] = "None",
+						["OUTLINE"] = "Outline",
+						["THICKOUTLINE"] = "Thick Outline",
+						["MONOCHROME"] = "Monochrome",
+						["OUTLINE,MONOCHROME"] = "Monochrome Outline",
+						["THICKOUTLINE,MONOCHROME"] = "Monochrome Thick Outline",
+					},
+					disabled = function() return KP.dbp.ArenaIDText_hide end
+				},
+				ArenaIDText_anchor = {
+					order = 33,
+					type = "select", 
+					name = "Anchor",
+					values = {
+						["Left"] = "Left",
+						["Center"] = "Center",
+						["Right"] = "Right"
+					},
+					set = function(info, val)
+						KP.dbp[info[#info]] = val
+						KP.dbp.ArenaIDText_offsetX = 0
+						KP.dbp.ArenaIDText_offsetY = 0
+						KP:UpdateAllTexts()
+						KP:UpdateClassColorNames()
+					end,
+					disabled = function() return KP.dbp.ArenaIDText_hide end
+				},
+				ArenaIDText_offsetX = {
+					order = 34,
+					type = "range",
+					name = "Offset X",
+					min = -50,
+					max = 50,
+					step = 0.1,
+					disabled = function() return KP.dbp.ArenaIDText_hide end
+				},
+				ArenaIDText_offsetY = {
+					order = 35,
+					type = "range",
+					name = "Offset Y",
+					min = -50,
+					max = 50,
+					step = 0.1,
+					disabled = function() return KP.dbp.ArenaIDText_hide end
+				},
+				ArenaIDText_color = {
+					order = 36,
+					type = "color",
+					name = "Text Color",
+					get = function(info)
+						local c = KP.dbp[info[#info]]
+						return c[1], c[2], c[3]
+					end,
+					set = function(info, r, g, b)
+						KP.dbp[info[#info]] = {r, g, b}
+						KP:UpdateAllTexts()
+						KP:UpdateClassColorNames()
+					end,
+					disabled = function() return KP.dbp.ArenaIDText_hide end
+				},
+				hideNameTextInArena = {
+					order = 37,
+					type = "toggle",
+					name = "Hide Enemy Names",
+					desc = "Hide name text on arena enemies",
+					disabled = function() return KP.dbp.ArenaIDText_hide or KP.dbp.nameText_hide end
+				},
+				hideLevelTextInArena = {
+					order = 38,
+					type = "toggle",
+					name = "Hide Enemy Levels",
+					desc = "Hide level text on arena enemies",
+					disabled = function() return KP.dbp.ArenaIDText_hide or KP.dbp.levelText_hide end
+				},
+				lineBreak9 = {order = 39, type = "description", name = ""},
+				ArenaIDText_hide = {
+					order = 40,
+					type = "toggle",
+					name = "Hide ArenaID Text",
 				},
 			},
 		},
