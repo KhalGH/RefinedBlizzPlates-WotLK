@@ -8,9 +8,10 @@ It preserves a Blizzlike appearance while adding functional and visual improveme
 - Adjusted Z-order spacing to prevent subregions from overlapping between nameplates
 - Custom glow for the target and mouseover nameplates.
 - Optional class icons in battlegrounds and arenas.
-- Displays arena enemies’ ID numbers as optional text on their nameplates.
+- Displays arenaID and partyID numbers as optional text in arenas.
 - Integrated TotemPlates system with in-game configuration.
 - Implemented a Blacklist to hide specific nameplates or replace them with icons.
+- Added an option to replace friendly player nameplates with only the name and class icon.
 - Added click-through behavior for totems, blacklist and, optionally, friendly nameplates.
 
 
@@ -24,20 +25,20 @@ It preserves a Blizzlike appearance while adding functional and visual improveme
        alt="KhalPlatesIMG3" width="90%">
 </p>
 <p align="center">
-  <img src="https://raw.githubusercontent.com/KhalGH/KhalPlates-WotLK/refs/heads/assets/assets/KhalPlatesIMG4.jpg" 
-       alt="KhalPlatesIMG4" width="90%">
-</p>
-<p align="center">
   <img src="https://raw.githubusercontent.com/KhalGH/KhalPlates-WotLK/refs/heads/assets/assets/KhalPlatesIMG5.jpg" 
        alt="KhalPlatesIMG5" width="90%">
 </p>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/KhalGH/KhalPlates-WotLK/refs/heads/assets/assets/KhalPlatesIMG6.jpg" 
+       alt="KhalPlatesIMG6" width="90%">
+</p>
 
 ## Installation  
-1. [Download](https://github.com/KhalGH/KhalPlates-WotLK/releases/download/v1.5/KhalPlates-v1.5.zip) the addon
+1. [Download](https://github.com/KhalGH/KhalPlates-WotLK/releases/download/v1.6/KhalPlates-v1.6.zip) the addon
 2. Extract the **!!KhalPlates** folder into `World of Warcraft/Interface/AddOns/`.  
 3. Restart the game and enable the addon.  
 
 ## Information  
-- **Addon Version:** 1.5  
+- **Addon Version:** 1.6  
 - **Game Version:** 3.3.5a (WotLK)  
 - **Author:** Khal  
