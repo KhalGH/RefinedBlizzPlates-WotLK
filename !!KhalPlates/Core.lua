@@ -6,28 +6,36 @@
 local AddonFile, KP = ...
 
 -- API
-local tonumber, tostring, select, sort, wipe, pairs, ipairs, unpack, CreateFrame, UnitName, UnitExists, IsInInstance, GetNumRaidMembers, GetNumArenaOpponents, GetRaidRosterInfo, RAID_CLASS_COLORS, ToggleFrame, UIPanelWindows =
-      tonumber, tostring, select, sort, wipe, pairs, ipairs, unpack, CreateFrame, UnitName, UnitExists, IsInInstance, GetNumRaidMembers, GetNumArenaOpponents, GetRaidRosterInfo, RAID_CLASS_COLORS, ToggleFrame, UIPanelWindows
+local select, sort, wipe, pairs, ipairs, unpack, CreateFrame, UnitName, IsInInstance, ToggleFrame, UIPanelWindows =
+      select, sort, wipe, pairs, ipairs, unpack, CreateFrame, UnitName, IsInInstance, ToggleFrame, UIPanelWindows
 
 -- Localized namespace definitions
+local NP_WIDTH = KP.NP_WIDTH
+local NP_HEIGHT = KP.NP_HEIGHT
 local VirtualPlates = KP.VirtualPlates
 local RealPlates = KP.RealPlates
 local PlatesVisible = KP.PlatesVisible
 local ClassByFriendName = KP.ClassByFriendName
-local NP_WIDTH = KP.NP_WIDTH
-local NP_HEIGHT = KP.NP_HEIGHT
+local ArenaID = KP.ArenaID
+local PartyID = KP.PartyID
 local ASSETS = KP.ASSETS
+local UpdatePlateVisibility = KP.UpdatePlateVisibility
+local ResetPlateFlags = KP.ResetPlateFlags
+local UpdateHitboxOutOfCombat = KP.UpdateHitboxOutOfCombat
 local UpdateTargetGlow = KP.UpdateTargetGlow
 local SetupLevelText = KP.SetupLevelText
 local ClassByPlateColor = KP.ClassByPlateColor
 local ReactionByPlateColor = KP.ReactionByPlateColor
+local UpdateGroupInfo = KP.UpdateGroupInfo
+local UpdateClassColorNames = KP.UpdateClassColorNames
+local UpdateArenaInfo = KP.UpdateArenaInfo
 local SetupKhalPlate = KP.SetupKhalPlate
 local SetupTotemPlate = KP.SetupTotemPlate
+local SetupClassPlate = KP.SetupClassPlate
 
 -- Local definitions
 local EventHandler = CreateFrame("Frame", nil, WorldFrame) -- Main addon frame (event handler + access to native frame methods)
 local PlateOverrides = {}	 -- Storage table: [MethodName] = override function for virtual plates
-local ArenaID = {}           -- Storage table: maps arena enemy names to their ID number
 local PlateLevels = 3 	     -- Frame level difference between plates so one plate's children don't overlap the next closest plate
 local NextUpdate = 0.05		 -- Time controller for PlatesUpdate
 local UpdateRate = 0.05	     -- Minimum time between plates are updated.
@@ -40,7 +48,9 @@ local GetParent = EventHandler.GetParent
 -- Status Flags
 KP.inCombat = false
 KP.inInstance = false
+KP.inPvEInstance = false
 KP.inPvPInstance = false
+KP.inBG = false
 KP.inArena = false
 
 -- SecureHandlers System: Manages nameplate hitbox resizing while in combat
@@ -138,117 +148,22 @@ do
 		PlatesVisible[Plate] = Virtual
 		Virtual:Show()
 		NextUpdate = 0 -- sorts instantly
-
 		-- Reposition all regions
 		for Index, Region in ipairs(Plate) do
 			for Point = 1, Region:GetNumPoints() do
 				ResetPoint(Plate, Region, Region:GetPoint(Point))
 			end
 		end
-
-		-- Sets the texture and name text colors based on player or NPC nameplate
-		Virtual.nameString = Virtual.nameText:GetText()
-		local name = Virtual.nameString
-		local healthBar = Virtual.healthBar
-		local isFriendly = ReactionByPlateColor(healthBar) == "FRIENDLY"
-		Virtual.classKey = ClassByPlateColor(healthBar)
-		local class = Virtual.classKey
-		local classColor	
-		if class then
-			healthBar.barTex:SetTexture(KP.LSM:Fetch("statusbar", KP.dbp.healthBar_playerTex))
-			if class == "FRIENDLY PLAYER" and ClassByFriendName[name] and KP.dbp.nameText_classColorFriends then
-				classColor = RAID_CLASS_COLORS[ClassByFriendName[name]]
-			elseif class ~= "FRIENDLY PLAYER" and KP.dbp.nameText_classColorEnemies then
-				classColor = RAID_CLASS_COLORS[class]
-			end
-		else
-			healthBar.barTex:SetTexture(KP.LSM:Fetch("statusbar", KP.dbp.healthBar_npcTex))
-		end
-		Virtual.nameColorR, Virtual.nameColorG, Virtual.nameColorB = unpack(KP.dbp.nameText_color)
-		if classColor then
-			Virtual.nameColorR, Virtual.nameColorG, Virtual.nameColorB = classColor.r, classColor.g, classColor.b
-		end
-		local nameText = Virtual.healthBar.nameText
-		nameText:SetTextColor(Virtual.nameColorR, Virtual.nameColorG, Virtual.nameColorB)
-		Virtual.nameTextIsYellow = false
-		if KP.dbp.nameText_hide then
-			nameText:Hide()
-		else
-			nameText:Show()	
-		end
-		local levelText = Virtual.levelText
-		if KP.dbp.levelText_hide then
-			levelText:Hide()
-		else
-			SetupLevelText(Virtual)
-			levelText:Show()
-		end
-
-		------------------------ TotemPlates Handling ------------------------
-		local totemKey = KP.Totems[name]
-		local totemCheck = KP.dbp.TotemsCheck[totemKey]
-		local blacklisted = KP.dbp.Blacklist[name]
-		if totemCheck or blacklisted then
-			if not Plate.totemPlate then
-				SetupTotemPlate(Plate) -- Setup TotemPlate on the fly
-			end
-			Virtual:Hide()
-			local iconTexture = (totemCheck == 1 and ASSETS .. "Icons\\" .. totemKey) or (blacklisted ~= "" and blacklisted)
-			if iconTexture then
-				Plate.totemPlate:Show()
-				Plate.totemPlate.icon:SetTexture(iconTexture)
-				Plate.totemPlateIsShown = true
-			end
-		else
-			--------------- Nameplate Level Filter --------------
-			local level = tonumber(Virtual.levelText:GetText())
-			if level and level < KP.dbp.levelFilter then
-				Virtual:Hide() -- Hide low level nameplates
-			elseif class and KP.inPvPInstance then
-				------------------------ Show Arena IDs ------------------------
-				if class ~= "FRIENDLY PLAYER" and KP.inArena then
-					local arenaID = ArenaID[name]
-					Virtual.arenaID = arenaID
-					if arenaID and not KP.dbp.ArenaIDText_hide then
-						healthBar.ArenaIDText:SetText(arenaID)
-						healthBar.ArenaIDText:Show()
-						if KP.dbp.hideLevelTextInArena then
-							levelText:Hide()
-						end
-						if KP.dbp.hideNameTextInArena then
-							nameText:Hide()
-						end
-					end
-				end
-				--------------- Show class icons in PvP instances --------------
-				if class == "FRIENDLY PLAYER" and KP.dbp.showClassOnFriends then
-					class = ClassByFriendName[name] or ""
-					Virtual.classIcon:SetTexture(ASSETS .. "Classes\\" .. class)
-					Virtual.classIcon:Show()
-				elseif class ~= "FRIENDLY PLAYER" and KP.dbp.showClassOnEnemies then
-					Virtual.classIcon:SetTexture(ASSETS .. "Classes\\" .. class)
-					Virtual.classIcon:Show()
-				end
-			end	
-		end
-
+		UpdatePlateVisibility(Plate, Virtual) -- Updates textures, texts, icons, filters
  		if KP.inCombat then
-			if not Virtual:IsShown() or (isFriendly and KP.dbp.friendlyClickthrough and KP.inInstance) then
+			if not Virtual.isShown or (Plate.isFriendly and KP.dbp.friendlyClickthrough and KP.inInstance) then
 				NullifyPlateHitbox()
 			else
 				NormalizePlateHitbox()
 			end
 			ExecuteHitboxSecureScript()
 		else
-			if not Virtual:IsShown() or (isFriendly and KP.dbp.friendlyClickthrough and KP.inInstance) then
-				Plate:SetSize(0.01, 0.01)
-			else
-				if KP.dbp.healthBar_border == "KhalPlates" then
-					Plate:SetSize(NP_WIDTH * KP.dbp.globalScale * 0.9, NP_HEIGHT * KP.dbp.globalScale * 0.7)
-				else
-					Plate:SetSize(NP_WIDTH * KP.dbp.globalScale, NP_HEIGHT * KP.dbp.globalScale)
-				end
-			end
+			UpdateHitboxOutOfCombat(Plate, Virtual)
 		end
 	end
 
@@ -256,14 +171,8 @@ do
 	local function PlateOnHide(Plate)
 		PlatesVisible[Plate] = nil
 		local Virtual = VirtualPlates[Plate]
-		Virtual.classIcon:Hide()
-		Virtual.nameString = nil
-		Virtual.classKey = nil
-		Virtual.arenaID = nil
 		Virtual:Hide() -- Explicitly hide so IsShown returns false.
-		if Plate.totemPlate then Plate.totemPlate:Hide() end
-		Plate.totemPlateIsShown = nil
-		Virtual.healthBar.ArenaIDText:Hide()
+		ResetPlateFlags(Plate, Virtual)
 		if KP.inCombat then
 			ExecuteHitboxSecureScript()
 		end
@@ -287,19 +196,21 @@ do
 				else
 					Depths[Plate] = Depth
 				end
-				----------------------- Improved mouseover highlight -----------------------
-				healthBarHighlight = Virtual.healthBarHighlight
-				nameText = Virtual.healthBar.nameText
-				if healthBarHighlight:IsShown() then
-					if Virtual.nameString ~= mouseoverName then
-						healthBarHighlight:Hide()
-					elseif not Virtual.nameTextIsYellow then
-						nameText:SetTextColor(1, 1, 0)
-						Virtual.nameTextIsYellow  = true
+				if Virtual.isShown then
+					----------------------- Improved mouseover highlight -----------------------
+					healthBarHighlight = Virtual.healthBarHighlight
+					nameText = Virtual.healthBar.nameText
+					if healthBarHighlight:IsShown() then
+						if Virtual.nameString ~= mouseoverName then
+							healthBarHighlight:Hide()
+						elseif not Virtual.nameTextIsYellow then
+							nameText:SetTextColor(1, 1, 0)
+							Virtual.nameTextIsYellow  = true
+						end
+					elseif Virtual.nameTextIsYellow then
+						nameText:SetTextColor(Virtual.nameColorR, Virtual.nameColorG, Virtual.nameColorB)
+						Virtual.nameTextIsYellow = false
 					end
-				elseif Virtual.nameTextIsYellow then
-					nameText:SetTextColor(Virtual.nameColorR, Virtual.nameColorG, Virtual.nameColorB)
-					Virtual.nameTextIsYellow = false
 				end
 			end
 		end
@@ -312,6 +223,9 @@ do
 				SetFrameLevel(Virtual.healthBar, Index * PlateLevels)
 				if Plate.totemPlateIsShown then
 					SetFrameLevel(Plate.totemPlate, Index * PlateLevels)
+				end
+				if Plate.classPlateIsShown then
+					SetFrameLevel(Plate.classPlate, Index * PlateLevels)
 				end
 				BGHframe = Virtual.BGHframe
 				if BGHframe then
@@ -516,7 +430,7 @@ end
 
 function KP:OnProfileChanged(...)
 	self.dbp = self.db.profile
-	self:MoveAllVisiblePlates(self.dbp.globalOffsetX - self.globalOffsetX, self.dbp.globalOffsetY - self.globalOffsetY)
+	self:MoveAllShownPlates(self.dbp.globalOffsetX - self.globalOffsetX, self.dbp.globalOffsetY - self.globalOffsetY)
 	self:UpdateProfile()
 	self.globalOffsetX = self.dbp.globalOffsetX
 	self.globalOffsetY = self.dbp.globalOffsetY
@@ -594,48 +508,30 @@ function EventHandler:PLAYER_TARGET_CHANGED()
 	end
 end
 
-local function UpdateClassByFriendName()
-	wipe(ClassByFriendName)
-	for i = 1 , GetNumRaidMembers() do
-		local name, _, _, _, _, class = GetRaidRosterInfo(i)
-		if name and class then
-			name = name:match("([^%-]+).*") -- remove realm suffix
-			ClassByFriendName[name] = class
-		end
-	end
-end
-
-local function UpdateArenaIDList()
-	for i = 1, GetNumArenaOpponents() do
-		local arenaName = UnitName("arena" .. i)
-		if arenaName then
-			ArenaID[arenaName] = tostring(i)
-		end
-	end
-end
 
 function EventHandler:PLAYER_ENTERING_WORLD()
 	local inInstance, instanceType = IsInInstance()
 	KP.inInstance = inInstance == 1
+	KP.inPvEInstance = instanceType == "party" or instanceType == "raid"
 	KP.inPvPInstance = instanceType == "pvp" or instanceType == "arena"
+	KP.inBG = instanceType == "pvp"
 	KP.inArena = instanceType == "arena"
-	UpdateClassByFriendName()
-	wipe(ArenaID)
+	UpdateGroupInfo()
 	if KP.inArena then
-		UpdateArenaIDList()
+		UpdateArenaInfo()
 	end
 end
 
 function EventHandler:PARTY_MEMBERS_CHANGED()
-	UpdateClassByFriendName()
-	KP:UpdateClassColorNames()
+	UpdateGroupInfo()
+	UpdateClassColorNames()
 end
 
 local DelayedUpdateClassColorNames = CreateFrame("Frame")
 DelayedUpdateClassColorNames:Hide()
 DelayedUpdateClassColorNames:SetScript("OnUpdate", function(self)
 	self:Hide()
-	KP:UpdateClassColorNames()
+	UpdateClassColorNames()
 end)
 
 function EventHandler:UNIT_FACTION(event, unit)
@@ -672,14 +568,8 @@ function EventHandler:PLAYER_PVP_RANK_CHANGED()
 end
 
 function EventHandler:ARENA_OPPONENT_UPDATE(event, unitToken, updateReason)
-	local arenaID = unitToken:match("^arena(%d+)$")
-	if not arenaID then return end
-	local arenaName = UnitName(unitToken)
-	if not arenaName then return end
-	if updateReason == "seen" then
-		ArenaID[arenaName] = arenaID
-	elseif updateReason == "destroyed" then
-		ArenaID[arenaName] = nil
+	if updateReason == "seen" and unitToken:match("^arena(%d+)$") then
+		UpdateArenaInfo()
 	end
 end
 

@@ -36,7 +36,7 @@ KP.dbp.levelText_anchor = "Right"
 KP.dbp.levelText_offsetX = 0
 KP.dbp.levelText_offsetY = 0
 -- ArenaID Text
-KP.dbp.ArenaIDText_hide = false
+KP.dbp.ArenaIDText_show = true
 KP.dbp.ArenaIDText_font = "Arial Narrow"
 KP.dbp.ArenaIDText_size = 12
 KP.dbp.ArenaIDText_outline = "OUTLINE"
@@ -44,8 +44,13 @@ KP.dbp.ArenaIDText_anchor = "Right"
 KP.dbp.ArenaIDText_offsetX = 0
 KP.dbp.ArenaIDText_offsetY = 0
 KP.dbp.ArenaIDText_color = {1, 1, 1} -- white
-KP.dbp.hideLevelTextInArena = true
-KP.dbp.hideNameTextInArena = false
+KP.dbp.ArenaIDText_HideLevel = true
+KP.dbp.ArenaIDText_HideName = false
+-- PartyID Text
+KP.dbp.PartyIDText_show = true
+KP.dbp.PartyIDText_color = {1, 1, 1} -- white
+KP.dbp.PartyIDText_HideLevel = true
+KP.dbp.PartyIDText_HideName = false
 -- HealthBar
 KP.dbp.healthBar_border = "KhalPlates"
 KP.dbp.healthBar_borderTint = {1, 1, 1} -- This a tint overlay, not a regular color
@@ -103,6 +108,20 @@ KP.dbp.classIcon_size = 26
 KP.dbp.classIcon_anchor = "Left"
 KP.dbp.classIcon_offsetX = 0
 KP.dbp.classIcon_offsetY = 0
+-- Class Plates
+KP.dbp.classPlate_textFont = "Friz Quadrata TT"
+KP.dbp.classPlate_textSize = 14
+KP.dbp.classPlate_textOutline = "OUTLINE"
+KP.dbp.classPlate_textColor = {1, 1, 1} -- white
+KP.dbp.classPlate_classColors = true
+KP.dbp.classPlate_showNameInBG = false
+KP.dbp.classPlate_showNameInArena = true
+KP.dbp.classPlate_showNameInPvE = true
+KP.dbp.classPlate_iconSize = 36
+KP.dbp.classPlate_offset = 0
+KP.dbp.classPlate_showIconInBG = false
+KP.dbp.classPlate_showIconInArena = true
+KP.dbp.classPlate_showIconInPvE = false
 -- Totem Plates
 KP.dbp.totemSize = 24 -- Size of the totem (or NPC) icon replacing the nameplate
 KP.dbp.totemOffset = 0 -- Vertical offset for totem icon
@@ -172,8 +191,6 @@ KP.MainOptionTable = {
 							KP.dbp.globalOffsetX = 0
 							KP.dbp.nameText_font = "Arial Narrow"
 							KP.dbp.nameText_size = 9
-							KP.dbp.nameText_offsetX = 0
-							KP.dbp.nameText_offsetY = 0
 							KP.dbp.nameText_width = 85
 							KP.dbp.levelText_hide = true
 							KP.dbp.levelText_font = "Arial Narrow"
@@ -184,7 +201,6 @@ KP.MainOptionTable = {
 							KP.dbp.healthText_size = 8.8
 							KP.dbp.healthText_anchor = "RIGHT"
 							KP.dbp.healthText_offsetX = 0
-							KP.dbp.healthText_offsetY = 0
 							KP.dbp.castText_font = "Arial Narrow"
 							KP.dbp.castText_size = 9
 							KP.dbp.castText_offsetY = 0
@@ -202,8 +218,6 @@ KP.MainOptionTable = {
 							KP.dbp.globalOffsetX = -11
 							KP.dbp.nameText_font = "Friz Quadrata TT"
 							KP.dbp.nameText_size = 16
-							KP.dbp.nameText_offsetX = 11
-							KP.dbp.nameText_offsetY = 17
 							KP.dbp.nameText_width = 250
 							KP.dbp.levelText_hide = false
 							KP.dbp.levelText_font = "Friz Quadrata TT"
@@ -214,7 +228,6 @@ KP.MainOptionTable = {
 							KP.dbp.healthText_size = 9.5
 							KP.dbp.healthText_anchor = "CENTER"
 							KP.dbp.healthText_offsetX = 11
-							KP.dbp.healthText_offsetY = -0.2
 							KP.dbp.castText_font = "Friz Quadrata TT"
 							KP.dbp.castText_size = 10
 							KP.dbp.castText_offsetY = -0.4
@@ -230,6 +243,8 @@ KP.MainOptionTable = {
 							KP.dbp.classIcon_anchor = "Top"
 						end
 						KP.dbp.nameText_anchor = "CENTER"
+						KP.dbp.nameText_offsetX = 0
+						KP.dbp.nameText_offsetY = 0
 						KP.dbp.levelText_outline = ""
 						KP.dbp.levelText_anchor = "Right"
 						KP.dbp.levelText_offsetX = 0
@@ -237,7 +252,8 @@ KP.MainOptionTable = {
 						KP.dbp.ArenaIDText_anchor = "Right"
 						KP.dbp.ArenaIDText_offsetX = 0
 						KP.dbp.ArenaIDText_offsetY = 0
-						KP.dbp.hideLevelTextInArena = true
+						KP.dbp.healthText_offsetY = 0
+						KP.dbp.ArenaIDText_HideLevel = true
 						KP.dbp.castText_anchor = "CENTER"
 						KP.dbp.castText_outline = ""
 						KP.dbp.castText_width = 90
@@ -254,13 +270,14 @@ KP.MainOptionTable = {
 						KP.dbp.raidTargetIcon_offsetY = 0
 						KP.dbp.classIcon_offsetX = 0
 						KP.dbp.classIcon_offsetY = 0
-						KP:MoveAllVisiblePlates(KP.dbp.globalOffsetX - KP.globalOffsetX, 0)
+						KP:MoveAllShownPlates(KP.dbp.globalOffsetX - KP.globalOffsetX, 0)
 						KP:UpdateAllTexts()
 						KP:UpdateAllHealthBars()
-						KP:UpdateAllCastBarBorders()
 						KP:UpdateAllCastBars()
-						KP:UpdateAllGlows()
 						KP:UpdateAllIcons()
+						KP:UpdateAllGlows()
+						KP:UpdateAllCastBarBorders()
+						KP:UpdateAllShownPlates()
 						KP:UpdateHitboxAttributes()
 						KP.globalOffsetX = KP.dbp.globalOffsetX
 					end,
@@ -294,7 +311,7 @@ KP.MainOptionTable = {
 					step = 1,
 					set = function(info, val)
 						KP.dbp.globalOffsetX = val
-						KP:MoveAllVisiblePlates(KP.dbp.globalOffsetX - KP.globalOffsetX, 0)
+						KP:MoveAllShownPlates(KP.dbp.globalOffsetX - KP.globalOffsetX, 0)
 						KP.globalOffsetX = KP.dbp.globalOffsetX
 					end,
 				},
@@ -308,7 +325,7 @@ KP.MainOptionTable = {
 					step = 1,
 					set = function(info, val)
 						KP.dbp.globalOffsetY = val
-						KP:MoveAllVisiblePlates(0, KP.dbp.globalOffsetY - KP.globalOffsetY)
+						KP:MoveAllShownPlates(0, KP.dbp.globalOffsetY - KP.globalOffsetY)
 						KP.globalOffsetY = KP.dbp.globalOffsetY
 					end,
 				},
@@ -325,7 +342,7 @@ KP.MainOptionTable = {
 					step = 1,
 					set = function(info, val)
 						KP.dbp[info[#info]] = val
-						KP:UpdateLevelFilter()
+						KP:UpdateAllShownPlates()
 					end,
 				},
 				lineBreak12 = {order = 18, type = "description", name = ""},
@@ -337,6 +354,8 @@ KP.MainOptionTable = {
 					name = "Click-through Friendly Nameplates",
 					desc = "Disables friendly nameplates hitboxes inside PvE and PvP instances",
 				},
+				lineBreak15 = {order = 22, type = "description", name = ""},
+				lineBreak16 = {order = 23, type = "description", name = ""},
 			},
 		},
 		Text = {
@@ -346,7 +365,7 @@ KP.MainOptionTable = {
 			set = function(info, val)
 				KP.dbp[info[#info]] = val
 				KP:UpdateAllTexts()
-				KP:UpdateClassColorNames()
+				KP:UpdateAllShownPlates()
 			end,
 			args = {
 				lineBreak1 = {order = 1, type = "description", name = ""},
@@ -392,16 +411,16 @@ KP.MainOptionTable = {
 					type = "select", 
 					name = "Anchor",
 					values = {
-						["LEFT"] = "Left",
-						["CENTER"] = "Center",
-						["RIGHT"] = "Right"
+						["LEFT"] = "LEFT",
+						["CENTER"] = "CENTER",
+						["RIGHT"] = "RIGHT"
 					},
 					set = function(info, val)
 						KP.dbp[info[#info]] = val
 						KP.dbp.nameText_offsetX = 0
 						KP.dbp.nameText_offsetY = 0
 						KP:UpdateAllTexts()
-						KP:UpdateClassColorNames()
+						KP:UpdateAllShownPlates()
 					end,
 					disabled = function() return KP.dbp.nameText_hide end
 				},
@@ -434,7 +453,7 @@ KP.MainOptionTable = {
 					set = function(info, r, g, b)
 						KP.dbp[info[#info]] = {r, g, b}
 						KP:UpdateAllTexts()
-						KP:UpdateClassColorNames()
+						KP:UpdateAllShownPlates()
 					end,
 					disabled = function() return KP.dbp.nameText_hide end
 				},
@@ -443,12 +462,14 @@ KP.MainOptionTable = {
 					type = "toggle",
 					name = "Class Colors on Friends",
 					desc = "Use class colors for friendly player names (only works for party or raid members).",
+					disabled = function() return KP.dbp.nameText_hide end
 				},
 				nameText_classColorEnemies = {
 					order = 12,
 					type = "toggle",
 					name = "Class Colors on Enemies",
 					desc = "Use class colors for enemy player names. 'Class Colors in Nameplates' must be enabled.",
+					disabled = function() return KP.dbp.nameText_hide end
 				},
 				nameText_width = {
 					order = 13,
@@ -517,7 +538,7 @@ KP.MainOptionTable = {
 						KP.dbp.levelText_offsetX = 0
 						KP.dbp.levelText_offsetY = 0
 						KP:UpdateAllTexts()
-						KP:UpdateClassColorNames()
+						KP:UpdateAllShownPlates()
 					end,
 					disabled = function() return KP.dbp.levelText_hide end
 				},
@@ -545,32 +566,39 @@ KP.MainOptionTable = {
 					name = "Hide Level Text",
 				},
 				lineBreak6 = {order = 26, type = "description", name = ""},
-				lineBreak7 = {order = 27, type = "description", name = ""},
 				ArenaIDText_header = {
-					order = 28,
+					order = 27,
 					type = "header",
-					name = "ArenaID Text",
+					name = "Arena/Party ID Text",
 				},
+				lineBreak7 = {order = 28, type = "description", name = ""},
 				lineBreak8 = {order = 29, type = "description", name = ""},
+				ArenaIDText_SharedConfig = {
+					order = 30, 
+					type = "description", 
+					name = "Shared Settings",
+					fontSize = "medium",
+				},
+				lineBreak9 = {order = 31, type = "description", name = ""},
 				ArenaIDText_font = {
-					order = 30,
+					order = 32,
 					type = "select",
 					name = "Text Font",
 					values = KP.LSM:HashTable("font"),
 					dialogControl = "LSM30_Font",
-					disabled = function() return KP.dbp.ArenaIDText_hide end
+					disabled = function() return not KP.dbp.ArenaIDText_show and not KP.dbp.PartyIDText_show end
 				},
 				ArenaIDText_size = {
-					order = 31,
+					order = 33,
 					type = "range",
 					name = "Font Size",
 					min = 8,
 					max = 20,
 					step = 0.1,
-					disabled = function() return KP.dbp.ArenaIDText_hide end
+					disabled = function() return not KP.dbp.ArenaIDText_show and not KP.dbp.PartyIDText_show end
 				},
 				ArenaIDText_outline = {
-					order = 32,
+					order = 34,
 					type = "select", 
 					name = "Outline",
 					values = {
@@ -581,10 +609,10 @@ KP.MainOptionTable = {
 						["OUTLINE,MONOCHROME"] = "Monochrome Outline",
 						["THICKOUTLINE,MONOCHROME"] = "Monochrome Thick Outline",
 					},
-					disabled = function() return KP.dbp.ArenaIDText_hide end
+					disabled = function() return not KP.dbp.ArenaIDText_show and not KP.dbp.PartyIDText_show end
 				},
 				ArenaIDText_anchor = {
-					order = 33,
+					order = 35,
 					type = "select", 
 					name = "Anchor",
 					values = {
@@ -597,32 +625,41 @@ KP.MainOptionTable = {
 						KP.dbp.ArenaIDText_offsetX = 0
 						KP.dbp.ArenaIDText_offsetY = 0
 						KP:UpdateAllTexts()
-						KP:UpdateClassColorNames()
+						KP:UpdateAllShownPlates()
 					end,
-					disabled = function() return KP.dbp.ArenaIDText_hide end
+					disabled = function() return not KP.dbp.ArenaIDText_show and not KP.dbp.PartyIDText_show end
 				},
 				ArenaIDText_offsetX = {
-					order = 34,
+					order = 36,
 					type = "range",
 					name = "Offset X",
 					min = -50,
 					max = 50,
 					step = 0.1,
-					disabled = function() return KP.dbp.ArenaIDText_hide end
+					disabled = function() return not KP.dbp.ArenaIDText_show and not KP.dbp.PartyIDText_show end
 				},
 				ArenaIDText_offsetY = {
-					order = 35,
+					order = 37,
 					type = "range",
 					name = "Offset Y",
 					min = -50,
 					max = 50,
 					step = 0.1,
-					disabled = function() return KP.dbp.ArenaIDText_hide end
+					disabled = function() return not KP.dbp.ArenaIDText_show and not KP.dbp.PartyIDText_show end
+				},
+				lineBreak10 = {order = 38, type = "description", name = ""},
+				lineBreak11 = {order = 39, type = "description", name = ""},
+				ArenaIDText_show = {
+					order = 40,
+					type = "toggle",
+					name = "Show ArenaID",
+					desc = "Shows Arena ID numbers on nameplates in arena",
+					width = "full",
 				},
 				ArenaIDText_color = {
-					order = 36,
+					order = 41,
 					type = "color",
-					name = "Text Color",
+					name = "ArenaID Color",
 					get = function(info)
 						local c = KP.dbp[info[#info]]
 						return c[1], c[2], c[3]
@@ -630,30 +667,191 @@ KP.MainOptionTable = {
 					set = function(info, r, g, b)
 						KP.dbp[info[#info]] = {r, g, b}
 						KP:UpdateAllTexts()
-						KP:UpdateClassColorNames()
+						KP:UpdateAllShownPlates()
 					end,
-					disabled = function() return KP.dbp.ArenaIDText_hide end
+					disabled = function() return not KP.dbp.ArenaIDText_show end
 				},
-				hideNameTextInArena = {
-					order = 37,
+				ArenaIDText_HideName = {
+					order = 42,
 					type = "toggle",
-					name = "Hide Enemy Names",
+					name = "Hide Enemy Name",
 					desc = "Hide name text on arena enemies",
-					disabled = function() return KP.dbp.ArenaIDText_hide or KP.dbp.nameText_hide end
+					disabled = function() return not KP.dbp.ArenaIDText_show or KP.dbp.nameText_hide end
 				},
-				hideLevelTextInArena = {
-					order = 38,
+				ArenaIDText_HideLevel = {
+					order = 43,
 					type = "toggle",
-					name = "Hide Enemy Levels",
+					name = "Hide Enemy Level",
 					desc = "Hide level text on arena enemies",
-					disabled = function() return KP.dbp.ArenaIDText_hide or KP.dbp.levelText_hide end
+					disabled = function() return not KP.dbp.ArenaIDText_show or KP.dbp.levelText_hide end
 				},
-				lineBreak9 = {order = 39, type = "description", name = ""},
-				ArenaIDText_hide = {
-					order = 40,
+				lineBreak12 = {order = 44, type = "description", name = ""},
+				lineBreak13 = {order = 45, type = "description", name = ""},
+				lineBreak14 = {order = 46, type = "description", name = ""},
+				PartyIDText_show = {
+					order = 47,
 					type = "toggle",
-					name = "Hide ArenaID Text",
+					name = "Show PartyID",
+					desc = "Shows Party ID numbers on nameplates in arena",
+					width = "full",
 				},
+				PartyIDText_color = {
+					order = 48,
+					type = "color",
+					name = "PartyID Color",
+					get = function(info)
+						local c = KP.dbp[info[#info]]
+						return c[1], c[2], c[3]
+					end,
+					set = function(info, r, g, b)
+						KP.dbp[info[#info]] = {r, g, b}
+						KP:UpdateAllTexts()
+						KP:UpdateAllShownPlates()
+					end,
+					disabled = function() return not KP.dbp.PartyIDText_show end
+				},
+				PartyIDText_HideName = {
+					order = 49,
+					type = "toggle",
+					name = "Hide Friend Name",
+					desc = "Hide name text on party",
+					disabled = function() return not KP.dbp.PartyIDText_show or KP.dbp.nameText_hide end
+				},
+				PartyIDText_HideLevel = {
+					order = 50,
+					type = "toggle",
+					name = "Hide Friend Level",
+					desc = "Hide level text on party",
+					disabled = function() return not KP.dbp.PartyIDText_show or KP.dbp.levelText_hide end
+				},
+				lineBreak15 = {order = 51, type = "description", name = ""},
+				lineBreak16 = {order = 52, type = "description", name = ""},
+				lineBreak17 = {order = 53, type = "description", name = ""},
+				classPlate_nameHeader = {
+					order = 54,
+					type = "header",
+					name = "Special Name Text",
+				},
+				lineBreak18 = {order = 55, type = "description", name = ""},
+				classPlate_nameDesc = {
+					order = 56, 
+					type = "description", 
+					name = "Unlike the regular name text, this completely replaces friendly player nameplates."
+				},
+				lineBreak19 = {order = 57, type = "description", name = ""},
+				classPlate_textFont = {
+					order = 58,
+					type = "select",
+					name = "Text Font",
+					values = KP.LSM:HashTable("font"),
+					dialogControl = "LSM30_Font",
+					set = function(info, val)
+						KP.dbp[info[#info]] = val
+						KP:UpdateAllIcons()
+						KP:UpdateAllShownPlates()
+					end,
+				},
+				classPlate_textSize = {
+					order = 59,
+					type = "range",
+					name = "Font Size",
+					min = 8,
+					max = 20,
+					step = 0.1,
+					set = function(info, val)
+						KP.dbp[info[#info]] = val
+						KP:UpdateAllIcons()
+						KP:UpdateAllShownPlates()
+					end,
+				},
+				classPlate_textOutline = {
+					order = 60,
+					type = "select", 
+					name = "Outline",
+					values = {
+						[""] = "None",
+						["OUTLINE"] = "Outline",
+						["THICKOUTLINE"] = "Thick Outline",
+						["MONOCHROME"] = "Monochrome",
+						["OUTLINE,MONOCHROME"] = "Monochrome Outline",
+						["THICKOUTLINE,MONOCHROME"] = "Monochrome Thick Outline",
+					},
+					set = function(info, val)
+						KP.dbp[info[#info]] = val
+						KP:UpdateAllIcons()
+						KP:UpdateAllShownPlates()
+					end,
+				},
+				classPlate_textColor = {
+					order = 61,
+					type = "color",
+					name = "Base name color",
+					get = function(info)
+						local c = KP.dbp[info[#info]]
+						return c[1], c[2], c[3]
+					end,
+					set = function(info, r, g, b)
+						KP.dbp[info[#info]] = {r, g, b}
+						KP:UpdateAllIcons()
+						KP:UpdateAllShownPlates()
+					end,
+				},
+				classPlate_classColors = {
+					order = 62,
+					type = "toggle",
+					name = "Name with class color",
+					set = function(info, val)
+						KP.dbp[info[#info]] = val
+						KP:UpdateAllIcons()
+						KP:UpdateAllShownPlates()
+					end,
+				},
+				classPlate_offset = {
+					order = 63,
+					type = "range",
+					name = "Offset Y",
+					min = -50,
+					max = 50,
+					step = 0.1,
+					set = function(info, val)
+						KP.dbp[info[#info]] = val
+						KP:UpdateAllIcons()
+						KP:UpdateAllShownPlates()
+					end,
+				},
+				lineBreak20 = {order = 64, type = "description", name = ""},
+				classPlate_showNameInBG = {
+					order = 65,
+					type = "toggle",
+					name = "Show in BGs",
+					set = function(info, val)
+						KP.dbp[info[#info]] = val
+						KP:UpdateAllIcons()
+						KP:UpdateAllShownPlates()
+					end,
+				},
+				classPlate_showNameInArena = {
+					order = 66,
+					type = "toggle",
+					name = "Show in Arenas",
+					set = function(info, val)
+						KP.dbp[info[#info]] = val
+						KP:UpdateAllIcons()
+						KP:UpdateAllShownPlates()
+					end,
+				},
+				classPlate_showNameInPvE = {
+					order = 67,
+					type = "toggle",
+					name = "Show in PvE",
+					set = function(info, val)
+						KP.dbp[info[#info]] = val
+						KP:UpdateAllIcons()
+						KP:UpdateAllShownPlates()
+					end,
+				},
+				lineBreak21 = {order = 68, type = "description", name = ""},
+				lineBreak22 = {order = 69, type = "description", name = ""},
 			},
 		},
 		HealthBar = {
@@ -830,6 +1028,8 @@ KP.MainOptionTable = {
 					type = "toggle",
 					name = "Hide Health Text",
 				},
+				lineBreak10 = {order = 26, type = "description", name = ""},
+				lineBreak11 = {order = 27, type = "description", name = ""},
 			},
 		},
 		CastBar = {
@@ -1050,6 +1250,8 @@ KP.MainOptionTable = {
 					type = "toggle",
 					name = "Hide Cast Timer Text",
 				},
+				lineBreak9 = {order = 30, type = "description", name = ""},
+				lineBreak10 = {order = 31, type = "description", name = ""},
 			},
 		},
 		Icons = {
@@ -1059,6 +1261,7 @@ KP.MainOptionTable = {
 			set = function(info, val)
 				KP.dbp[info[#info]] = val
 				KP:UpdateAllIcons()
+				KP:UpdateAllShownPlates()
 			end,
 			args = {
 				lineBreak1 = {order = 1, type = "description", name = ""},
@@ -1089,6 +1292,7 @@ KP.MainOptionTable = {
 					set = function(info, r, g, b)
 						KP.dbp[info[#info]] = {r, g, b}
 						KP:UpdateAllIcons()
+						KP:UpdateAllShownPlates()
 					end,
 				},
 				lineBreak3 = {order = 6, type = "description", name = ""},
@@ -1113,6 +1317,7 @@ KP.MainOptionTable = {
 						KP.dbp.bossIcon_offsetX = 0
 						KP.dbp.bossIcon_offsetY = 0
 						KP:UpdateAllIcons()
+						KP:UpdateAllShownPlates()
 					end,
 				},
 				bossIcon_offsetX = {
@@ -1161,6 +1366,7 @@ KP.MainOptionTable = {
 						KP.dbp.raidTargetIcon_offsetX = 0
 						KP.dbp.raidTargetIcon_offsetY = 0
 						KP:UpdateAllIcons()
+						KP:UpdateAllShownPlates()
 					end,
 				},
 				raidTargetIcon_offsetX = {
@@ -1209,6 +1415,7 @@ KP.MainOptionTable = {
 						KP.dbp.classIcon_offsetX = 0
 						KP.dbp.classIcon_offsetY = 0
 						KP:UpdateAllIcons()
+						KP:UpdateAllShownPlates()
 					end,
 				},
 				classIcon_offsetX = {
@@ -1240,20 +1447,12 @@ KP.MainOptionTable = {
 					type = "toggle",
 					name = "Show on Friends",
 					desc = "Class icons are only shown in battlegrounds and arenas.",
-					set = function(info, val)
-						KP.dbp[info[#info]] = val
-						KP:UpdateClassIconsShown()
-					end,
 				},
 				showClassOnEnemies = {
 					order = 31,
 					type = "toggle",
 					name = "Show on Enemies",
 					desc = "Class icons are only shown in battlegrounds and arenas.",
-					set = function(info, val)
-						KP.dbp[info[#info]] = val
-						KP:UpdateClassIconsShown()
-					end,
 				},
 				lineBreak12 = {order = 32, type = "description", name = ""},
 				lineBreak13 = {order = 33, type = "description", name = ""},
@@ -1270,10 +1469,6 @@ KP.MainOptionTable = {
 					min = 15,
 					max = 35,
 					step = 0.1,
-					set = function(info, val)
-						KP.dbp[info[#info]] = val
-						KP:UpdateAllTotemIcons()
-					end,
 				},
 				totemOffset = {
 					order = 37,
@@ -1282,11 +1477,56 @@ KP.MainOptionTable = {
 					min = -50,
 					max = 50,
 					step = 0.1,
-					set = function(info, val)
-						KP.dbp[info[#info]] = val
-						KP:UpdateAllTotemIcons()
-					end,
 				},
+				lineBreak15 = {order = 38, type = "description", name = ""},
+				lineBreak16 = {order = 39, type = "description", name = ""},
+				classPlate_iconHeader = {
+					order = 40,
+					type = "header",
+					name = "Special Class Icon",
+				},
+				lineBreak17 = {order = 41, type = "description", name = ""},
+				classPlate_iconDesc = {
+					order = 42, 
+					type = "description", 
+					name = "Unlike the regular class icon, this completely replaces friendly player nameplates."
+				},
+				lineBreak18 = {order = 43, type = "description", name = ""},
+				lineBreak19 = {order = 44, type = "description", name = ""},
+				classPlate_iconSize = {
+					order = 45,
+					type = "range",
+					name = "Icon Size",
+					min = 20,
+					max = 50,
+					step = 0.1,
+				},
+				classPlate_offset = {
+					order = 46,
+					type = "range",
+					name = "Offset Y",
+					min = -50,
+					max = 50,
+					step = 0.1,
+				},
+				lineBreak20 = {order = 47, type = "description", name = ""},
+				classPlate_showIconInBG = {
+					order = 48,
+					type = "toggle",
+					name = "Show in BGs",
+				},
+				classPlate_showIconInArena = {
+					order = 49,
+					type = "toggle",
+					name = "Show in Arenas",
+				},
+				classPlate_showIconInPvE = {
+					order = 50,
+					type = "toggle",
+					name = "Show in PvE",
+				},
+				lineBreak21 = {order = 51, type = "description", name = ""},
+				lineBreak22 = {order = 52, type = "description", name = ""},
 			},
 		},
 		Totems = {
@@ -1330,7 +1570,7 @@ KP.MainOptionTable = {
 						if not KP.dbp.Blacklist[tmpNewName] then
 							KP.dbp.Blacklist[tmpNewName] = ""
 							KP:BuildBlacklistUI()
-							KP:UpdateAllTotemPlates()
+							KP:UpdateAllShownPlates()
 							LibStub("AceConfigDialog-3.0"):SelectGroup("KhalPlates", "BlackList", tmpNewName)
 							tmpNewName = ""
 						else
@@ -1349,7 +1589,7 @@ KP.MainOptionTable = {
 					func = function()
 						KP.dbp.Blacklist = CopyTable(KP.Blacklist)
 						KP:BuildBlacklistUI()
-						KP:UpdateAllTotemPlates()
+						KP:UpdateAllShownPlates()
 					end,
 				},
 			},
@@ -1479,7 +1719,7 @@ for i, element in ipairs(TotemOrder) do
 					end,
 					set = function(_, val)
 						KP.dbp.TotemsCheck[name] = val and (KP.dbp.TotemsCheck[name] or 1) or false
-						KP:UpdateAllTotemPlates()
+						KP:UpdateAllShownPlates()
 					end,
 				},
 				hide = {
@@ -1495,7 +1735,7 @@ for i, element in ipairs(TotemOrder) do
 					end,
 					set = function(_, val)
 						KP.dbp.TotemsCheck[name] = val and 0 or 1
-						KP:UpdateAllTotemPlates()
+						KP:UpdateAllShownPlates()
 					end,
 				},
 			},
@@ -1539,7 +1779,7 @@ function KP:BuildBlacklistUI()
                     set = function(_, val)
                         KP.dbp.Blacklist[name] = val
                         KP:BuildBlacklistUI()
-						KP:UpdateAllTotemPlates()
+						KP:UpdateAllShownPlates()
                     end,
                 },
 				lineBreak1 = {order = 3, type = "description", name = ""},
@@ -1566,7 +1806,7 @@ function KP:BuildBlacklistUI()
                     func = function()
                 		KP.dbp.Blacklist[name] = false
 						KP:BuildBlacklistUI()
-						KP:UpdateAllTotemPlates()
+						KP:UpdateAllShownPlates()
                     end,
                 },
             },

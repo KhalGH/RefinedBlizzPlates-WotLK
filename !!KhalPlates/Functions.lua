@@ -2,17 +2,19 @@
 local AddonFile, KP = ... -- namespace
 
 ----------------------------- API -----------------------------
-local ipairs, unpack, tonumber, CreateFrame, UnitCastingInfo, UnitChannelInfo, UnitName, floor =
-      ipairs, unpack, tonumber, CreateFrame, UnitCastingInfo, UnitChannelInfo, UnitName, math.floor
+local ipairs, unpack, tonumber, tostring, wipe, CreateFrame, UnitCastingInfo, UnitChannelInfo, UnitName, UnitClass, GetNumArenaOpponents, GetNumPartyMembers, GetNumRaidMembers, GetRaidRosterInfo, RAID_CLASS_COLORS, floor =
+      ipairs, unpack, tonumber, tostring, wipe, CreateFrame, UnitCastingInfo, UnitChannelInfo, UnitName, UnitClass, GetNumArenaOpponents, GetNumPartyMembers, GetNumRaidMembers, GetRaidRosterInfo, RAID_CLASS_COLORS, math.floor
 
 ------------------------- Core Variables -------------------------
-local VirtualPlates = {}     -- Storage table: Virtual nameplate frames
-local RealPlates = {}        -- Storage table: Real nameplate frames
-local PlatesVisible = {}     -- Storage table: currently active nameplates
-local ClassByFriendName = {} -- Storage table: maps friendly player names (party/raid) to their class
-local ASSETS = "Interface\\AddOns\\" .. AddonFile .. "\\Assets\\"
-local NP_WIDTH = 156.65118520899 -- Nameplate original width (don't modify)
+local NP_WIDTH = 156.65118520899  -- Nameplate original width (don't modify)
 local NP_HEIGHT = 39.162796302247 -- Nameplate original height (don't modify)
+local VirtualPlates = {}          -- Storage table: Virtual nameplate frames
+local RealPlates = {}             -- Storage table: Real nameplate frames
+local PlatesVisible = {}          -- Storage table: currently active nameplates
+local ClassByFriendName = {}      -- Storage table: maps friendly player names (party/raid) to their class
+local ArenaID = {}                -- Storage table: maps arena names to their ID number
+local PartyID = {}                -- Storage table: maps party names to their ID number
+local ASSETS = "Interface\\AddOns\\" .. AddonFile .. "\\Assets\\"
 
 -- Hash table mapping custom color keys to class names
 local ClassByKey = {
@@ -76,7 +78,15 @@ local function UpdateNameText(nameText)
 	if not nameText then return end
 	nameText:SetFont(KP.LSM:Fetch("font", KP.dbp.nameText_font), KP.dbp.nameText_size, KP.dbp.nameText_outline)
 	nameText:ClearAllPoints()
-	nameText:SetPoint(KP.dbp.nameText_anchor, KP.dbp.nameText_offsetX + 0.2, KP.dbp.nameText_offsetY + 0.7)
+	if KP.dbp.healthBar_border == "KhalPlates" then
+		nameText:SetPoint(KP.dbp.nameText_anchor, KP.dbp.nameText_offsetX + 0.2, KP.dbp.nameText_offsetY + 0.7)
+	else
+		if KP.dbp.nameText_anchor == "CENTER" then
+			nameText:SetPoint(KP.dbp.nameText_anchor, KP.dbp.nameText_offsetX + 11.2, KP.dbp.nameText_offsetY + 17.7)
+		else
+			nameText:SetPoint(KP.dbp.nameText_anchor, KP.dbp.nameText_offsetX + 0.2, KP.dbp.nameText_offsetY + 0.7)
+		end
+	end
 	nameText:SetWidth(KP.dbp.nameText_width)
 	nameText:SetJustifyH(KP.dbp.nameText_anchor)
 	nameText:SetTextColor(unpack(KP.dbp.nameText_color))
@@ -120,7 +130,6 @@ end
 local function UpdateArenaIDText(healthBar)
 	local ArenaIDText = healthBar.ArenaIDText
 	ArenaIDText:SetFont(KP.LSM:Fetch("font", KP.dbp.ArenaIDText_font), KP.dbp.ArenaIDText_size, KP.dbp.ArenaIDText_outline)
-	ArenaIDText:SetTextColor(unpack(KP.dbp.ArenaIDText_color))
 	ArenaIDText:ClearAllPoints()
 	if KP.dbp.healthBar_border == "KhalPlates" then
 		if KP.dbp.ArenaIDText_anchor == "Left" then
@@ -447,20 +456,45 @@ local function SetupKhalPlate(Virtual)
 	Virtual:HookScript("OnShow", VirtualOnShow)
 end
 
+local function SetupTotemIcon(Plate)
+	if not Plate.totemPlate then return end
+	Plate.totemPlate:SetPoint("TOP", 0, KP.dbp.totemOffset - 5)
+	Plate.totemPlate:SetSize(KP.dbp.totemSize, KP.dbp.totemSize)
+	Plate.totemPlate.targetGlow:SetSize(128*KP.dbp.totemSize/88, 128*KP.dbp.totemSize/88)
+end
+
 local function SetupTotemPlate(Plate)
 	if Plate.totemPlate then return end
 	Plate.totemPlate = CreateFrame("Frame", nil, Plate)
-	Plate.totemPlate:SetPoint("TOP", 0, KP.dbp.totemOffset - 5)
-	Plate.totemPlate:SetSize(KP.dbp.totemSize, KP.dbp.totemSize)
 	Plate.totemPlate:Hide()
 	Plate.totemPlate.icon = Plate.totemPlate:CreateTexture(nil, "ARTWORK")
 	Plate.totemPlate.icon:SetAllPoints(Plate.totemPlate)
 	Plate.totemPlate.targetGlow = Plate.totemPlate:CreateTexture(nil, "OVERLAY")
-	Plate.totemPlate.targetGlow:SetSize(128*KP.dbp.totemSize/88, 128*KP.dbp.totemSize/88)
 	Plate.totemPlate.targetGlow:SetTexture(ASSETS .. "PlateBorders\\TotemPlate-TargetGlow.blp")
 	Plate.totemPlate.targetGlow:SetVertexColor(unpack(KP.dbp.targetGlow_Tint))
 	Plate.totemPlate.targetGlow:SetPoint("CENTER")
 	Plate.totemPlate.targetGlow:Hide()
+	SetupTotemIcon(Plate)
+end
+
+local function SetupClassPlateIcon(Plate)
+	if not Plate.classPlate then return end
+	Plate.classPlate:SetPoint("TOP", Plate, "TOP", 0, KP.dbp.classPlate_offset)
+	Plate.classPlate:SetSize(KP.dbp.classPlate_iconSize, KP.dbp.classPlate_iconSize)
+	Plate.classPlate.icon:SetSize(KP.dbp.classPlate_iconSize, KP.dbp.classPlate_iconSize)
+	Plate.classPlate.nameText:SetFont(KP.LSM:Fetch("font", KP.dbp.classPlate_textFont), KP.dbp.classPlate_textSize, KP.dbp.classPlate_textOutline)
+end
+
+local function SetupClassPlate(Plate)
+	if Plate.classPlate then return end
+	Plate.classPlate = CreateFrame("Frame", nil, WorldFrame)
+	Plate.classPlate:Hide()
+	Plate.classPlate.nameText = Plate.classPlate:CreateFontString(nil, "OVERLAY")
+	Plate.classPlate.nameText:SetPoint("TOP")
+	Plate.classPlate.nameText:SetShadowOffset(0.5, -0.5)
+	Plate.classPlate.icon = Plate.classPlate:CreateTexture(nil, "ARTWORK")
+	Plate.classPlate.icon:SetPoint("BOTTOM", Plate.classPlate, "TOP")
+	SetupClassPlateIcon(Plate)
 end
 
 ---------------------------------------- Settings Update Functions ----------------------------------------
@@ -481,7 +515,7 @@ function KP:UpdateAllVirtualsScale()
 	end
 end
 
-function KP:MoveAllVisiblePlates(diffX, diffY)
+function KP:MoveAllShownPlates(diffX, diffY)
 	for Plate, Virtual in pairs(PlatesVisible) do
 		for _, Region in ipairs(Plate) do
 			for i = 1, Region:GetNumPoints() do
@@ -494,60 +528,17 @@ function KP:MoveAllVisiblePlates(diffX, diffY)
 	end
 end
 
-function KP:UpdateLevelFilter()
-	for Plate, Virtual in pairs(PlatesVisible) do
-		local name = Virtual.nameString
-		local totemCheck = self.dbp.TotemsCheck[self.Totems[name]]
-		local blacklisted = self.dbp.Blacklist[name]
-		if totemCheck or blacklisted then
-			Virtual:Hide()
-		else
-			local level = tonumber(Virtual.levelText:GetText())
-			if level and level < self.dbp.levelFilter then
-				Virtual:Hide()
-			else
-				Virtual:Show()
-			end
-		end
-	end
-end
-
 function KP:UpdateAllTexts()
-	for _, Virtual in pairs(VirtualPlates) do
+	for Plate, Virtual in pairs(VirtualPlates) do
 		local healthBar = Virtual.healthBar
-		local nameText = healthBar.nameText
-		UpdateNameText(nameText)
-		if self.dbp.nameText_hide then
-			nameText:Hide()
-		else
-			nameText:Show()
-		end
-		local levelText = Virtual.levelText
+		UpdateNameText(healthBar.nameText)
 		SetupLevelText(Virtual)
-		if self.dbp.levelText_hide then
-			levelText:Hide()
-		else
-			levelText:Show()
-		end
-		local ArenaIDText = healthBar.ArenaIDText
 		UpdateArenaIDText(healthBar)
-		if Virtual.arenaID and not self.dbp.ArenaIDText_hide then
-			ArenaIDText:SetText(Virtual.arenaID)
-			ArenaIDText:Show()
-			if self.dbp.hideLevelTextInArena then
-				levelText:Hide()
-			end
-			if self.dbp.hideNameTextInArena then
-				nameText:Hide()
-			end
-		else
-			ArenaIDText:Hide()
-		end
 	end
 end
 
 function KP:UpdateAllHealthBars()
-	for _, Virtual in pairs(VirtualPlates) do
+	for Plate, Virtual in pairs(VirtualPlates) do
 		local healthBar = Virtual.healthBar
 		local healthBarBorder = healthBar.healthBarBorder
 		local healthText = healthBar.healthText
@@ -557,7 +548,7 @@ function KP:UpdateAllHealthBars()
 			healthBarBorder:SetTexture("Interface\\Tooltips\\Nameplate-Border")
 		end
 		healthBarBorder:SetVertexColor(unpack(self.dbp.healthBar_borderTint))
-		if Virtual.classKey then
+		if Plate.classKey then
 			healthBar.barTex:SetTexture(self.LSM:Fetch("statusbar", self.dbp.healthBar_playerTex))
 		else
 			healthBar.barTex:SetTexture(self.LSM:Fetch("statusbar", self.dbp.healthBar_npcTex))
@@ -570,22 +561,6 @@ function KP:UpdateAllHealthBars()
 			healthText:ClearAllPoints()
 			healthText:SetPoint(self.dbp.healthText_anchor, self.dbp.healthText_offsetX, self.dbp.healthText_offsetY + 0.3)
 			healthText:SetTextColor(unpack(self.dbp.healthText_color))
-		end
-	end
-end
-
-function KP:UpdateAllCastBarBorders()
-	for _, Virtual in pairs(VirtualPlates) do
-		local castBarBorder = Virtual.castBarBorder
-		local shieldCastBarBorder = Virtual.shieldCastBarBorder
-		if self.dbp.healthBar_border == "KhalPlates" then
-			castBarBorder:SetPoint("CENTER", self.dbp.globalOffsetX, self.dbp.globalOffsetY -19)
-			castBarBorder:SetWidth(145)
-			shieldCastBarBorder:SetWidth(145)
-		else
-			castBarBorder:SetPoint("CENTER", self.dbp.globalOffsetX + 10.5, self.dbp.globalOffsetY -19)
-			castBarBorder:SetWidth(157)
-			shieldCastBarBorder:SetWidth(157)
 		end
 	end
 end
@@ -627,6 +602,17 @@ function KP:UpdateAllCastBars()
 	end
 end
 
+function KP:UpdateAllIcons()
+	for Plate, Virtual in pairs(VirtualPlates) do
+		SetupBossIcon(Virtual)
+		SetupRaidTargetIcon(Virtual)
+		SetupEliteIcon(Virtual)
+		SetupClassIcon(Virtual)
+		SetupTotemIcon(Plate)
+		SetupClassPlateIcon(Plate)
+	end
+end
+
 function KP:UpdateAllGlows()
 	for Plate, Virtual in pairs(VirtualPlates) do
 		local targetGlow = Virtual.healthBar.targetGlow
@@ -659,71 +645,57 @@ function KP:UpdateAllGlows()
 	end
 end
 
-function KP:UpdateAllThreatGlows()
+function KP:UpdateAllCastBarBorders()
 	for _, Virtual in pairs(VirtualPlates) do
+		local castBarBorder = Virtual.castBarBorder
+		local shieldCastBarBorder = Virtual.shieldCastBarBorder
 		if self.dbp.healthBar_border == "KhalPlates" then
-			Virtual.threatGlow:SetTexture(ASSETS .. "PlateBorders\\HealthBar-ThreatGlow")
+			castBarBorder:SetPoint("CENTER", self.dbp.globalOffsetX, self.dbp.globalOffsetY -19)
+			castBarBorder:SetWidth(145)
+			shieldCastBarBorder:SetWidth(145)
 		else
-			Virtual.threatGlow:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Flash")
+			castBarBorder:SetPoint("CENTER", self.dbp.globalOffsetX + 10.5, self.dbp.globalOffsetY -19)
+			castBarBorder:SetWidth(157)
+			shieldCastBarBorder:SetWidth(157)
 		end
 	end
 end
 
-function KP:UpdateAllIcons()
-	for _, Virtual in pairs(VirtualPlates) do
-		SetupBossIcon(Virtual)
-		SetupRaidTargetIcon(Virtual)
-		SetupEliteIcon(Virtual)
-		SetupClassIcon(Virtual)
+local function UpdateGroupInfo()
+	wipe(ClassByFriendName)
+	wipe(PartyID)
+	for i = 1 , GetNumPartyMembers() do
+		local partyID = "party" .. i
+		local name = UnitName(partyID)
+		local _, class = UnitClass(partyID)
+		name = name:match("([^%-]+).*") -- remove realm suffix
+		if name and class then
+			PartyID[name] = tostring(i)
+			ClassByFriendName[name] = class
+		end
 	end
-end
-
-function KP:UpdateAllTotemIcons()
-	for Plate in pairs(VirtualPlates) do
-		local totemPlate = Plate.totemPlate
-		if totemPlate then
-			totemPlate:SetPoint("TOP", 0, self.dbp.totemOffset - 5)
-			totemPlate:SetSize(self.dbp.totemSize, self.dbp.totemSize)
-			totemPlate.targetGlow:SetSize(128*self.dbp.totemSize/88, 128*self.dbp.totemSize/88)
+	for i = 1 , GetNumRaidMembers() do
+		local name, _, _, _, _, class = GetRaidRosterInfo(i)
+		name = name:match("([^%-]+).*") -- remove realm suffix
+		if name and class and not ClassByFriendName[name] then
+			ClassByFriendName[name] = class
 		end
 	end
 end
 
-function KP:UpdateClassIconsShown()
+local function UpdateClassColorNames()
 	for Plate, Virtual in pairs(PlatesVisible) do
-		local name =  Virtual.nameString
-		local totemCheck = self.dbp.TotemsCheck[self.Totems[name]]
-		local blacklisted = self.dbp.Blacklist[name]
-		Virtual.classIcon:Hide()
-		if not (totemCheck or blacklisted) and self.inPvPInstance then
-			local class = Virtual.classKey
-			if class then
-				if class == "FRIENDLY PLAYER" and self.dbp.showClassOnFriends then
-					class = ClassByFriendName[name] or ""
-					Virtual.classIcon:SetTexture(ASSETS .. "Classes\\" .. class)
-					Virtual.classIcon:Show()
-				elseif class ~= "FRIENDLY PLAYER" and self.dbp.showClassOnEnemies then
-					Virtual.classIcon:SetTexture(ASSETS .. "Classes\\" .. class)
-					Virtual.classIcon:Show()
-				end
-			end
-		end
-	end
-end
-
-function KP:UpdateClassColorNames()
-	for _, Virtual in pairs(PlatesVisible) do
-		local class = Virtual.classKey
+		local class = Plate.classKey
 		local classColor
 		if class then
-			if class == "FRIENDLY PLAYER" and ClassByFriendName[Virtual.nameString] and self.dbp.nameText_classColorFriends then
-				classColor = RAID_CLASS_COLORS[ClassByFriendName[Virtual.nameString]]
-			elseif class ~= "FRIENDLY PLAYER" and self.dbp.nameText_classColorEnemies then
+			if class == "FRIENDLY PLAYER" and ClassByFriendName[name] then
+				classColor = RAID_CLASS_COLORS[ClassByFriendName[name]]
+			elseif class ~= "FRIENDLY PLAYER" then
 				classColor = RAID_CLASS_COLORS[class]
 			end
 		end
-		Virtual.nameColorR, Virtual.nameColorG, Virtual.nameColorB = unpack(self.dbp.nameText_color)
-		if classColor then
+		Virtual.nameColorR, Virtual.nameColorG, Virtual.nameColorB = unpack(KP.dbp.nameText_color)
+		if classColor and ((class == "FRIENDLY PLAYER" and KP.dbp.nameText_classColorFriends) or (class ~= "FRIENDLY PLAYER" and KP.dbp.nameText_classColorEnemies)) then
 			Virtual.nameColorR, Virtual.nameColorG, Virtual.nameColorB = classColor.r, classColor.g, classColor.b
 		end
 		Virtual.healthBar.nameText:SetTextColor(Virtual.nameColorR, Virtual.nameColorG, Virtual.nameColorB)
@@ -731,42 +703,204 @@ function KP:UpdateClassColorNames()
 	end
 end
 
-function KP:UpdateAllTotemPlates()
-	for Plate, Virtual in pairs(PlatesVisible) do
-		if Plate.totemPlate then Plate.totemPlate:Hide() end
-		Plate.totemPlateIsShown = nil
-		Virtual:Show()
-		local name = Virtual.nameString
-		local totemKey = self.Totems[name]
-		local totemCheck = self.dbp.TotemsCheck[totemKey]
-		local blacklisted = self.dbp.Blacklist[name]
-		if totemCheck or blacklisted then
-			if not Plate.totemPlate then
-				SetupTotemPlate(Plate)
-			end
-			Virtual:Hide()
-			local iconTexture = (totemCheck == 1 and ASSETS .. "Icons\\" .. totemKey) or (blacklisted ~= "" and blacklisted)
-			if iconTexture then
-				Plate.totemPlate:Show()
-				Plate.totemPlate.icon:SetTexture(iconTexture)
-				Plate.totemPlateIsShown = true
-			end
-		else
-			local level = tonumber(Virtual.levelText:GetText())
-			if level and level < self.dbp.levelFilter then
-				Virtual:Hide()
-			end
+local function UpdateArenaInfo()
+	wipe(ArenaID)
+	for i = 1, GetNumArenaOpponents() do
+		local arenaName = UnitName("arena" .. i)
+		if arenaName then
+			ArenaID[arenaName] = tostring(i)
 		end
-		if not self.inCombat then
-			if Virtual:IsShown() then
-				if self.dbp.healthBar_border == "KhalPlates" then
-					Plate:SetSize(NP_WIDTH * self.dbp.globalScale * 0.9, NP_HEIGHT * self.dbp.globalScale * 0.7)
+	end
+end
+
+local function UpdatePlateVisibility(Plate, Virtual)
+	-------- Sets the healthBar texture and text colors based on unit type --------
+	local healthBar = Virtual.healthBar
+	local name = Virtual.nameText:GetText()
+	Virtual.nameString = name
+	------------------------ TotemPlates Handling ------------------------
+	local totemKey = KP.Totems[name]
+	local totemCheck = KP.dbp.TotemsCheck[totemKey]
+	local blacklisted = KP.dbp.Blacklist[name]
+	if totemCheck or blacklisted then
+		if not Plate.totemPlate then
+			SetupTotemPlate(Plate) -- Setup TotemPlate on the fly
+		end
+		Virtual:Hide()
+		local iconTexture = (totemCheck == 1 and ASSETS .. "Icons\\" .. totemKey) or (blacklisted ~= "" and blacklisted)
+		if iconTexture then
+			Plate.totemPlate:Show()
+			Plate.totemPlate.icon:SetTexture(iconTexture)
+			Plate.totemPlateIsShown = true
+		end
+	else
+		--------------- Nameplate Level Filter --------------
+		local level = tonumber(Virtual.levelText:GetText())
+		if level and level < KP.dbp.levelFilter then
+			Virtual:Hide() -- Hide low level nameplates
+		else
+			local nameText = healthBar.nameText
+			if KP.dbp.nameText_hide then
+				nameText:Hide()
+			else
+				nameText:Show()	
+			end
+			local levelText = Virtual.levelText
+			if KP.dbp.levelText_hide then
+				levelText:Hide()
+			else
+				SetupLevelText(Virtual)
+				levelText:Show()
+			end
+			Plate.isFriendly = ReactionByPlateColor(healthBar) == "FRIENDLY"
+			local class = ClassByPlateColor(healthBar)
+			local classColor	
+			if class then
+				Plate.classKey = class
+				local classPlateCheck
+				if class == "FRIENDLY PLAYER" then
+					classColor = ClassByFriendName[name] and RAID_CLASS_COLORS[ClassByFriendName[name]]
+					---------------------- Special Class Name/Icon ----------------------
+					if (KP.inBG and KP.dbp.classPlate_showNameInBG) 
+					or (KP.inArena and KP.dbp.classPlate_showNameInArena) 
+					or (KP.inPvEInstance and KP.dbp.classPlate_showNameInPvE) then
+						if not Plate.classPlate then
+							SetupClassPlate(Plate)
+						end
+						Plate.classPlate.nameText:SetText(name)
+						if classColor and KP.dbp.classPlate_classColors then
+							Plate.classPlate.nameText:SetTextColor(classColor.r, classColor.g, classColor.b)
+						else
+							Plate.classPlate.nameText:SetTextColor(unpack(KP.dbp.classPlate_textColor))
+						end
+						Plate.classPlate.nameText:Show()
+						classPlateCheck = true
+					end
+					if (KP.inBG and KP.dbp.classPlate_showIconInBG) 
+					or (KP.inArena and KP.dbp.classPlate_showIconInArena) 
+					or (KP.inPvEInstance and KP.dbp.classPlate_showIconInPvE) then
+						if not Plate.classPlate then
+							SetupClassPlate(Plate)
+						end
+						Plate.classPlate.icon:SetTexture(ASSETS .. "Classes\\" .. (ClassByFriendName[name] or ""))
+						Plate.classPlate.icon:Show()
+						classPlateCheck = true
+					end
 				else
-					Plate:SetSize(NP_WIDTH * self.dbp.globalScale, NP_HEIGHT * self.dbp.globalScale)
+					classColor = RAID_CLASS_COLORS[class]
+				end
+				if classPlateCheck then
+					Virtual:Hide()
+					Plate.classPlate:Show()
+					Plate.classPlateIsShown = true
+				else
+					------------------------ Show Arena IDs ------------------------
+					if KP.inArena then
+						local ArenaIDText = healthBar.ArenaIDText
+						if class == "FRIENDLY PLAYER" then
+							local partyID = PartyID[name]
+							if not partyID then
+								UpdateGroupInfo()
+								partyID = PartyID[name]
+							end
+							if partyID and KP.dbp.PartyIDText_show then
+								ArenaIDText:SetTextColor(unpack(KP.dbp.PartyIDText_color))
+								ArenaIDText:SetText(partyID)
+								ArenaIDText:Show()
+								if KP.dbp.PartyIDText_HideLevel then
+									levelText:Hide()
+								end
+								if KP.dbp.PartyIDText_HideName then
+									nameText:Hide()
+								end								
+							end
+						else
+							local arenaID = ArenaID[name]
+							if not arenaID then
+								UpdateArenaInfo()
+								arenaID = ArenaID[name]
+							end
+							if arenaID and KP.dbp.ArenaIDText_show then
+								ArenaIDText:SetTextColor(unpack(KP.dbp.ArenaIDText_color))
+								ArenaIDText:SetText(arenaID)
+								ArenaIDText:Show()
+								if KP.dbp.ArenaIDText_HideLevel then
+									levelText:Hide()
+								end
+								if KP.dbp.ArenaIDText_HideName then
+									nameText:Hide()
+								end
+							end
+						end
+					end
+					--------------- Show class icons in PvP instances --------------
+					if KP.inPvPInstance then
+						if class == "FRIENDLY PLAYER" and KP.dbp.showClassOnFriends then
+							Virtual.classIcon:SetTexture(ASSETS .. "Classes\\" .. (ClassByFriendName[name] or ""))
+							Virtual.classIcon:Show()
+						elseif class ~= "FRIENDLY PLAYER" and KP.dbp.showClassOnEnemies then
+							Virtual.classIcon:SetTexture(ASSETS .. "Classes\\" .. class)
+							Virtual.classIcon:Show()
+						end
+					end
+					healthBar.barTex:SetTexture(KP.LSM:Fetch("statusbar", KP.dbp.healthBar_playerTex))
+					Virtual.isShown = true
 				end
 			else
-				Plate:SetSize(0.01, 0.01)
+				healthBar.barTex:SetTexture(KP.LSM:Fetch("statusbar", KP.dbp.healthBar_npcTex))
+				Virtual.isShown = true
 			end
+			if Virtual.isShown then
+				if classColor and ((class == "FRIENDLY PLAYER" and KP.dbp.nameText_classColorFriends) or (class ~= "FRIENDLY PLAYER" and KP.dbp.nameText_classColorEnemies)) then
+					Virtual.nameColorR, Virtual.nameColorG, Virtual.nameColorB = classColor.r, classColor.g, classColor.b
+				else
+					Virtual.nameColorR, Virtual.nameColorG, Virtual.nameColorB = unpack(KP.dbp.nameText_color)
+				end
+				nameText:SetTextColor(Virtual.nameColorR, Virtual.nameColorG, Virtual.nameColorB)
+				Virtual.nameTextIsYellow = false
+			end
+		end	
+	end
+end
+
+local function ResetPlateFlags(Plate, Virtual)
+	Virtual.classIcon:Hide()
+	Virtual.healthBar.ArenaIDText:Hide()
+	Virtual.isShown = nil
+	Virtual.nameString = nil
+	Virtual.nameTextIsYellow = nil
+	Plate.isFriendly = nil
+	Plate.classKey = nil
+	Plate.totemPlateIsShown = nil
+	Plate.classPlateIsShown = nil
+	if Plate.totemPlate then Plate.totemPlate:Hide() end
+	if Plate.classPlate then 
+		Plate.classPlate:Hide()
+		Plate.classPlate.nameText:Hide()
+		Plate.classPlate.icon:Hide()
+	end
+end
+
+local function UpdateHitboxOutOfCombat(Plate, Virtual)
+	if not Virtual:IsShown() or (KP.isFriendly and KP.dbp.friendlyClickthrough and KP.inInstance) then
+		Plate:SetSize(0.01, 0.01)
+	else
+		if KP.dbp.healthBar_border == "KhalPlates" then
+			Plate:SetSize(NP_WIDTH * KP.dbp.globalScale * 0.9, NP_HEIGHT * KP.dbp.globalScale * 0.7)
+		else
+			Plate:SetSize(NP_WIDTH * KP.dbp.globalScale, NP_HEIGHT * KP.dbp.globalScale)
+		end
+	end
+end
+
+function KP:UpdateAllShownPlates()
+	for Plate, Virtual in pairs(PlatesVisible) do
+		Virtual:Show()
+		Virtual.levelText:Show()
+		ResetPlateFlags(Plate, Virtual)
+		UpdatePlateVisibility(Plate, Virtual)
+		if not self.inCombat then
+			UpdateHitboxOutOfCombat(Plate, Virtual)
 		end
 	end
 end
@@ -787,32 +921,37 @@ end
 
 function KP:UpdateProfile()
 	self:UpdateAllVirtualsScale()
-	self:UpdateLevelFilter()
 	self:UpdateAllTexts()
 	self:UpdateAllHealthBars()
-	self:UpdateAllCastBarBorders()
 	self:UpdateAllCastBars()
-	self:UpdateAllGlows()
 	self:UpdateAllIcons()
-	self:UpdateAllTotemIcons()
-	self:UpdateClassIconsShown()
-	self:UpdateClassColorNames()
+	self:UpdateAllGlows()
+	self:UpdateAllCastBarBorders()
 	self:BuildBlacklistUI()
-	self:UpdateAllTotemPlates()
+	self:UpdateAllShownPlates()
 	self:UpdateHitboxAttributes()
 end
 
 ----------- Reference for Core.lua -----------
+KP.NP_WIDTH = NP_WIDTH
+KP.NP_HEIGHT = NP_HEIGHT
 KP.VirtualPlates = VirtualPlates
 KP.RealPlates = RealPlates
 KP.PlatesVisible = PlatesVisible
 KP.ClassByFriendName = ClassByFriendName
-KP.NP_WIDTH = NP_WIDTH
-KP.NP_HEIGHT = NP_HEIGHT
+KP.ArenaID = ArenaID
+KP.PartyID = PartyID
 KP.ASSETS = ASSETS
+KP.UpdatePlateVisibility = UpdatePlateVisibility
+KP.ResetPlateFlags = ResetPlateFlags
+KP.UpdateHitboxOutOfCombat = UpdateHitboxOutOfCombat
 KP.UpdateTargetGlow = UpdateTargetGlow
 KP.SetupLevelText = SetupLevelText
 KP.ClassByPlateColor = ClassByPlateColor
 KP.ReactionByPlateColor = ReactionByPlateColor
+KP.UpdateGroupInfo = UpdateGroupInfo
+KP.UpdateClassColorNames = UpdateClassColorNames
+KP.UpdateArenaInfo = UpdateArenaInfo
 KP.SetupKhalPlate = SetupKhalPlate
 KP.SetupTotemPlate = SetupTotemPlate
+KP.SetupClassPlate = SetupClassPlate
