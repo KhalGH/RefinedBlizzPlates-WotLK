@@ -721,6 +721,7 @@ local function UpdatePlateVisibility(Plate, Virtual)
 	local healthBar = Virtual.healthBar
 	local name = Virtual.nameText:GetText()
 	Virtual.nameString = name
+
 	------------------------ TotemPlates Handling ------------------------
 	local totemKey = KP.Totems[name]
 	local totemCheck = KP.dbp.TotemsCheck[totemKey]
@@ -742,18 +743,22 @@ local function UpdatePlateVisibility(Plate, Virtual)
 		if level and level < KP.dbp.levelFilter then
 			Virtual:Hide() -- Hide low level nameplates
 		else
+			local levelText = Virtual.levelText
+			if Virtual.bossIcon:IsShown() then
+				Plate.isBoss = true
+				levelText:Hide()
+			else
+				SetupLevelText(Virtual)
+				levelText:Show()
+			end
+			if KP.dbp.levelText_hide then
+				levelText:Hide()
+			end
 			local nameText = healthBar.nameText
 			if KP.dbp.nameText_hide then
 				nameText:Hide()
 			else
 				nameText:Show()	
-			end
-			local levelText = Virtual.levelText
-			if KP.dbp.levelText_hide then
-				levelText:Hide()
-			else
-				SetupLevelText(Virtual)
-				levelText:Show()
 			end
 			Plate.isFriendly = ReactionByPlateColor(healthBar) == "FRIENDLY"
 			local class = ClassByPlateColor(healthBar)
@@ -876,6 +881,7 @@ local function ResetPlateFlags(Plate, Virtual)
 	Virtual.isShown = nil
 	Virtual.nameString = nil
 	Virtual.nameTextIsYellow = nil
+	Plate.isBoss = nil
 	Plate.isFriendly = nil
 	Plate.classKey = nil
 	Plate.totemPlateIsShown = nil
@@ -919,7 +925,6 @@ end
 function KP:UpdateAllShownPlates()
 	for Plate, Virtual in pairs(PlatesVisible) do
 		Virtual:Show()
-		Virtual.levelText:Show()
 		ResetPlateFlags(Plate, Virtual)
 		UpdatePlateVisibility(Plate, Virtual)
 		if not self.inCombat then
@@ -956,7 +961,7 @@ function KP:UpdateWorldFrameHeight(init)
 	self.ScreenWidth = GetScreenWidth() * UIParent:GetEffectiveScale()
 	if self.dbp.stackingEnabled then
 		SetCVar("nameplateAllowOverlap", 1)
-		if self.dbp.tallBossFix then
+		if self.dbp.tallEntitiesFix then
 			ExtendWorldFrameHeight(true)
 		elseif not init then
 			ExtendWorldFrameHeight(false)
@@ -1020,7 +1025,7 @@ local function UpdateStacking()
             end
             Plate1_StackData.position = newposition
             Plate1:SetClampedToScreen()
-			if VirtualPlates[Plate1].isTarget then
+			if VirtualPlates[Plate1].isTarget or (Plate1.isBoss and KP.dbp.allBossFix) then
 				Plate1:SetClampRectInsets(-10, 10, KP.dbp.upperborder, - Plate1_StackData.ypos - newposition - KP.dbp.originpos + height)
 			else
 				Plate1:SetClampRectInsets(0.5*width, -0.5*width, -height, - Plate1_StackData.ypos - newposition - KP.dbp.originpos + height)

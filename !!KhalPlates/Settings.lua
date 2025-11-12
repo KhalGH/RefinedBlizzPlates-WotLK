@@ -159,7 +159,8 @@ KP.dbp.xspace = 130
 KP.dbp.yspace = 15
 KP.dbp.originpos = 0
 KP.dbp.upperborder = 35
-KP.dbp.tallBossFix = true
+KP.dbp.tallEntitiesFix = true
+KP.dbp.allBossFix = false
 KP.dbp.FreezeMouseover = false
 
 -------------------- Options Table --------------------
@@ -454,20 +455,28 @@ KP.MainOptionTable = {
 					step = 1,
 					disabled = function() return not KP.dbp.stackingEnabled end
 				},
-				tallBossFix = {
+				tallEntitiesFix = {
 					order = 30,
 					type = "toggle",
-					name = "Tall Boss Fix",
-					desc = "Prevents tall bosses' nameplates from going above the top of the screen while targeted.",
+					name = "Clamp Tall Entities",
+					desc = "Prevents tall entities' nameplates from going above the top of the screen while targeted.",
 					set = function(info, val)
-						local tallBossFixWasEnabled = KP.dbp.tallBossFix
 						KP.dbp[info[#info]] = val
 						KP:UpdateWorldFrameHeight()
 					end,					
 					disabled = function() return not KP.dbp.stackingEnabled end
 				},
-				FreezeMouseover = {
+				allBossFix = {
 					order = 31,
+					type = "toggle",
+					name = "Clamp all Bosses",
+					desc = "Prevents bosses' nameplates from going above the top of the screen without needing to target.",					
+					disabled = function() return not KP.dbp.stackingEnabled or not KP.dbp.tallEntitiesFix end
+				},
+				lineBreak16 = {order = 32, type = "description", name = ""},
+				lineBreak17 = {order = 33, type = "description", name = ""},
+				FreezeMouseover = {
+					order = 34,
 					type = "toggle",
 					name = "Freeze Mouseover",
 					desc = "Stops the nameplate you're mousing over from moving for better selection.",

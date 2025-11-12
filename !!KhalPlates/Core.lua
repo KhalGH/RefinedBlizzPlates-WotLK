@@ -48,7 +48,6 @@ local SetFrameLevel = EventHandler.SetFrameLevel
 local GetParent = EventHandler.GetParent
 
 -- Status Flags
-KP.completeLoaded = false
 KP.inCombat = false
 KP.inInstance = false
 KP.inPvEInstance = false
