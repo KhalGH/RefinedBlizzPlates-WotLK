@@ -161,6 +161,7 @@ KP.dbp.originpos = 0
 KP.dbp.upperborder = 35
 KP.dbp.tallEntitiesFix = true
 KP.dbp.allBossFix = false
+KP.dbp.stackingInInstance = false
 KP.dbp.FreezeMouseover = false
 
 -------------------- Options Table --------------------
@@ -396,14 +397,14 @@ KP.MainOptionTable = {
 				stacking_header = {
 					order = 19,
 					type = "header",
-					name = "Enhanced Stacking",
+					name = "Retail-like Stacking",
 				},
 				lineBreak11 = {order = 20, type = "description", name = ""},
 				stackingEnabled = {
 					order = 21,
 					type = "toggle",
 					name = "Enable",
-					desc = "Simulates a retail-like stacking for enemy nameplates. This feature impacts CPU performance, use it with discretion.",
+					desc = "Simulates Retail's nameplate stacking for enemies. This feature has a high CPU cost, use it with discretion.",
 					set = function(info, val)
 						KP.dbp[info[#info]] = val
 						KP:UpdateWorldFrameHeight()
@@ -476,10 +477,22 @@ KP.MainOptionTable = {
 				lineBreak16 = {order = 32, type = "description", name = ""},
 				lineBreak17 = {order = 33, type = "description", name = ""},
 				FreezeMouseover = {
-					order = 34,
+					order = 35,
 					type = "toggle",
 					name = "Freeze Mouseover",
 					desc = "Stops the nameplate you're mousing over from moving for better selection.",
+					disabled = function() return not KP.dbp.stackingEnabled end
+				},
+				stackingInInstance = {
+					order = 36,
+					type = "toggle",
+					name = "Disable in Open World",
+					desc = "Only process stacking inside PvE and PvP instances. This will reduce CPU usage in the open world.",
+					set = function(info, val)
+						KP.dbp[info[#info]] = val
+						KP:ResetStackingClamp()
+						KP:UpdateAllShownPlates()
+					end,
 					disabled = function() return not KP.dbp.stackingEnabled end
 				},
 			},

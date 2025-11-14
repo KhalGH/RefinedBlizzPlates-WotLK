@@ -192,7 +192,7 @@ end
 local function SetupTargetGlow(Virtual)
 	local healthBar = Virtual.healthBar
 	if healthBar.targetGlow then return end
-	local RealPlate = KP.RealPlates[Virtual]
+	local RealPlate = RealPlates[Virtual]
 	healthBar.targetGlow = healthBar:CreateTexture(nil, "OVERLAY")
 	healthBar.targetGlow:Hide()
 	if KP.dbp.healthBar_border == "KhalPlates" then
@@ -247,7 +247,17 @@ local function SetupCastText(Virtual)
 	castBar.castTextDelay:Hide()
 	castBar.castTextDelay:SetScript("OnUpdate", function(self)
 		self:Hide()
-		local spellName = UnitCastingInfo("target") or UnitChannelInfo("target")
+		local unit = RealPlates[Virtual].namePlateUnitToken or "target"
+		local spellName 
+		local spellCasting = UnitCastingInfo(unit)
+		local spellChanneling = UnitChannelInfo(unit)
+		if spellCasting then
+			castBar.channeling = false
+			spellName = spellCasting
+		elseif spellChanneling then
+			castBar.channeling = true
+			spellName = spellChanneling
+		end
  		if spellName then
 			castBar.BackgroundTex:Show()
 			if not KP.dbp.castText_hide then
@@ -270,11 +280,15 @@ local function SetupCastText(Virtual)
 			castBar.castTimerText:Hide()
 		end
 	end)
-	local function UpdateCastTextValue()
+	local function UpdateCastText()
 		castBar.castTextDelay:Show()
 	end
-	UpdateCastTextValue()
-	castBar:HookScript("OnShow", UpdateCastTextValue)
+	UpdateCastText()
+	castBar:HookScript("OnShow", UpdateCastText)
+	local function HideCastText()
+		castBar.channeling = false
+	end
+	castBar:HookScript("OnHide", HideCastText)
 end
 
 local function SetupCastTimer(castBar)
@@ -288,7 +302,7 @@ local function SetupCastTimer(castBar)
 	castBar:HookScript("OnValueChanged", function(self, val)
 		local min, max = self:GetMinMaxValues()
 		if max and val then
-			if UnitChannelInfo("target") then
+			if self.channeling then
 				self.castTimerText:SetFormattedText("%.1f", val)
 			else
 				self.castTimerText:SetFormattedText("%.1f", max - val)
@@ -982,6 +996,7 @@ local resetSpeed = 1
 local delta = ySpeed * 5
 local function UpdateStacking()
 	if not KP.dbp.stackingEnabled then return end
+	if KP.dbp.stackingInInstance and not KP.inInstance then return end
     local xspace = KP.dbp.xspace * KP.dbp.globalScale
     local yspace = KP.dbp.yspace * KP.dbp.globalScale
     for Plate1, Plate1_StackData in pairs(KP.StackablePlates) do

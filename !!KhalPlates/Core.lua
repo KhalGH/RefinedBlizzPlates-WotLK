@@ -617,6 +617,7 @@ local function CheckDominateMind()
     if KP.DominateMind then
         KP.DominateMind = nil
         SetUIVisibility(true)
+		KP:UpdateAllShownPlates()
     end
 end
 
@@ -638,6 +639,13 @@ function EventHandler:UNIT_AURA(event, unit)
 	end
 end
 
+function EventHandler:NAME_PLATE_UNIT_ADDED(event, token)
+	local Plate = C_NamePlate.GetNamePlateForUnit(token)
+	if Plate and not Plate.namePlateUnitToken then
+		Plate.namePlateUnitToken = token
+	end
+end
+
 --- Global event handler.
 function EventHandler:OnEvent(event, ...)
 	if self[event] then
@@ -656,4 +664,7 @@ EventHandler:RegisterEvent("PARTY_MEMBERS_CHANGED")
 EventHandler:RegisterEvent("UNIT_FACTION")
 EventHandler:RegisterEvent("PLAYER_PVP_RANK_CHANGED")
 EventHandler:RegisterEvent("ARENA_OPPONENT_UPDATE")
+if C_NamePlate then
+	EventHandler:RegisterEvent("NAME_PLATE_UNIT_ADDED")
+end
 KP.EventHandler = EventHandler
