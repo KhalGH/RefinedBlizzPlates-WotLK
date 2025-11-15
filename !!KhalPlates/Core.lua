@@ -23,7 +23,6 @@ local ASSETS = KP.ASSETS
 local UpdatePlateVisibility = KP.UpdatePlateVisibility
 local ResetPlateFlags = KP.ResetPlateFlags
 local UpdateHitboxOutOfCombat = KP.UpdateHitboxOutOfCombat
-local UpdateTargetGlow = KP.UpdateTargetGlow
 local SetupLevelText = KP.SetupLevelText
 local ClassByPlateColor = KP.ClassByPlateColor
 local ReactionByPlateColor = KP.ReactionByPlateColor
@@ -462,6 +461,10 @@ function KP:Initialize()
 		ResizeHitBox:SetAttribute("height", NP_HEIGHT * self.dbp.globalScale)
 	end
 
+	if self.dbp.stackingEnabled then
+		SetCVar("nameplateAllowOverlap", 1)
+	end
+
 	SetUIVisibility(true)
 	if self.dbp.LDWfix then
 		EventHandler:RegisterEvent("ZONE_CHANGED_INDOORS")
@@ -517,7 +520,7 @@ end
 
 function EventHandler:PLAYER_TARGET_CHANGED()
 	for _, Virtual in pairs(PlatesVisible) do
-		UpdateTargetGlow(Virtual)
+		Virtual.targetHandler:Show()
 	end
 end
 

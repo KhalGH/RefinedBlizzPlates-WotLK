@@ -205,25 +205,33 @@ local function SetupTargetGlow(Virtual)
 		healthBar.targetGlow:SetPoint("CENTER", 11.33, 0.5)
 	end
 	healthBar.targetGlow:SetVertexColor(unpack(KP.dbp.targetGlow_Tint))
-	healthBar.targetBorderDelay = CreateFrame("Frame")
-	healthBar.targetBorderDelay:Hide()
-	healthBar.targetBorderDelay:SetScript("OnUpdate", function(self)
-		self:Hide()
-		Virtual.Alpha = Virtual:GetAlpha()
-		if Virtual.nameString == UnitName("target") and Virtual.Alpha == 1 then
-			Virtual.isTarget = true
-			healthBar.targetGlow:Show()
-			if RealPlate.totemPlate then RealPlate.totemPlate.targetGlow:Show() end
-		else
-			Virtual.isTarget = false
-			healthBar.targetGlow:Hide()
-			if RealPlate.totemPlate then RealPlate.totemPlate.targetGlow:Hide() end
-		end
-	end)
 end
 
-local function UpdateTargetGlow(Virtual)
-	Virtual.healthBar.targetBorderDelay:Show()
+local function SetupTargetHandler(Virtual)
+	if Virtual.targetHandler then return end
+	local Plate = RealPlates[Virtual]
+	Virtual.targetHandler = CreateFrame("Frame")
+	Virtual.targetHandler:SetScript("OnUpdate", function(self)
+		self:Hide()
+		if Virtual.nameString == UnitName("target") and Virtual:GetAlpha() == 1 then
+			Virtual.isTarget = true
+			Virtual.healthBar.targetGlow:Show()
+			if Plate.totemPlate then Plate.totemPlate.targetGlow:Show() end
+		else
+			Virtual.isTarget = false
+			Virtual.healthBar.targetGlow:Hide()
+			if Plate.totemPlate then Plate.totemPlate.targetGlow:Hide() end
+		end
+		if Virtual.isShown and not Plate.isFriendly and not KP.dbp.stackingEnabled then
+			if (Virtual.isTarget and KP.dbp.clampTarget) or (Plate.isBoss and KP.dbp.clampBoss and KP.inPvEInstance) then
+				Plate:SetClampRectInsets(80*KP.dbp.globalScale, -80*KP.dbp.globalScale, KP.dbp.upperborder, 0)
+				Plate:SetClampedToScreen(true)
+			else
+				Plate:SetClampRectInsets(0, 0, 0, 0)
+				Plate:SetClampedToScreen(false)
+			end				
+		end
+	end)
 end
 
 local function SetupCastText(Virtual)
@@ -456,6 +464,7 @@ local function SetupKhalPlate(Virtual)
 	SetupLevelText(Virtual)
 	SetupArenaIDText(Virtual.healthBar)
 	SetupTargetGlow(Virtual)
+	SetupTargetHandler(Virtual)
 	SetupHealthText(Virtual.healthBar)
 	SetupBarBackground(Virtual.healthBar)
 	SetupBarBackground(Virtual.castBar, true)
@@ -501,7 +510,6 @@ local function SetupKhalPlate(Virtual)
 			healthBarHighlight:SetPoint("CENTER", 11.83 + KP.dbp.globalOffsetX, -8.7 + KP.dbp.globalOffsetY)
 		end
 		Virtual.healthBar.nameText:SetText(nameText:GetText())
-		UpdateTargetGlow(Virtual)
 	end
 	VirtualOnShow()
 	Virtual:HookScript("OnShow", VirtualOnShow)
@@ -776,7 +784,6 @@ local function UpdatePlateVisibility(Plate, Virtual)
 	local healthBar = Virtual.healthBar
 	local name = Virtual.nameText:GetText()
 	Virtual.nameString = name
-
 	------------------------ TotemPlates Handling ------------------------
 	local totemKey = KP.Totems[name]
 	local totemCheck = KP.dbp.TotemsCheck[totemKey]
@@ -928,12 +935,18 @@ local function UpdatePlateVisibility(Plate, Virtual)
 				nameText:SetTextColor(Virtual.nameColorR, Virtual.nameColorG, Virtual.nameColorB)
 				Virtual.nameTextIsYellow = false
 				----------------- Init Enhanced Plate Stacking -----------------
-				if KP.dbp.stackingEnabled and not Plate.isFriendly then
-					KP.StackablePlates[Plate] = {xpos = 0, ypos = 0, position = 0}
+				if not Plate.isFriendly then
+					if KP.dbp.stackingEnabled then
+						KP.StackablePlates[Plate] = {xpos = 0, ypos = 0, position = 0}
+					elseif Plate.isBoss and KP.dbp.clampBoss and KP.inPvEInstance then
+						Plate:SetClampedToScreen(true)
+						Plate:SetClampRectInsets(80*KP.dbp.globalScale, -80*KP.dbp.globalScale, KP.dbp.upperborder, 0)
+					end
 				end
 			end
 		end	
 	end
+	Virtual.targetHandler:Show()
 end
 
 local function ResetPlateFlags(Plate, Virtual)
@@ -954,22 +967,9 @@ local function ResetPlateFlags(Plate, Virtual)
 		Plate.classPlate.nameText:Hide()
 		Plate.classPlate.icon:Hide()
 	end
-	if KP.dbp.stackingEnabled then
-		KP.StackablePlates[Plate] = nil
-		Plate:SetClampRectInsets(0, 0, 0, 0)
-		Plate:SetClampedToScreen(false) 
-	end
-end
-
-function KP:ResetStackingClamp()
-	if self.dbp.stackingEnabled then
-		SetCVar("nameplateAllowOverlap", 1)
-	end	
-	for Plate in pairs(VirtualPlates) do
-		self.StackablePlates[Plate] = nil
-		Plate:SetClampRectInsets(0, 0, 0, 0)
-		Plate:SetClampedToScreen(false) 		
-	end
+	KP.StackablePlates[Plate] = nil
+	Plate:SetClampedToScreen(false)
+	Plate:SetClampRectInsets(0, 0, 0, 0)
 end
 
 local function UpdateHitboxOutOfCombat(Plate, Virtual)
@@ -1010,7 +1010,7 @@ function KP:UpdateHitboxAttributes()
 end
 
 -- Enlarging of WorldFrame, so that nameplates are displayed even if they have slightly left the screen or are very high up, as is the case with large bosses.
-KP.ScreenWidth = GetScreenWidth()
+KP.ScreenWidth = GetScreenWidth() * UIParent:GetEffectiveScale()
 KP.ScreenHeight = 768
 local function ExtendWorldFrameHeight(shouldExtend)
 	local heightScale = shouldExtend and 50 or 1
@@ -1021,13 +1021,8 @@ local function ExtendWorldFrameHeight(shouldExtend)
 end
 function KP:UpdateWorldFrameHeight(init)
 	self.ScreenWidth = GetScreenWidth() * UIParent:GetEffectiveScale()
-	if self.dbp.stackingEnabled then
-		SetCVar("nameplateAllowOverlap", 1)
-		if self.dbp.tallEntitiesFix then
-			ExtendWorldFrameHeight(true)
-		elseif not init then
-			ExtendWorldFrameHeight(false)
-		end
+	if self.dbp.clampTarget or self.dbp.clampBoss then
+		ExtendWorldFrameHeight(true)
 	elseif not init then
 		ExtendWorldFrameHeight(false)
 	end
@@ -1037,11 +1032,11 @@ end
 -- All visible enemy nameplates are iterated and the minimum distance to the next nameplate is determined.
 -- If there is no other nameplate in the immediate vicinity of the original position, the position is reset (to prevent the nameplates from rising higher and higher).
 -- Depending on whether the position is to be reset or the nameplate is above or below the closest one different functions are used for a smooth movement.
-local ySpeed = 0.7
-local raiseSpeed = 1
-local lowerSpeed = 1
-local resetSpeed = 1
-local delta = ySpeed * 5
+local ySpeed = 3.5
+local delta = ySpeed
+local resetSpeedFactor = 1
+local raiseSpeedFactor = 1
+local lowerSpeedFactor = 0.8
 local function UpdateStacking()
 	if not KP.dbp.stackingEnabled then return end
 	if KP.dbp.stackingInInstance and not KP.inInstance then return end
@@ -1050,14 +1045,15 @@ local function UpdateStacking()
     for Plate1, Plate1_StackData in pairs(KP.StackablePlates) do
         local width, height = Plate1:GetSize()
 		local x, y = select(4, Plate1:GetPoint(1))
+		local Virtual1 = VirtualPlates[Plate1]
 		KP.StackablePlates[Plate1].xpos = x
 		KP.StackablePlates[Plate1].ypos = y
-        if KP.dbp.FreezeMouseover and VirtualPlates[Plate1].healthBarHighlight:IsShown() then  -- Freeze Mouseover Nameplate
+        if KP.dbp.FreezeMouseover and Virtual1.healthBarHighlight:IsShown() then  -- Freeze Mouseover Nameplate
             local x, y =  Plate1:GetCenter() -- This Coordinates are the "real" values for the center point
             local newposition = y - Plate1_StackData.ypos - KP.dbp.originpos + height/2
             Plate1_StackData.position = newposition
             Plate1_StackData.xpos = x
-            Plate1:SetClampedToScreen()
+            Plate1:SetClampedToScreen(true)
             Plate1:SetClampRectInsets(-2*KP.ScreenWidth, KP.ScreenWidth - x - width/2, KP.ScreenHeight - y - height/2, -2*KP.ScreenHeight)
         else
             local min = 1000
@@ -1079,17 +1075,17 @@ local function UpdateStacking()
             end
             local oldposition = Plate1_StackData.position
             local newposition = oldposition
-            if oldposition >= 2*delta and reset then
-                newposition = oldposition - math_exp(-10/oldposition)*delta*resetSpeed
-            elseif  min < yspace then
-                newposition = oldposition + math_exp(-min/yspace)*delta*raiseSpeed
-            elseif (oldposition >= 2*delta and min > yspace + 2*delta) then
-                newposition = oldposition - math_exp(-yspace/min)*delta*lowerSpeed*0.8
+            if oldposition >= delta and reset then
+                newposition = oldposition - math_exp(-10/oldposition)*ySpeed*resetSpeedFactor
+            elseif min < yspace then
+                newposition = oldposition + math_exp(-min/yspace)*ySpeed*raiseSpeedFactor
+            elseif (oldposition >= delta and min > yspace + delta) then
+                newposition = oldposition - math_exp(-yspace/min)*ySpeed*lowerSpeedFactor
             end
             Plate1_StackData.position = newposition
-            Plate1:SetClampedToScreen()
-			if VirtualPlates[Plate1].isTarget or (Plate1.isBoss and KP.dbp.allBossFix) then
-				Plate1:SetClampRectInsets(-10, 10, KP.dbp.upperborder, - Plate1_StackData.ypos - newposition - KP.dbp.originpos + height)
+            Plate1:SetClampedToScreen(true)
+			if (Virtual1.isTarget and KP.dbp.clampTarget) or (Plate1.isBoss and KP.dbp.clampBoss and KP.inPvEInstance) then
+				Plate1:SetClampRectInsets(0.5*width, -0.5*width, KP.dbp.upperborder, - Plate1_StackData.ypos - newposition - KP.dbp.originpos + height)
 			else
 				Plate1:SetClampRectInsets(0.5*width, -0.5*width, -height, - Plate1_StackData.ypos - newposition - KP.dbp.originpos + height)
 			end
@@ -1107,7 +1103,7 @@ function KP:UpdateProfile()
 	self:UpdateAllCastBarBorders()
 	self:BuildBlacklistUI()
 	self:UpdateWorldFrameHeight()
-	self:ResetStackingClamp()
+	if self.dbp.stackingEnabled then SetCVar("nameplateAllowOverlap", 1) end
 	self:UpdateAllShownPlates()
 	self:UpdateHitboxAttributes()
 end
@@ -1126,7 +1122,6 @@ KP.ASSETS = ASSETS
 KP.UpdatePlateVisibility = UpdatePlateVisibility
 KP.ResetPlateFlags = ResetPlateFlags
 KP.UpdateHitboxOutOfCombat = UpdateHitboxOutOfCombat
-KP.UpdateTargetGlow = UpdateTargetGlow
 KP.SetupLevelText = SetupLevelText
 KP.ClassByPlateColor = ClassByPlateColor
 KP.ReactionByPlateColor = ReactionByPlateColor

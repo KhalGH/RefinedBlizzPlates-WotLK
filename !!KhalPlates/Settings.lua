@@ -155,14 +155,15 @@ KP.dbp.TotemsCheck = { -- 1 = Icon, 0 = Hiden, false = nameplate
 -- Blacklist
 KP.dbp.Blacklist = CopyTable(KP.Blacklist)
 local tmpNewName = ""
+-- Clamping
+KP.dbp.clampTarget = false
+KP.dbp.clampBoss = false
+KP.dbp.upperborder = 35
 -- Enhanced Stacking
 KP.dbp.stackingEnabled = false
 KP.dbp.xspace = 130
 KP.dbp.yspace = 15
 KP.dbp.originpos = 0
-KP.dbp.upperborder = 35
-KP.dbp.tallEntitiesFix = true
-KP.dbp.allBossFix = false
 KP.dbp.stackingInInstance = false
 KP.dbp.FreezeMouseover = false
 
@@ -364,7 +365,7 @@ KP.MainOptionTable = {
 					desc = "Disable friendly nameplates hitboxes inside PvE and PvP instances.",
 				},
 				LDWfix = {
-					order = 15,
+					order = 16,
 					type = "toggle",
 					name = "Hide on LDW MC",
 					desc = "Hide nameplates when mind-controlled by Lady Deathwhisper.",
@@ -396,28 +397,65 @@ KP.MainOptionTable = {
 				},
 				lineBreak9 = {order = 17, type = "description", name = ""},
 				lineBreak10 = {order = 18, type = "description", name = ""},
-				stacking_header = {
+				clampTarget = {
 					order = 19,
+					type = "toggle",
+					name = "Clamp Target",
+					desc = "Prevents targeted enemy nameplate from going above the top of the screen.",
+					set = function(info, val)
+						KP.dbp[info[#info]] = val
+						KP:UpdateWorldFrameHeight()
+						KP:UpdateAllShownPlates()
+					end,					
+				},
+				clampBoss = {
+					order = 20,
+					type = "toggle",
+					name = "Clamp Bosses",
+					desc = "Prevents boss nameplates inside instances from going above the top of the screen.",
+					set = function(info, val)
+						KP.dbp[info[#info]] = val
+						KP:UpdateWorldFrameHeight()
+						KP:UpdateAllShownPlates()
+					end,		
+				},
+				upperborder = {
+					order = 21,
+					type = "range",
+					name = "Clamp Top Inset",
+					desc = "Adjusts the distance below the top of the screen where clamped nameplates will stop.",
+					min = 0,
+					max = 200,
+					step = 1,
+					set = function(info, val)
+						KP.dbp[info[#info]] = val
+						KP:UpdateAllShownPlates()
+					end,
+					disabled = function() return not KP.dbp.clampTarget and not KP.dbp.clampBoss end
+				},
+				lineBreak11 = {order = 22, type = "description", name = ""},
+				lineBreak12 = {order = 23, type = "description", name = ""},
+				stacking_header = {
+					order = 24,
 					type = "header",
 					name = "Retail-like Stacking",
 				},
-				lineBreak11 = {order = 20, type = "description", name = ""},
+				lineBreak13 = {order = 25, type = "description", name = ""},
 				stackingEnabled = {
-					order = 21,
+					order = 26,
 					type = "toggle",
 					name = "Enable",
 					desc = "Simulates Retail's nameplate stacking for enemies. This feature has a high CPU cost, use it with discretion.",
 					set = function(info, val)
 						KP.dbp[info[#info]] = val
-						KP:UpdateWorldFrameHeight()
-						KP:ResetStackingClamp()
+						if val then SetCVar("nameplateAllowOverlap", 1) end
 						KP:UpdateAllShownPlates()
 					end,
 				},
-				lineBreak12 = {order = 22, type = "description", name = ""},
-				lineBreak13 = {order = 23, type = "description", name = ""},
+				lineBreak14 = {order = 27, type = "description", name = ""},
+				lineBreak15 = {order = 28, type = "description", name = ""},
 				xspace = {
-					order = 24,
+					order = 29,
 					type = "range",
 					name = "Collider Width",
 					desc = "Sets the width of the virtual collider centered on each nameplate used to detect overlaps.",
@@ -427,7 +465,7 @@ KP.MainOptionTable = {
 					disabled = function() return not KP.dbp.stackingEnabled end
 				},
 				yspace = {
-					order = 25,
+					order = 30,
 					type = "range",
 					name = "Collider Height",
 					desc = "Sets the height of the virtual collider centered on each nameplate used to detect overlaps.",
@@ -437,7 +475,7 @@ KP.MainOptionTable = {
 					disabled = function() return not KP.dbp.stackingEnabled end
 				},
 				originpos = {
-					order = 26,
+					order = 31,
 					type = "range",
 					name = "Vertical Offset",
 					desc = "Vertically offsets the entire nameplate, including its hitbox.",
@@ -445,36 +483,6 @@ KP.MainOptionTable = {
 					max = 50,
 					step = 1,
 					disabled = function() return not KP.dbp.stackingEnabled end
-				},
-				lineBreak14 = {order = 27, type = "description", name = ""},
-				lineBreak15 = {order = 28, type = "description", name = ""},
-				upperborder = {
-					order = 29,
-					type = "range",
-					name = "Top Screen Boundary",
-					desc = "Defines how far from the top of the screen targeted nameplate can move upward.",
-					min = 0,
-					max = 100,
-					step = 1,
-					disabled = function() return not KP.dbp.stackingEnabled end
-				},
-				tallEntitiesFix = {
-					order = 30,
-					type = "toggle",
-					name = "Clamp Tall Entities",
-					desc = "Prevents tall entities' nameplates from going above the top of the screen while targeted.",
-					set = function(info, val)
-						KP.dbp[info[#info]] = val
-						KP:UpdateWorldFrameHeight()
-					end,					
-					disabled = function() return not KP.dbp.stackingEnabled end
-				},
-				allBossFix = {
-					order = 31,
-					type = "toggle",
-					name = "Clamp all Bosses",
-					desc = "Prevents bosses' nameplates from going above the top of the screen without needing to target.",					
-					disabled = function() return not KP.dbp.stackingEnabled or not KP.dbp.tallEntitiesFix end
 				},
 				lineBreak16 = {order = 32, type = "description", name = ""},
 				lineBreak17 = {order = 33, type = "description", name = ""},
@@ -492,7 +500,6 @@ KP.MainOptionTable = {
 					desc = "Only process stacking inside PvE and PvP instances. This will reduce CPU usage in the open world.",
 					set = function(info, val)
 						KP.dbp[info[#info]] = val
-						KP:ResetStackingClamp()
 						KP:UpdateAllShownPlates()
 					end,
 					disabled = function() return not KP.dbp.stackingEnabled end
