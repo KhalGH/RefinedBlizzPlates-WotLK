@@ -112,19 +112,22 @@ KP.dbp.classIcon_anchor = "Left"
 KP.dbp.classIcon_offsetX = 0
 KP.dbp.classIcon_offsetY = 0
 -- Class Plates
+KP.dbp.classPlate_showNameInBG = false
+KP.dbp.classPlate_showNameInArena = false
+KP.dbp.classPlate_showNameInPvE = true
+KP.dbp.classPlate_showIconInBG = false
+KP.dbp.classPlate_showIconInArena = false
+KP.dbp.classPlate_showIconInPvE = false
 KP.dbp.classPlate_textFont = "Friz Quadrata TT"
 KP.dbp.classPlate_textSize = 14
 KP.dbp.classPlate_textOutline = "OUTLINE"
 KP.dbp.classPlate_textColor = {1, 1, 1} -- white
 KP.dbp.classPlate_classColors = true
-KP.dbp.classPlate_showNameInBG = false
-KP.dbp.classPlate_showNameInArena = false
-KP.dbp.classPlate_showNameInPvE = true
-KP.dbp.classPlate_iconSize = 36
+KP.dbp.classPlate_iconSize = 32
 KP.dbp.classPlate_offset = 0
-KP.dbp.classPlate_showIconInBG = false
-KP.dbp.classPlate_showIconInArena = false
-KP.dbp.classPlate_showIconInPvE = false
+KP.dbp.classPlate_showHealthText = false
+KP.dbp.classPlate_showRaidTarget = false
+KP.dbp.classPlate_raidTargetSize = 30
 -- Totem Plates
 KP.dbp.totemSize = 24 -- Size of the totem (or NPC) icon replacing the nameplate
 KP.dbp.totemOffset = 0 -- Vertical offset for totem icon
@@ -374,20 +377,20 @@ KP.MainOptionTable = {
 						if val then
 							KP.EventHandler:RegisterEvent("ZONE_CHANGED_INDOORS")
 							KP.EventHandler:RegisterEvent("UNIT_AURA")
-							KP.isICC = false
-							KP.isLDWZone = false
+							KP.inICC = false
+							KP.inLDWZone = false
 							SetMapToCurrentZone()
 							if GetCurrentMapAreaID() == 605 then
-								KP.isICC = true
+								KP.inICC = true
 								if GetSubZoneText() == KP.LDWZoneText then
-									KP.isLDWZone = true
+									KP.inLDWZone = true
 								end
 							end
 						else
 							KP.EventHandler:UnregisterEvent("ZONE_CHANGED_INDOORS")
 							KP.EventHandler:UnregisterEvent("UNIT_AURA")
-							KP.isICC = false
-							KP.isLDWZone = false
+							KP.inICC = false
+							KP.inLDWZone = false
 							if KP.DominateMind then
 								KP.DominateMind = nil
 								SetUIVisibility(true)
@@ -887,8 +890,40 @@ KP.MainOptionTable = {
 					name = "Unlike the regular name text, this completely replaces friendly player nameplates."
 				},
 				lineBreak19 = {order = 57, type = "description", name = ""},
+				lineBreak20 = {order = 58, type = "description", name = ""},
+				classPlate_showNameInBG = {
+					order = 59,
+					type = "toggle",
+					name = "Show in BGs",
+					set = function(info, val)
+						KP.dbp[info[#info]] = val
+						KP:UpdateAllIcons()
+						KP:UpdateAllShownPlates()
+					end,
+				},
+				classPlate_showNameInArena = {
+					order = 60,
+					type = "toggle",
+					name = "Show in Arenas",
+					set = function(info, val)
+						KP.dbp[info[#info]] = val
+						KP:UpdateAllIcons()
+						KP:UpdateAllShownPlates()
+					end,
+				},
+				classPlate_showNameInPvE = {
+					order = 61,
+					type = "toggle",
+					name = "Show in PvE",
+					set = function(info, val)
+						KP.dbp[info[#info]] = val
+						KP:UpdateAllIcons()
+						KP:UpdateAllShownPlates()
+					end,
+				},
+				lineBreak21 = {order = 62, type = "description", name = ""},
 				classPlate_textFont = {
-					order = 58,
+					order = 63,
 					type = "select",
 					name = "Text Font",
 					values = KP.LSM:HashTable("font"),
@@ -900,7 +935,7 @@ KP.MainOptionTable = {
 					end,
 				},
 				classPlate_textSize = {
-					order = 59,
+					order = 64,
 					type = "range",
 					name = "Font Size",
 					min = 8,
@@ -913,7 +948,7 @@ KP.MainOptionTable = {
 					end,
 				},
 				classPlate_textOutline = {
-					order = 60,
+					order = 65,
 					type = "select", 
 					name = "Outline",
 					values = {
@@ -931,7 +966,7 @@ KP.MainOptionTable = {
 					end,
 				},
 				classPlate_textColor = {
-					order = 61,
+					order = 66,
 					type = "color",
 					name = "Base name color",
 					get = function(info)
@@ -945,7 +980,7 @@ KP.MainOptionTable = {
 					end,
 				},
 				classPlate_classColors = {
-					order = 62,
+					order = 67,
 					type = "toggle",
 					name = "Name with class color",
 					set = function(info, val)
@@ -955,7 +990,7 @@ KP.MainOptionTable = {
 					end,
 				},
 				classPlate_offset = {
-					order = 63,
+					order = 68,
 					type = "range",
 					name = "Offset Y",
 					min = -50,
@@ -967,39 +1002,43 @@ KP.MainOptionTable = {
 						KP:UpdateAllShownPlates()
 					end,
 				},
-				lineBreak20 = {order = 64, type = "description", name = ""},
-				classPlate_showNameInBG = {
-					order = 65,
+				classPlate_showHealthText = {
+					order = 69,
 					type = "toggle",
-					name = "Show in BGs",
+					name = "Show Health Text",
+					desc = "Display the health percentage below the special name text.",
 					set = function(info, val)
 						KP.dbp[info[#info]] = val
 						KP:UpdateAllIcons()
 						KP:UpdateAllShownPlates()
 					end,
 				},
-				classPlate_showNameInArena = {
-					order = 66,
+				classPlate_showRaidTarget = {
+					order = 70,
 					type = "toggle",
-					name = "Show in Arenas",
+					name = "Show Raid Target",
+					desc = "Display the raid target icon above the special name text.",
 					set = function(info, val)
 						KP.dbp[info[#info]] = val
 						KP:UpdateAllIcons()
 						KP:UpdateAllShownPlates()
 					end,
 				},
-				classPlate_showNameInPvE = {
-					order = 67,
-					type = "toggle",
-					name = "Show in PvE",
+				classPlate_raidTargetSize = {
+					order = 71,
+					type = "range",
+					name = "Raid Target Size",
+					min = 20,
+					max = 50,
+					step = 0.1,
 					set = function(info, val)
 						KP.dbp[info[#info]] = val
 						KP:UpdateAllIcons()
 						KP:UpdateAllShownPlates()
 					end,
 				},
-				lineBreak21 = {order = 68, type = "description", name = ""},
-				lineBreak22 = {order = 69, type = "description", name = ""},
+				lineBreak22 = {order = 72, type = "description", name = ""},
+				lineBreak23 = {order = 73, type = "description", name = ""},
 			},
 		},
 		HealthBar = {
@@ -1067,6 +1106,7 @@ KP.MainOptionTable = {
 					set = function(info, r, g, b)
 						KP.dbp[info[#info]] = {r, g, b}
 						KP:UpdateAllGlows()
+						KP:UpdateAllShownPlates()
 					end,
 				},
 				mouseoverGlow_Tint = {
@@ -1081,6 +1121,7 @@ KP.MainOptionTable = {
 					set = function(info, r, g, b)
 						KP.dbp[info[#info]] = {r, g, b}
 						KP:UpdateAllGlows()
+						KP:UpdateAllShownPlates()
 					end,
 				},
 				lineBreak7 = {order = 14, type = "description", name = ""},
@@ -1617,8 +1658,24 @@ KP.MainOptionTable = {
 				},
 				lineBreak15 = {order = 37, type = "description", name = ""},
 				lineBreak16 = {order = 38, type = "description", name = ""},
-				classPlate_iconSize = {
+				classPlate_showIconInBG = {
 					order = 39,
+					type = "toggle",
+					name = "Show in BGs",
+				},
+				classPlate_showIconInArena = {
+					order = 40,
+					type = "toggle",
+					name = "Show in Arenas",
+				},
+				classPlate_showIconInPvE = {
+					order = 41,
+					type = "toggle",
+					name = "Show in PvE",
+				},
+				lineBreak17 = {order = 42, type = "description", name = ""},
+				classPlate_iconSize = {
+					order = 43,
 					type = "range",
 					name = "Icon Size",
 					min = 20,
@@ -1626,28 +1683,12 @@ KP.MainOptionTable = {
 					step = 0.1,
 				},
 				classPlate_offset = {
-					order = 40,
+					order = 44,
 					type = "range",
 					name = "Offset Y",
 					min = -50,
 					max = 50,
 					step = 0.1,
-				},
-				lineBreak17 = {order = 41, type = "description", name = ""},
-				classPlate_showIconInBG = {
-					order = 42,
-					type = "toggle",
-					name = "Show in BGs",
-				},
-				classPlate_showIconInArena = {
-					order = 43,
-					type = "toggle",
-					name = "Show in Arenas",
-				},
-				classPlate_showIconInPvE = {
-					order = 44,
-					type = "toggle",
-					name = "Show in PvE",
 				},
 				lineBreak18 = {order = 45, type = "description", name = ""},
 				lineBreak19 = {order = 46, type = "description", name = ""},

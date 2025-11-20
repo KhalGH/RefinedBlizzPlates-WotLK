@@ -6,8 +6,8 @@
 local AddonFile, KP = ...
 
 -- API
-local select, sort, wipe, pairs, ipairs, unpack, CreateFrame, UnitName, UnitDebuff, IsInInstance, ToggleFrame, UIPanelWindows, SetMapToCurrentZone, GetCurrentMapAreaID, GetSubZoneText, SetUIVisibility, SetCVar =
-      select, sort, wipe, pairs, ipairs, unpack, CreateFrame, UnitName, UnitDebuff, IsInInstance, ToggleFrame, UIPanelWindows, SetMapToCurrentZone, GetCurrentMapAreaID, GetSubZoneText, SetUIVisibility, SetCVar
+local select, next, pairs, ipairs, unpack, sort, wipe, CreateFrame, UnitName, UnitDebuff, IsInInstance, SetMapToCurrentZone, GetCurrentMapAreaID, GetSubZoneText, SetUIVisibility, SetCVar =
+      select, next, pairs, ipairs, unpack, sort, wipe, CreateFrame, UnitName, UnitDebuff, IsInInstance, SetMapToCurrentZone, GetCurrentMapAreaID, GetSubZoneText, SetUIVisibility, SetCVar
 
 -- Localized namespace definitions
 local NP_WIDTH = KP.NP_WIDTH
@@ -20,18 +20,26 @@ local ClassByFriendName = KP.ClassByFriendName
 local ArenaID = KP.ArenaID
 local PartyID = KP.PartyID
 local ASSETS = KP.ASSETS
+local ClassByPlateColor = KP.ClassByPlateColor
+local ReactionByPlateColor = KP.ReactionByPlateColor
+local SetupLevelText = KP.SetupLevelText
+local SetupTotemPlate = KP.SetupTotemPlate
+local SetupClassPlate = KP.SetupClassPlate
+local UpdateTarget = KP.UpdateTarget
+local SetupKhalPlate = KP.SetupKhalPlate
+local ForceLevelHide = KP.ForceLevelHide
+local CheckDominateMind = KP.CheckDominateMind
+local UpdateClassColorNames = KP.UpdateClassColorNames
+local DelayedUpdateClassColorNames = KP.DelayedUpdateClassColorNames
+local UpdateGroupInfo = KP.UpdateGroupInfo
+local UpdateArenaInfo = KP.UpdateArenaInfo
 local UpdatePlateVisibility = KP.UpdatePlateVisibility
 local ResetPlateFlags = KP.ResetPlateFlags
 local UpdateHitboxOutOfCombat = KP.UpdateHitboxOutOfCombat
-local SetupLevelText = KP.SetupLevelText
-local ClassByPlateColor = KP.ClassByPlateColor
-local ReactionByPlateColor = KP.ReactionByPlateColor
-local UpdateGroupInfo = KP.UpdateGroupInfo
-local UpdateClassColorNames = KP.UpdateClassColorNames
-local UpdateArenaInfo = KP.UpdateArenaInfo
-local SetupKhalPlate = KP.SetupKhalPlate
-local SetupTotemPlate = KP.SetupTotemPlate
-local SetupClassPlate = KP.SetupClassPlate
+local ExecuteHitboxSecureScript = KP.ExecuteHitboxSecureScript
+local InitPlatesHitboxes = KP.InitPlatesHitboxes
+local NullifyPlateHitbox = KP.NullifyPlateHitbox
+local NormalizePlateHitbox = KP.NormalizePlateHitbox
 local UpdateStacking = KP.UpdateStacking
 
 -- Local definitions
@@ -47,100 +55,25 @@ local SetFrameLevel = EventHandler.SetFrameLevel
 local GetParent = EventHandler.GetParent
 
 -- Status Flags
+local ExistsVisiblePlates = false
 KP.inCombat = false
 KP.inInstance = false
 KP.inPvEInstance = false
 KP.inPvPInstance = false
 KP.inBG = false
 KP.inArena = false
-KP.isICC = false
-KP.isLDWZone = false
-
--- SecureHandlers System: Manages nameplate hitbox resizing while in combat
-local TriggerFrames = {}
-local ResizeHitBox = CreateFrame("Frame", "ResizeHitboxSecureHandler", UIParent, "SecureHandlerShowHideTemplate") 
-ResizeHitBox:SetFrameRef("WorldFrame", WorldFrame)
-SecureHandlerWrapScript(ResizeHitBox, "OnShow", ResizeHitBox,
-	[[
-	local WorldFrame = self:GetFrameRef("WorldFrame");
-	local height = self:GetAttribute("height")
-	local width = self:GetAttribute("width")
-	Plates = Plates or table.new()
-	for plate, shown in pairs(Plates) do
-		if shown and not plate:IsShown() then
-			Plates[plate] = nil
-		end
-	end
-	for i, nameplate in pairs(newtable(WorldFrame:GetChildren())) do
-		if nameplate:IsShown() and nameplate:IsProtected() and not Plates[nameplate] then
-			Plates[nameplate] = true
-			if WorldFrame:GetID() == 0 then
-				nameplate:SetWidth(width)
-				nameplate:SetHeight(height)
-			elseif WorldFrame:GetID() == 1 then
-				nameplate:SetWidth(0.01)
-				nameplate:SetHeight(0.01)
-			end
-		end
-	end
-	]]
-)
-TriggerFrames["ResizeHitboxSecureHandler"] = ResizeHitBox
-KP.ResizeHitBox = ResizeHitBox
-local function ExecuteHitboxSecureScript()
-    ToggleFrame(ResizeHitBox)
-	ToggleFrame(ResizeHitBox)
-end
-local SetWorldFrameID5 = CreateFrame("Frame", "SetWorldFrameID5SecureHandler", UIParent, "SecureHandlerShowHideTemplate") 
-SetWorldFrameID5:SetFrameRef("WorldFrame", WorldFrame)
-SecureHandlerWrapScript(SetWorldFrameID5, "OnShow", SetWorldFrameID5, [[local WorldFrame = self:GetFrameRef("WorldFrame"); WorldFrame:SetID(5)]])
-TriggerFrames["SetWorldFrameID5SecureHandler"] = SetWorldFrameID5
-local function InitPlatesHitboxes()
-	if WorldFrame:GetID() ~= 5 then
-		ToggleFrame(SetWorldFrameID5)
-		ToggleFrame(SetWorldFrameID5)
-	end
-end
-local SetWorldFrameID1 = CreateFrame("Frame", "SetWorldFrameID1SecureHandler", UIParent, "SecureHandlerShowHideTemplate") 
-SetWorldFrameID1:SetFrameRef("WorldFrame", WorldFrame)
-SecureHandlerWrapScript(SetWorldFrameID1, "OnShow", SetWorldFrameID1, [[local WorldFrame = self:GetFrameRef("WorldFrame"); WorldFrame:SetID(1)]])
-TriggerFrames["SetWorldFrameID1SecureHandler"] = SetWorldFrameID1
-local function NullifyPlateHitbox()
-	if WorldFrame:GetID() ~= 1 then
-		ToggleFrame(SetWorldFrameID1)
-		ToggleFrame(SetWorldFrameID1)
-	end
-end
-local SetWorldFrameID0 = CreateFrame("Frame", "SetWorldFrameID0SecureHandler", UIParent, "SecureHandlerShowHideTemplate") 
-SetWorldFrameID0:SetFrameRef("WorldFrame", WorldFrame)
-SecureHandlerWrapScript(SetWorldFrameID0, "OnShow", SetWorldFrameID0, [[local WorldFrame = self:GetFrameRef("WorldFrame"); WorldFrame:SetID(0)]])
-TriggerFrames["SetWorldFrameID0SecureHandler"] = SetWorldFrameID0
-local function NormalizePlateHitbox()
-	if WorldFrame:GetID() ~= 0 then
-		ToggleFrame(SetWorldFrameID0)
-		ToggleFrame(SetWorldFrameID0)
-	end
-end
-for name, frame in pairs(TriggerFrames) do
-    if not UIPanelWindows[name] or true then   
-        UIPanelWindows[name] = {area = "left", pushable = 8, whileDead = 1}
-        frame:SetAttribute("UIPanelLayout-defined", true)
-        for attribute, value in pairs(UIPanelWindows[name]) do
-            frame:SetAttribute("UIPanelLayout-"..attribute, value)
-        end
-        frame:SetAttribute("UIPanelLayout-enabled", true)
-    end
-end
+KP.inICC = false
+KP.inLDWZone = false
 
 -- Plate handling and updating	
 do
 	local SortOrder, Depths = {}, {}
 
 	--- If an anchor ataches to the original plate (by WoW), re-anchor to the Virtual.
-	local function ResetPoint(Plate, Region, Point, RelFrame, ...)
-		if RelFrame == Plate then
+	local function ResetPoint(Plate, Virtual, Region, Point, RelativeFrame, ...)
+		if RelativeFrame == Plate then
 			local point, xOfs, yOfs = ...
-			Region:SetPoint(Point, VirtualPlates[Plate], point, xOfs + KP.dbp.globalOffsetX + 11, yOfs + KP.dbp.globalOffsetY)
+			Region:SetPoint(Point, Virtual, point, xOfs + KP.dbp.globalOffsetX + 11, yOfs + KP.dbp.globalOffsetY)
 		end
 	end
 
@@ -149,15 +82,16 @@ do
 	local function PlateOnShow(Plate)
 		local Virtual = VirtualPlates[Plate]
 		PlatesVisible[Plate] = Virtual
-		Virtual:Show()
+		ExistsVisiblePlates = true
 		NextUpdate = 0 -- sorts instantly
 		-- Reposition all regions
 		for Index, Region in ipairs(Plate) do
 			for Point = 1, Region:GetNumPoints() do
-				ResetPoint(Plate, Region, Region:GetPoint(Point))
+				ResetPoint(Plate, Virtual, Region, Region:GetPoint(Point))
 			end
 		end
-		UpdatePlateVisibility(Plate, Virtual) -- Updates textures, texts, icons, filters
+		UpdatePlateVisibility(Plate) -- Updates textures, texts, icons, filters
+		UpdateTarget(Plate)
  		if KP.inCombat then
 			if not Virtual.isShown or (Plate.isFriendly and KP.dbp.friendlyClickthrough and KP.inInstance) then
 				NullifyPlateHitbox()
@@ -166,16 +100,15 @@ do
 			end
 			ExecuteHitboxSecureScript()
 		else
-			UpdateHitboxOutOfCombat(Plate, Virtual)
+			UpdateHitboxOutOfCombat(Plate)
 		end
 	end
 
 	--- Removes the plate from the visible list when hidden.
 	local function PlateOnHide(Plate)
 		PlatesVisible[Plate] = nil
-		local Virtual = VirtualPlates[Plate]
-		Virtual:Hide() -- Explicitly hide so IsShown returns false.
-		ResetPlateFlags(Plate, Virtual)
+		ExistsVisiblePlates = next(PlatesVisible) ~= nil
+		ResetPlateFlags(Plate)
 		if KP.inCombat then
 			ExecuteHitboxSecureScript()
 		end
@@ -189,6 +122,7 @@ do
 	--- Update all visible nameplates
 	local mouseoverName, Depth, healthBarHighlight, nameText, Virtual, BGHframe
 	local function PlatesUpdate()
+		if not ExistsVisiblePlates then return end
 		mouseoverName = UnitName("mouseover")
 		for Plate, Virtual in pairs(PlatesVisible) do
 			Depth = Virtual:GetEffectiveDepth()
@@ -228,7 +162,7 @@ do
 					SetFrameLevel(Plate.totemPlate, Index * PlateLevels)
 				end
 				if Plate.classPlateIsShown then
-					SetFrameLevel(Plate.classPlate, Index * PlateLevels)
+					SetFrameLevel(Plate.classPlate, Index * PlateLevels + 1)
 				end
 				BGHframe = Virtual.BGHframe
 				if BGHframe then
@@ -454,11 +388,11 @@ function KP:Initialize()
 	KP:BuildBlacklistUI()
 
 	if self.dbp.healthBar_border == "KhalPlates" then
-		ResizeHitBox:SetAttribute("width", NP_WIDTH * self.dbp.globalScale * 0.9)
-		ResizeHitBox:SetAttribute("height", NP_HEIGHT * self.dbp.globalScale * 0.7)
+		self.ResizeHitBox:SetAttribute("width", NP_WIDTH * self.dbp.globalScale * 0.9)
+		self.ResizeHitBox:SetAttribute("height", NP_HEIGHT * self.dbp.globalScale * 0.7)
 	else
-		ResizeHitBox:SetAttribute("width", NP_WIDTH * self.dbp.globalScale)
-		ResizeHitBox:SetAttribute("height", NP_HEIGHT * self.dbp.globalScale)
+		self.ResizeHitBox:SetAttribute("width", NP_WIDTH * self.dbp.globalScale)
+		self.ResizeHitBox:SetAttribute("height", NP_HEIGHT * self.dbp.globalScale)
 	end
 
 	if self.dbp.stackingEnabled then
@@ -503,11 +437,11 @@ function EventHandler:PLAYER_REGEN_ENABLED()
 	if KP.delayedHitboxUpdate then
 		KP.delayedHitboxUpdate = false
 		if KP.dbp.healthBar_border == "KhalPlates" then
-			ResizeHitBox:SetAttribute("width", NP_WIDTH * KP.dbp.globalScale * 0.9)
-			ResizeHitBox:SetAttribute("height", NP_HEIGHT * KP.dbp.globalScale * 0.7)
+			KP.ResizeHitBox:SetAttribute("width", NP_WIDTH * KP.dbp.globalScale * 0.9)
+			KP.ResizeHitBox:SetAttribute("height", NP_HEIGHT * KP.dbp.globalScale * 0.7)
 		else
-			ResizeHitBox:SetAttribute("width", NP_WIDTH * KP.dbp.globalScale)
-			ResizeHitBox:SetAttribute("height", NP_HEIGHT * KP.dbp.globalScale)
+			KP.ResizeHitBox:SetAttribute("width", NP_WIDTH * KP.dbp.globalScale)
+			KP.ResizeHitBox:SetAttribute("height", NP_HEIGHT * KP.dbp.globalScale)
 		end
 	end
 end
@@ -519,8 +453,8 @@ function EventHandler:PLAYER_REGEN_DISABLED()
 end
 
 function EventHandler:PLAYER_TARGET_CHANGED()
-	for _, Virtual in pairs(PlatesVisible) do
-		Virtual.targetHandler:Show()
+	for Plate in pairs(PlatesVisible) do
+		UpdateTarget(Plate)
 	end
 end
 
@@ -535,14 +469,14 @@ function EventHandler:PLAYER_ENTERING_WORLD()
 	if instanceType == "arena" then
 		UpdateArenaInfo()
 	end
-	KP.isICC = false
-	KP.isLDWZone = false
+	KP.inICC = false
+	KP.inLDWZone = false
 	if instanceType == "raid" and KP.dbp.LDWfix then
 		SetMapToCurrentZone()
 		if GetCurrentMapAreaID() == 605 then
-			KP.isICC = true
+			KP.inICC = true
 			if GetSubZoneText() == KP.LDWZoneText then
-				KP.isLDWZone = true
+				KP.inLDWZone = true
 			end
 		end
 	end
@@ -557,43 +491,15 @@ function EventHandler:PARTY_MEMBERS_CHANGED()
 	UpdateClassColorNames()
 end
 
-local DelayedUpdateClassColorNames = CreateFrame("Frame")
-DelayedUpdateClassColorNames:Hide()
-DelayedUpdateClassColorNames:SetScript("OnUpdate", function(self)
-	self:Hide()
-	UpdateClassColorNames()
-end)
-
 function EventHandler:UNIT_FACTION(event, unit)
 	if unit == "player" then
-		DelayedUpdateClassColorNames:Show()
+		DelayedUpdateClassColorNames()
 	end
 end
 
-local firstChecked
-local ForceLevelHide = CreateFrame("Frame")
-ForceLevelHide:Hide()
-ForceLevelHide:SetScript("OnUpdate", function(self)
-	firstChecked = false
-	for _, Virtual in pairs(PlatesVisible) do
-		if not firstChecked then
-			firstChecked = true
-			if not Virtual.levelText:IsShown() then
-				break
-			else
-				self:Hide()
-			end
-		end
-		Virtual.levelText:Hide()
-	end
-	if not firstChecked then
-		self:Hide()
-	end
-end)
-
 function EventHandler:PLAYER_PVP_RANK_CHANGED()
 	if KP.dbp.levelText_hide then
-		ForceLevelHide:Show()
+		ForceLevelHide()
 	end
 end
 
@@ -603,32 +509,11 @@ function EventHandler:ARENA_OPPONENT_UPDATE(event, unitToken, updateReason)
 	end
 end
 
-local function CheckDominateMind()
-    local i = 1
-    while true do
-        local spellID = select(11, UnitDebuff("player", i))
-        if not spellID then break end
-        if spellID == 71289 then
-            if not KP.DominateMind then
-                KP.DominateMind = true
-                SetUIVisibility(false)
-            end
-            return
-        end
-        i = i + 1
-    end
-    if KP.DominateMind then
-        KP.DominateMind = nil
-        SetUIVisibility(true)
-		KP:UpdateAllShownPlates()
-    end
-end
-
 function EventHandler:ZONE_CHANGED_INDOORS()
-	if KP.isICC and GetSubZoneText() == KP.LDWZoneText then
-		KP.isLDWZone = true
+	if KP.inICC and GetSubZoneText() == KP.LDWZoneText then
+		KP.inLDWZone = true
 	else
-		KP.isLDWZone = false
+		KP.inLDWZone = false
 	end
     if KP.DominateMind then
         KP.DominateMind = nil
@@ -637,7 +522,7 @@ function EventHandler:ZONE_CHANGED_INDOORS()
 end
 
 function EventHandler:UNIT_AURA(event, unit)
-	if unit == "player" and KP.isLDWZone then
+	if unit == "player" and KP.inLDWZone then
 		CheckDominateMind()
 	end
 end
