@@ -626,7 +626,7 @@ local function SetupTargetHandler(Plate)
 					UpdateMouseoverGlow(Virtual)
 					if Plate.hasRaidTarget then
 						Virtual.raidTargetIcon:Show()
-						Plate.classPlate.raidTargetIcon:Hide()
+						if Plate.classPlate then Plate.classPlate.raidTargetIcon:Hide() end
 					end
 					if not KP.dbp.levelText_hide and not (KP.inArena and KP.dbp.PartyIDText_show and KP.dbp.PartyIDText_HideLevel) then
 						SetupLevelText(Virtual)
