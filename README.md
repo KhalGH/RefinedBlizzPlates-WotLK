@@ -15,6 +15,10 @@ It preserves a Blizzlike appearance while adding functional and visual improveme
 - Added click-through behavior for totems, blacklist and, optionally, friendly nameplates.
 - Integrated optional system that simulates Retail's nameplate stacking.
 
+## Recommendations
+- KhalPlates may conflict with Gladdy’s Totem Plates module. Disable it to ensure proper functionality.
+- Retail-like stacking is replicated from Cheeta’s WeakAura. Disable it to avoid conflicts and duplication.
+
 ## Screenshots
 <p align="center">
   <img src="https://raw.githubusercontent.com/KhalGH/KhalPlates-WotLK/refs/heads/assets/assets/KhalPlatesIMG2.jpg" 
@@ -33,16 +37,12 @@ It preserves a Blizzlike appearance while adding functional and visual improveme
        alt="KhalPlatesIMG6" width="90%">
 </p>
 
-## Recommendations
-- KhalPlates may conflict with Gladdy’s Totem Plates module. Disable it to ensure proper functionality.
-- Retail-like stacking is replicated from Cheeta’s WeakAura. Disable it to avoid conflicts and duplication.
-
 ## Installation  
-1. [Download](https://github.com/KhalGH/KhalPlates-WotLK/releases/download/v1.7/KhalPlates-v1.7.zip) the addon
+1. [Download](https://github.com/KhalGH/KhalPlates-WotLK/releases/download/v1.7.1/KhalPlates-v1.7.1.zip) the addon
 2. Extract the **!!KhalPlates** folder into `World of Warcraft/Interface/AddOns/`.  
 3. Restart the game and enable the addon.  
 
 ## Information  
-- **Addon Version:** 1.7  
+- **Addon Version:** 1.7.1  
 - **Game Version:** 3.3.5a (WotLK)  
 - **Author:** Khal  
