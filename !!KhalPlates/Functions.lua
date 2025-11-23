@@ -597,6 +597,7 @@ local function CheckSpecialPlate(Plate)
 		Virtual.shieldCastBarBorder:Hide()
 		Virtual.spellIcon:Hide()
 		Virtual.levelText:Hide()
+		Virtual.bossIcon:Hide()
 		Virtual.raidTargetIcon:Hide()
 		if Virtual.BGHframe then
 			if KP.dbp.specialPlate_BGHiconAnchor == "Left" then
@@ -618,12 +619,13 @@ local function CheckSpecialPlate(Plate)
 	else
 		Virtual.healthBar:Show()
 		UpdateMouseoverGlow(Virtual)
-		if Plate.hasRaidTarget then
-			Virtual.raidTargetIcon:Show()
-		end
 		if not KP.dbp.levelText_hide and not (KP.inArena and KP.dbp.PartyIDText_show and KP.dbp.PartyIDText_HideLevel) then
 			SetupLevelText(Virtual)
 			Virtual.levelText:Show()
+		end
+		Virtual.bossIcon:Hide()
+		if Plate.hasRaidTarget then
+			Virtual.raidTargetIcon:Show()
 		end
 		local specialPlate = Plate.specialPlate
 		if specialPlate then
@@ -756,18 +758,19 @@ local function ForceLevelHide()
 	ForceLevelHideHandler:Show()
 end
 
-local delayedUASP = CreateFrame("Frame")
-delayedUASP:Hide()
-delayedUASP:SetScript("OnUpdate", function(self, elapsed)
+local delayedSUIV = CreateFrame("Frame")
+delayedSUIV:Hide()
+delayedSUIV:SetScript("OnUpdate", function(self, elapsed)
     self.timeLeft = self.timeLeft - elapsed
     if self.timeLeft <= 0 then
         self:Hide()
+		SetUIVisibility(true)
         KP:UpdateAllShownPlates()
     end
 end)
-local function DelayedUpdateAllShownPlates(delay)
-    delayedUASP.timeLeft = delay or 0.2
-    delayedUASP:Show()
+local function DelayedSetUIVisibility()
+    delayedSUIV.timeLeft = 0.1
+    delayedSUIV:Show()
 end
 
 local function CheckDominateMind()
@@ -786,40 +789,8 @@ local function CheckDominateMind()
     end
     if KP.DominateMind then
         KP.DominateMind = nil
-        SetUIVisibility(true)
-		DelayedUpdateAllShownPlates(0.2)
+		DelayedSetUIVisibility()
     end
-end
-
-local function UpdateClassColorNames()
-	for Plate, Virtual in pairs(PlatesVisible) do
-		local class = Plate.classKey
-		local classColor
-		if class then
-			if class == "FRIENDLY PLAYER" and ClassByFriendName[name] then
-				classColor = RAID_CLASS_COLORS[ClassByFriendName[name]]
-				Plate.classColor = classColor
-			elseif class ~= "FRIENDLY PLAYER" then
-				classColor = RAID_CLASS_COLORS[class]
-				Plate.classColor = classColor
-			end
-		end
-		Virtual.nameColorR, Virtual.nameColorG, Virtual.nameColorB = unpack(KP.dbp.nameText_color)
-		if classColor and ((class == "FRIENDLY PLAYER" and KP.dbp.nameText_classColorFriends) or (class ~= "FRIENDLY PLAYER" and KP.dbp.nameText_classColorEnemies)) then
-			Virtual.nameColorR, Virtual.nameColorG, Virtual.nameColorB = classColor.r, classColor.g, classColor.b
-		end
-		Virtual.healthBar.nameText:SetTextColor(Virtual.nameColorR, Virtual.nameColorG, Virtual.nameColorB)
-		Virtual.nameTextIsYellow = false
-	end
-end
-local DelayedUpdateClassColorNamesHandler = CreateFrame("Frame")
-DelayedUpdateClassColorNamesHandler:Hide()
-DelayedUpdateClassColorNamesHandler:SetScript("OnUpdate", function(self)
-	self:Hide()
-	UpdateClassColorNames()
-end)
-local function DelayedUpdateClassColorNames()
-	DelayedUpdateClassColorNamesHandler:Show()
 end
 
 local function UpdateGroupInfo()
@@ -854,6 +825,40 @@ local function UpdateArenaInfo()
 			ArenaID[arenaName] = tostring(i)
 		end
 	end
+end
+
+local function UpdateClassColorNames()
+	local class, name
+	for Plate, Virtual in pairs(PlatesVisible) do
+		class = Plate.classKey
+		name = Virtual.nameString
+		local classColor
+		if class then
+			if class == "FRIENDLY PLAYER" and ClassByFriendName[name] then
+				classColor = RAID_CLASS_COLORS[ClassByFriendName[name]]
+				Plate.classColor = classColor
+			elseif class ~= "FRIENDLY PLAYER" then
+				classColor = RAID_CLASS_COLORS[class]
+				Plate.classColor = classColor
+			end
+		end
+		Virtual.nameColorR, Virtual.nameColorG, Virtual.nameColorB = unpack(KP.dbp.nameText_color)
+		if classColor and ((class == "FRIENDLY PLAYER" and KP.dbp.nameText_classColorFriends) or (class ~= "FRIENDLY PLAYER" and KP.dbp.nameText_classColorEnemies)) then
+			Virtual.nameColorR, Virtual.nameColorG, Virtual.nameColorB = classColor.r, classColor.g, classColor.b
+		end
+		Virtual.healthBar.nameText:SetTextColor(Virtual.nameColorR, Virtual.nameColorG, Virtual.nameColorB)
+		Virtual.nameTextIsYellow = false
+	end
+end
+local DelayedUpdateClassColorNamesHandler = CreateFrame("Frame")
+DelayedUpdateClassColorNamesHandler:Hide()
+DelayedUpdateClassColorNamesHandler:SetScript("OnUpdate", function(self)
+	self:Hide()
+	UpdateGroupInfo()
+	UpdateClassColorNames()
+end)
+local function DelayedUpdateClassColorNames()
+	DelayedUpdateClassColorNamesHandler:Show()
 end
 
 local function UpdatePlateVisibility(Plate)
@@ -988,8 +993,8 @@ local function UpdatePlateVisibility(Plate)
 			Virtual.nameTextIsYellow = false
 			----------------- Init Enhanced Plate Stacking -----------------
 			if not Plate.isFriendly then
-				if KP.dbp.stackingEnabled and not KP.StackablePlates[Plate] then
-					KP.StackablePlates[Plate] = {xpos = 0, ypos = 0, position = 0}
+				if KP.dbp.stackingEnabled and not StackablePlates[Plate] then
+					StackablePlates[Plate] = {xpos = 0, ypos = 0, position = 0}
 				elseif Plate.isBoss and KP.dbp.clampBoss and KP.inPvEInstance then
 					Plate:SetClampedToScreen(true)
 					Plate:SetClampRectInsets(80*KP.dbp.globalScale, -80*KP.dbp.globalScale, KP.dbp.upperborder, 0)
@@ -1025,7 +1030,7 @@ local function ResetPlateFlags(Plate)
 	Plate.specialPlateIsShown = nil
 	Plate.SpecialHealthTextIsShown = nil
 	Plate.hasRaidTarget = nil
-	KP.StackablePlates[Plate] = nil
+	StackablePlates[Plate] = nil
 	Plate:SetClampedToScreen(false)
 	Plate:SetClampRectInsets(0, 0, 0, 0)
 	if Virtual.BGHframe then
@@ -1149,12 +1154,12 @@ local function UpdateStacking()
 	if KP.dbp.stackingInInstance and not KP.inInstance then return end
     local xspace = KP.dbp.xspace * KP.dbp.globalScale
     local yspace = KP.dbp.yspace * KP.dbp.globalScale
-    for Plate1, Plate1_StackData in pairs(KP.StackablePlates) do
+    for Plate1, Plate1_StackData in pairs(StackablePlates) do
         local width, height = Plate1:GetSize()
 		local x, y = select(4, Plate1:GetPoint(1))
 		local Virtual1 = VirtualPlates[Plate1]
-		KP.StackablePlates[Plate1].xpos = x
-		KP.StackablePlates[Plate1].ypos = y
+		StackablePlates[Plate1].xpos = x
+		StackablePlates[Plate1].ypos = y
         if KP.dbp.FreezeMouseover and Virtual1.healthBarHighlight:IsShown() then  -- Freeze Mouseover Nameplate
             local x, y =  Plate1:GetCenter() -- This Coordinates are the "real" values for the center point
             local newposition = y - Plate1_StackData.ypos - KP.dbp.originpos + height/2
@@ -1165,7 +1170,7 @@ local function UpdateStacking()
         else
             local min = 1000
             local reset = true
-            for Plate2, Plate2_StackData in pairs(KP.StackablePlates) do
+            for Plate2, Plate2_StackData in pairs(StackablePlates) do
                 if Plate1 ~= Plate2 then
                     local xdiff = Plate1_StackData.xpos - Plate2_StackData.xpos
                     local ydiff = Plate1_StackData.ypos + Plate1_StackData.position - Plate2_StackData.ypos - Plate2_StackData.position
@@ -1414,19 +1419,14 @@ KP.NP_HEIGHT = NP_HEIGHT
 KP.VirtualPlates = VirtualPlates
 KP.RealPlates = RealPlates
 KP.PlatesVisible = PlatesVisible
-KP.StackablePlates = StackablePlates
-KP.ClassByFriendName = ClassByFriendName
-KP.ArenaID = ArenaID
-KP.PartyID = PartyID
-KP.ASSETS = ASSETS
 KP.UpdateTarget = UpdateTarget
 KP.SetupKhalPlate = SetupKhalPlate
 KP.ForceLevelHide = ForceLevelHide
 KP.CheckDominateMind = CheckDominateMind
-KP.UpdateClassColorNames = UpdateClassColorNames
-KP.DelayedUpdateClassColorNames = DelayedUpdateClassColorNames
 KP.UpdateGroupInfo = UpdateGroupInfo
 KP.UpdateArenaInfo = UpdateArenaInfo
+KP.UpdateClassColorNames = UpdateClassColorNames
+KP.DelayedUpdateClassColorNames = DelayedUpdateClassColorNames
 KP.UpdatePlateVisibility = UpdatePlateVisibility
 KP.ResetPlateFlags = ResetPlateFlags
 KP.UpdateHitboxOutOfCombat = UpdateHitboxOutOfCombat
