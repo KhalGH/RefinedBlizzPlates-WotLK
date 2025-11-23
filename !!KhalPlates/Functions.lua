@@ -773,7 +773,7 @@ local function CheckDominateMind()
     if KP.DominateMind then
         KP.DominateMind = nil
         SetUIVisibility(true)
-		KP:DelayedUpdateAllShownPlates()
+		KP:DelayedUpdateAllShownPlates(0.2)
     end
 end
 
@@ -1373,8 +1373,8 @@ KP.delayedUASP:SetScript("OnUpdate", function(self, elapsed)
 		KP:UpdateAllShownPlates()
 	end
 end)
-function KP:DelayedUpdateAllShownPlates()
-	KP.delayedUASP.timeLeft = 0.2
+function KP:DelayedUpdateAllShownPlates(delay)
+	KP.delayedUASP.timeLeft = delay or 0.2
 	KP.delayedUASP:Show()
 end
 
