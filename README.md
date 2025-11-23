@@ -7,7 +7,7 @@ It preserves a Blizzlike appearance while adding functional and visual improveme
 - Nameplates drawing order based on distance to the camera.
 - Adjusted Z-order spacing to prevent subregions from overlapping between nameplates.
 - Custom glow for the target and mouseover nameplates.
-- Optional class icons in battlegrounds and arenas.
+- Optional class icons inside PvE or PvP instances.
 - Displays arenaID and partyID numbers as optional text in arenas.
 - Integrated TotemPlates system with in-game configuration.
 - Implemented a Blacklist to hide specific nameplates or replace them with icons.
