@@ -772,7 +772,10 @@ local function CheckDominateMind()
     end
     if KP.DominateMind then
         KP.DominateMind = nil
-        SetUIVisibility(true)
+        -- 必须使用C_Timer.After至少延迟1秒执行(因为需要等待nameplate重置更新)(也许1.5秒会更安全)
+        C_Timer.After(1, function()
+            SetUIVisibility(true)
+        end)
 		KP:UpdateAllShownPlates()
     end
 end
