@@ -11,7 +11,7 @@ It preserves a Blizzlike appearance while adding functional and visual improveme
 - Displays arenaID and partyID numbers as optional text in arenas.
 - Integrated TotemPlates system with in-game configuration.
 - Implemented a Blacklist to hide specific nameplates or replace them with icons.
-- Optional "Barless Plates" that replace friendly player nameplates with only the name and indicators
+- Optional "Barless Plates" that replace friendly player nameplates with only the name and indicators.
 - Added click-through behavior for totems, blacklist and, optionally, friendly nameplates.
 - Integrated optional system that simulates Retail's nameplate stacking.
 
