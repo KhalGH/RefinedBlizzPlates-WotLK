@@ -173,9 +173,7 @@ local function UpdateSpecialHealthText(healthText, percent)
 end
 
 local function UpdateHealthTextValue(healthBar)
-	local Virtual = healthBar.parent
-	if not Virtual.isShown then return end
-	local Plate = RealPlates[Virtual]
+	local Plate = RealPlates[healthBar.parent]
 	local min, max = healthBar:GetMinMaxValues()
 	local val = healthBar:GetValue()
 	if max > 0 then
@@ -908,12 +906,18 @@ local function UpdatePlateVisibility(Plate)
 			local classColor	
 			if class then
 				Plate.classKey = class
+				Plate.isBoss = nil
 				if class == "FRIENDLY PLAYER" then
 					classColor = ClassByFriendName[name] and RAID_CLASS_COLORS[ClassByFriendName[name]]
 					Plate.classColor = classColor
+					Virtual.bossIcon:Hide()
 				else
 					classColor = RAID_CLASS_COLORS[class]
 					Plate.classColor = classColor
+					if not Virtual.bossIcon:IsShown() and level and level - KP.playerLevel >= 10 then
+						Virtual.bossIcon:Show()
+						levelText:Hide()
+					end
 				end
 				------------------------ Show Arena IDs ------------------------
 				if KP.inArena then

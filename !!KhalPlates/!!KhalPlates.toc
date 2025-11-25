@@ -5,7 +5,7 @@
 ## Author: Khal
 ## SavedVariables: KhalPlatesDB
 ## X-Repository: https://github.com/KhalGH/KhalPlates-WotLK
-## X-Date: 2025-11-24
+## X-Date: 2025-11-25
 
 Embeds.xml
 Media.lua

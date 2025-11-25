@@ -6,8 +6,8 @@
 local AddonFile, KP = ...
 
 -- API
-local select, next, pairs, ipairs, unpack, sort, wipe, CreateFrame, UnitName, UnitDebuff, IsInInstance, SetMapToCurrentZone, GetCurrentMapAreaID, GetSubZoneText, SetUIVisibility, SetCVar =
-      select, next, pairs, ipairs, unpack, sort, wipe, CreateFrame, UnitName, UnitDebuff, IsInInstance, SetMapToCurrentZone, GetCurrentMapAreaID, GetSubZoneText, SetUIVisibility, SetCVar
+local select, next, pairs, ipairs, unpack, sort, wipe, CreateFrame, UnitName, UnitLevel, UnitDebuff, IsInInstance, SetMapToCurrentZone, GetCurrentMapAreaID, GetSubZoneText, SetUIVisibility, SetCVar =
+      select, next, pairs, ipairs, unpack, sort, wipe, CreateFrame, UnitName, UnitLevel, UnitDebuff, IsInInstance, SetMapToCurrentZone, GetCurrentMapAreaID, GetSubZoneText, SetUIVisibility, SetCVar
 
 -- Localized namespace definitions
 local NP_WIDTH = KP.NP_WIDTH
@@ -54,6 +54,7 @@ KP.inBG = false
 KP.inArena = false
 KP.inICC = false
 KP.inLDWZone = false
+KP.playerLevel = UnitLevel("player")
 
 -- Plate handling and updating	
 do
@@ -493,6 +494,13 @@ function EventHandler:PLAYER_PVP_RANK_CHANGED()
 	end
 end
 
+function EventHandler:PLAYER_LEVEL_UP(event, newLevel)
+	KP.playerLevel = newLevel
+	if KP.dbp.levelText_hide then
+		ForceLevelHide()
+	end
+end
+
 function EventHandler:ARENA_OPPONENT_UPDATE(event, unitToken, updateReason)
 	if updateReason == "seen" and unitToken:match("^arena(%d+)$") then
 		UpdateArenaInfo()
@@ -541,6 +549,7 @@ EventHandler:RegisterEvent("PLAYER_ENTERING_WORLD")
 EventHandler:RegisterEvent("PARTY_MEMBERS_CHANGED")
 EventHandler:RegisterEvent("UNIT_FACTION")
 EventHandler:RegisterEvent("PLAYER_PVP_RANK_CHANGED")
+EventHandler:RegisterEvent("PLAYER_LEVEL_UP")
 EventHandler:RegisterEvent("ARENA_OPPONENT_UPDATE")
 if C_NamePlate then
 	EventHandler:RegisterEvent("NAME_PLATE_UNIT_ADDED")
