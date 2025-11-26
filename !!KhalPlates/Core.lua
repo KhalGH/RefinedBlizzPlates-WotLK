@@ -485,6 +485,10 @@ function EventHandler:UNIT_AURA(event, unit)
 	end
 end
 
+function EventHandler:RAID_TARGET_UPDATE()
+	KP:UpdateAllShownPlatesRaidTarget()
+end
+
 function EventHandler:NAME_PLATE_UNIT_ADDED(event, token)
 	local Plate = C_NamePlate.GetNamePlateForUnit(token)
 	if Plate and not Plate.namePlateUnitToken then
@@ -511,6 +515,7 @@ EventHandler:RegisterEvent("UNIT_FACTION")
 EventHandler:RegisterEvent("PLAYER_PVP_RANK_CHANGED")
 EventHandler:RegisterEvent("PLAYER_LEVEL_UP")
 EventHandler:RegisterEvent("ARENA_OPPONENT_UPDATE")
+EventHandler:RegisterEvent("RAID_TARGET_UPDATE")
 if C_NamePlate then
 	EventHandler:RegisterEvent("NAME_PLATE_UNIT_ADDED")
 end

@@ -1473,12 +1473,22 @@ function KP:UpdateWorldFrameHeight(init)
 end
 
 function KP:UpdateAllShownPlates()
-	for Plate, Virtual in pairs(PlatesVisible) do
+	for Plate in pairs(PlatesVisible) do
 		local hadRaidTarget = Plate.hasRaidTarget
 		local hadEliteIcon = Plate.hasEliteIcon
 		ResetKhalPlate(Plate)
 		UpdateKhalPlate(Plate)
 		Plate.hasRaidTarget = hadRaidTarget
+		Plate.hasEliteIcon = hadEliteIcon
+		UpdateTarget(Plate)
+	end
+end
+
+function KP:UpdateAllShownPlatesRaidTarget()
+	for Plate in pairs(PlatesVisible) do
+		local hadEliteIcon = Plate.hasEliteIcon
+		ResetKhalPlate(Plate)
+		UpdateKhalPlate(Plate)
 		Plate.hasEliteIcon = hadEliteIcon
 		UpdateTarget(Plate)
 	end
