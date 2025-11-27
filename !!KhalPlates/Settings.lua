@@ -123,40 +123,40 @@ KP.dbp.classIcon_anchor = "Left"
 KP.dbp.classIcon_offsetX = 0
 KP.dbp.classIcon_offsetY = 0
 -- Barless Plate
-KP.dbp.specialPlate_showInBG = true
-KP.dbp.specialPlate_showInArena = false
-KP.dbp.specialPlate_showInPvE = true
-KP.dbp.specialPlate_textFont = "Friz Quadrata TT"
-KP.dbp.specialPlate_textSize = 14
-KP.dbp.specialPlate_textOutline = "OUTLINE"
-KP.dbp.specialPlate_textColor = {0.2, 0.2, 0.9}
-KP.dbp.specialPlate_classColors = true
-KP.dbp.specialPlate_offset = 0
-KP.dbp.specialPlate_NPCtextFont = "Arial Narrow"
-KP.dbp.specialPlate_NPCtextSize = 13
-KP.dbp.specialPlate_NPCtextOutline = "OUTLINE"
-KP.dbp.specialPlate_NPCtextColor = {0, 1, 0.1}
-KP.dbp.specialPlate_NPCoffset = 0
-KP.dbp.specialPlate_showHealthText = true
-KP.dbp.specialPlate_showNPCHealthText = false
-KP.dbp.specialPlate_healthTextSize = 11
-KP.dbp.specialPlate_healthTextAnchor = "Bottom"
-KP.dbp.specialPlate_healthTextOffsetX = 0
-KP.dbp.specialPlate_healthTextOffsetY = 0
-KP.dbp.specialPlate_showRaidTarget = false
-KP.dbp.specialPlate_raidTargetIconSize = 30
-KP.dbp.specialPlate_raidTargetIconAnchor = "Top"
-KP.dbp.specialPlate_raidTargetIconOffsetX = 0
-KP.dbp.specialPlate_raidTargetIconOffsetY = 0
-KP.dbp.specialPlate_showClassIcon = false
-KP.dbp.specialPlate_classIconSize = 32
-KP.dbp.specialPlate_classIconAnchor = "Top"
-KP.dbp.specialPlate_classIconOffsetX = 0
-KP.dbp.specialPlate_classIconOffsetY = 0
-KP.dbp.specialPlate_BGHiconSize = 36
-KP.dbp.specialPlate_BGHiconAnchor = "Top"
-KP.dbp.specialPlate_BGHiconOffsetX = 0
-KP.dbp.specialPlate_BGHiconOffsetY = 0
+KP.dbp.barlessPlate_showInBG = true
+KP.dbp.barlessPlate_showInArena = false
+KP.dbp.barlessPlate_showInPvE = true
+KP.dbp.barlessPlate_textFont = "Friz Quadrata TT"
+KP.dbp.barlessPlate_textSize = 14
+KP.dbp.barlessPlate_textOutline = "OUTLINE"
+KP.dbp.barlessPlate_textColor = {0.2, 0.2, 0.9}
+KP.dbp.barlessPlate_classColors = true
+KP.dbp.barlessPlate_offset = 0
+KP.dbp.barlessPlate_NPCtextFont = "Arial Narrow"
+KP.dbp.barlessPlate_NPCtextSize = 13
+KP.dbp.barlessPlate_NPCtextOutline = "OUTLINE"
+KP.dbp.barlessPlate_NPCtextColor = {0, 1, 0.1}
+KP.dbp.barlessPlate_NPCoffset = 0
+KP.dbp.barlessPlate_showHealthText = true
+KP.dbp.barlessPlate_showNPCHealthText = false
+KP.dbp.barlessPlate_healthTextSize = 11
+KP.dbp.barlessPlate_healthTextAnchor = "Bottom"
+KP.dbp.barlessPlate_healthTextOffsetX = 0
+KP.dbp.barlessPlate_healthTextOffsetY = 0
+KP.dbp.barlessPlate_showRaidTarget = false
+KP.dbp.barlessPlate_raidTargetIconSize = 30
+KP.dbp.barlessPlate_raidTargetIconAnchor = "Top"
+KP.dbp.barlessPlate_raidTargetIconOffsetX = 0
+KP.dbp.barlessPlate_raidTargetIconOffsetY = 0
+KP.dbp.barlessPlate_showClassIcon = false
+KP.dbp.barlessPlate_classIconSize = 32
+KP.dbp.barlessPlate_classIconAnchor = "Top"
+KP.dbp.barlessPlate_classIconOffsetX = 0
+KP.dbp.barlessPlate_classIconOffsetY = 0
+KP.dbp.barlessPlate_BGHiconSize = 36
+KP.dbp.barlessPlate_BGHiconAnchor = "Top"
+KP.dbp.barlessPlate_BGHiconOffsetX = 0
+KP.dbp.barlessPlate_BGHiconOffsetY = 0
 -- Totem Plate
 KP.dbp.totemSize = 24 -- Size of the totem (or NPC) icon replacing the nameplate
 KP.dbp.totemOffset = 0 -- Vertical offset for totem icon
@@ -314,7 +314,7 @@ KP.MainOptionTable = {
 						KP:UpdateAllHealthBars()
 						KP:UpdateAllCastBars()
 						KP:UpdateAllIcons()
-						KP:UpdateAllSpecialPlates()
+						KP:UpdateAllBarlessPlates()
 						KP:UpdateAllGlows()
 						KP:UpdateAllCastBarBorders()
 						KP:UpdateAllShownPlates()
@@ -342,7 +342,7 @@ KP.MainOptionTable = {
 				globalOffsetX = {
 					order = 9,
 					type = "range",
-					name = "Visual Offset X",
+					name = "Global Offset X",
 					desc = "Affects only the nameplate's visual regions. The real hitbox can't be moved using this feature.",
 					min = -50,
 					max = 50,
@@ -356,7 +356,7 @@ KP.MainOptionTable = {
 				globalOffsetY = {
 					order = 10,
 					type = "range",
-					name = "Visual Offset Y",
+					name = "Global Offset Y",
 					desc = "Affects only the nameplate's visual regions. The real hitbox can't be moved using this feature.",
 					min = -50,
 					max = 50,
@@ -1632,37 +1632,37 @@ KP.MainOptionTable = {
 				lineBreak13 = {order = 33, type = "description", name = ""},
 			},
 		},
-		SpecialPlate = {
+		BarlessPlate = {
 			order = 6,
 			name = "Barless Plate",
 			type = "group",
 			set = function(info, val)
 				KP.dbp[info[#info]] = val
-				KP:UpdateAllSpecialPlates()
+				KP:UpdateAllBarlessPlates()
 				KP:UpdateAllShownPlates()
 			end,
 			args = {
 				lineBreak1 = {order = 1, type = "description", name = ""},
-				specialPlate_Header = {
+				barlessPlate_Header = {
 					order = 2,
 					type = "header",
 					name = "Barless Plate Enabling",
 				},
 				lineBreak2 = {order = 3, type = "description", name = ""},
 				lineBreak3 = {order = 4, type = "description", name = ""},
-				specialPlate_showInPvE = {
+				barlessPlate_showInPvE = {
 					order = 5,
 					type = "toggle",
 					name = "Enable in PvE",
 					desc = "Replace friendly nameplates with a barless layout: name text and anchored indicators.",
 				},
-				specialPlate_showInBG = {
+				barlessPlate_showInBG = {
 					order = 6,
 					type = "toggle",
 					name = "Enable in BGs",
 					desc = "Replace friendly nameplates with a barless layout: name text and anchored indicators.",
 				},
-				specialPlate_showInArena = {
+				barlessPlate_showInArena = {
 					order = 7,
 					type = "toggle",
 					name = "Enable in Arenas",
@@ -1670,34 +1670,40 @@ KP.MainOptionTable = {
 				},
 				lineBreak4 = {order = 8, type = "description", name = ""},
 				lineBreak5 = {order = 9, type = "description", name = ""},
-				specialPlate_nameHeader = {
+				barlessPlate_nameHeader = {
 					order = 10,
 					type = "header",
 					name = "Player Name Text",
 				},
 				lineBreak6 = {order = 11, type = "description", name = ""},
-				specialPlate_textFont = {
+				barlessPlate_textFont = {
 					order = 12,
 					type = "select",
 					name = "Text Font",
 					values = KP.LSM:HashTable("font"),
 					dialogControl = "LSM30_Font",
 					disabled = function()
-						return not (KP.dbp.specialPlate_showInPvE or KP.dbp.specialPlate_showInBG or KP.dbp.specialPlate_showInArena)
+						return not (KP.dbp.barlessPlate_showInPvE or KP.dbp.barlessPlate_showInBG or KP.dbp.barlessPlate_showInArena)
 					end,
 				},
-				specialPlate_textSize = {
+				barlessPlate_textSize = {
 					order = 13,
 					type = "range",
 					name = "Font Size",
 					min = 8,
 					max = 20,
 					step = 0.1,
+					set = function(info, val)
+						KP.dbp[info[#info]] = val
+						KP:UpdateAllBarlessPlates()
+						KP:UpdateAllShownPlates()
+						KP:UpdateHitboxAttributes()
+					end,
 					disabled = function()
-						return not (KP.dbp.specialPlate_showInPvE or KP.dbp.specialPlate_showInBG or KP.dbp.specialPlate_showInArena)
+						return not (KP.dbp.barlessPlate_showInPvE or KP.dbp.barlessPlate_showInBG or KP.dbp.barlessPlate_showInArena)
 					end,
 				},
-				specialPlate_textOutline = {
+				barlessPlate_textOutline = {
 					order = 14,
 					type = "select", 
 					name = "Outline",
@@ -1710,21 +1716,22 @@ KP.MainOptionTable = {
 						["THICKOUTLINE,MONOCHROME"] = "Monochrome Thick Outline",
 					},
 					disabled = function()
-						return not (KP.dbp.specialPlate_showInPvE or KP.dbp.specialPlate_showInBG or KP.dbp.specialPlate_showInArena)
+						return not (KP.dbp.barlessPlate_showInPvE or KP.dbp.barlessPlate_showInBG or KP.dbp.barlessPlate_showInArena)
 					end,
 				},
-				specialPlate_offset = {
+				barlessPlate_offset = {
 					order = 15,
 					type = "range",
 					name = "Offset Y",
+					desc = "Adjusts the visual vertical position (does not affect the hitbox).",
 					min = -50,
 					max = 50,
 					step = 0.1,
 					disabled = function()
-						return not (KP.dbp.specialPlate_showInPvE or KP.dbp.specialPlate_showInBG or KP.dbp.specialPlate_showInArena)
+						return not (KP.dbp.barlessPlate_showInPvE or KP.dbp.barlessPlate_showInBG or KP.dbp.barlessPlate_showInArena)
 					end,
 				},
-				specialPlate_textColor = {
+				barlessPlate_textColor = {
 					order = 16,
 					type = "color",
 					name = "Text color",
@@ -1734,41 +1741,41 @@ KP.MainOptionTable = {
 					end,
 					set = function(info, r, g, b)
 						KP.dbp[info[#info]] = {r, g, b}
-						KP:UpdateAllSpecialPlates()
+						KP:UpdateAllBarlessPlates()
 						KP:UpdateAllShownPlates()
 					end,
 					disabled = function()
-						return not (KP.dbp.specialPlate_showInPvE or KP.dbp.specialPlate_showInBG or KP.dbp.specialPlate_showInArena)
+						return not (KP.dbp.barlessPlate_showInPvE or KP.dbp.barlessPlate_showInBG or KP.dbp.barlessPlate_showInArena)
 					end,
 				},
-				specialPlate_classColors = {
+				barlessPlate_classColors = {
 					order = 17,
 					type = "toggle",
 					name = "Use class color",
 					disabled = function()
-						return not (KP.dbp.specialPlate_showInPvE or KP.dbp.specialPlate_showInBG or KP.dbp.specialPlate_showInArena)
+						return not (KP.dbp.barlessPlate_showInPvE or KP.dbp.barlessPlate_showInBG or KP.dbp.barlessPlate_showInArena)
 					end,
 				},
 
 				lineBreak7 = {order = 18, type = "description", name = ""},
 				lineBreak8 = {order = 19, type = "description", name = ""},
-				specialPlate_NPCnameHeader = {
+				barlessPlate_NPCnameHeader = {
 					order = 20,
 					type = "header",
 					name = "NPC Name Text",
 				},
 				lineBreak9 = {order = 21, type = "description", name = ""},
-				specialPlate_NPCtextFont = {
+				barlessPlate_NPCtextFont = {
 					order = 22,
 					type = "select",
 					name = "Text Font",
 					values = KP.LSM:HashTable("font"),
 					dialogControl = "LSM30_Font",
 					disabled = function()
-						return not (KP.dbp.specialPlate_showInPvE or KP.dbp.specialPlate_showInBG or KP.dbp.specialPlate_showInArena)
+						return not (KP.dbp.barlessPlate_showInPvE or KP.dbp.barlessPlate_showInBG or KP.dbp.barlessPlate_showInArena)
 					end,
 				},
-				specialPlate_NPCtextSize = {
+				barlessPlate_NPCtextSize = {
 					order = 23,
 					type = "range",
 					name = "Font Size",
@@ -1776,10 +1783,10 @@ KP.MainOptionTable = {
 					max = 20,
 					step = 0.1,
 					disabled = function()
-						return not (KP.dbp.specialPlate_showInPvE or KP.dbp.specialPlate_showInBG or KP.dbp.specialPlate_showInArena)
+						return not (KP.dbp.barlessPlate_showInPvE or KP.dbp.barlessPlate_showInBG or KP.dbp.barlessPlate_showInArena)
 					end,
 				},
-				specialPlate_NPCtextOutline = {
+				barlessPlate_NPCtextOutline = {
 					order = 24,
 					type = "select", 
 					name = "Outline",
@@ -1792,21 +1799,22 @@ KP.MainOptionTable = {
 						["THICKOUTLINE,MONOCHROME"] = "Monochrome Thick Outline",
 					},
 					disabled = function()
-						return not (KP.dbp.specialPlate_showInPvE or KP.dbp.specialPlate_showInBG or KP.dbp.specialPlate_showInArena)
+						return not (KP.dbp.barlessPlate_showInPvE or KP.dbp.barlessPlate_showInBG or KP.dbp.barlessPlate_showInArena)
 					end,
 				},
-				specialPlate_NPCoffset = {
+				barlessPlate_NPCoffset = {
 					order = 25,
 					type = "range",
 					name = "Offset Y",
+					desc = "Adjusts the visual vertical position (does not affect the hitbox).",
 					min = -50,
 					max = 50,
 					step = 0.1,
 					disabled = function()
-						return not (KP.dbp.specialPlate_showInPvE or KP.dbp.specialPlate_showInBG or KP.dbp.specialPlate_showInArena)
+						return not (KP.dbp.barlessPlate_showInPvE or KP.dbp.barlessPlate_showInBG or KP.dbp.barlessPlate_showInArena)
 					end,
 				},
-				specialPlate_NPCtextColor = {
+				barlessPlate_NPCtextColor = {
 					order = 26,
 					type = "color",
 					name = "Text color",
@@ -1816,39 +1824,39 @@ KP.MainOptionTable = {
 					end,
 					set = function(info, r, g, b)
 						KP.dbp[info[#info]] = {r, g, b}
-						KP:UpdateAllSpecialPlates()
+						KP:UpdateAllBarlessPlates()
 						KP:UpdateAllShownPlates()
 					end,
 					disabled = function()
-						return not (KP.dbp.specialPlate_showInPvE or KP.dbp.specialPlate_showInBG or KP.dbp.specialPlate_showInArena)
+						return not (KP.dbp.barlessPlate_showInPvE or KP.dbp.barlessPlate_showInBG or KP.dbp.barlessPlate_showInArena)
 					end,
 				},
 				lineBreak10 = {order = 27, type = "description", name = ""},
 				lineBreak11 = {order = 28, type = "description", name = ""},
-				specialPlate_healthHeader = {
+				barlessPlate_healthHeader = {
 					order = 29,
 					type = "header",
 					name = "Health Text",
 				},				
 				lineBreak12 = {order = 30, type = "description", name = ""},
-				specialPlate_showHealthText = {
+				barlessPlate_showHealthText = {
 					order = 31,
 					type = "toggle",
 					name = "Show in Players",
 					disabled = function()
-						return not (KP.dbp.specialPlate_showInPvE or KP.dbp.specialPlate_showInBG or KP.dbp.specialPlate_showInArena)
+						return not (KP.dbp.barlessPlate_showInPvE or KP.dbp.barlessPlate_showInBG or KP.dbp.barlessPlate_showInArena)
 					end,
 				},
-				specialPlate_showNPCHealthText = {
+				barlessPlate_showNPCHealthText = {
 					order = 32,
 					type = "toggle",
 					name = "Show in NPCs",
 					disabled = function()
-						return not (KP.dbp.specialPlate_showInPvE or KP.dbp.specialPlate_showInBG or KP.dbp.specialPlate_showInArena)
+						return not (KP.dbp.barlessPlate_showInPvE or KP.dbp.barlessPlate_showInBG or KP.dbp.barlessPlate_showInArena)
 					end,
 				},
 				lineBreak13 = {order = 33, type = "description", name = ""},
-				specialPlate_healthTextAnchor = {
+				barlessPlate_healthTextAnchor = {
 					order = 34,
 					type = "select", 
 					name = "Anchor",
@@ -1860,16 +1868,16 @@ KP.MainOptionTable = {
 					},
 					set = function(info, val)
 						KP.dbp[info[#info]] = val
-						KP.dbp.specialPlate_healthTextOffsetX = 0
-						KP.dbp.specialPlate_healthTextOffsetY = 0
-						KP:UpdateAllSpecialPlates()
+						KP.dbp.barlessPlate_healthTextOffsetX = 0
+						KP.dbp.barlessPlate_healthTextOffsetY = 0
+						KP:UpdateAllBarlessPlates()
 						KP:UpdateAllShownPlates()
 					end,
 					disabled = function()
-						return not (KP.dbp.specialPlate_showHealthText or KP.dbp.specialPlate_showNPCHealthText) or not (KP.dbp.specialPlate_showInPvE or KP.dbp.specialPlate_showInBG or KP.dbp.specialPlate_showInArena)
+						return not (KP.dbp.barlessPlate_showHealthText or KP.dbp.barlessPlate_showNPCHealthText) or not (KP.dbp.barlessPlate_showInPvE or KP.dbp.barlessPlate_showInBG or KP.dbp.barlessPlate_showInArena)
 					end,
 				},
-				specialPlate_healthTextOffsetX = {
+				barlessPlate_healthTextOffsetX = {
 					order = 35,
 					type = "range",
 					name = "Offset X",
@@ -1877,10 +1885,10 @@ KP.MainOptionTable = {
 					max = 50,
 					step = 0.1,
 					disabled = function()
-						return not (KP.dbp.specialPlate_showHealthText or KP.dbp.specialPlate_showNPCHealthText) or not (KP.dbp.specialPlate_showInPvE or KP.dbp.specialPlate_showInBG or KP.dbp.specialPlate_showInArena)
+						return not (KP.dbp.barlessPlate_showHealthText or KP.dbp.barlessPlate_showNPCHealthText) or not (KP.dbp.barlessPlate_showInPvE or KP.dbp.barlessPlate_showInBG or KP.dbp.barlessPlate_showInArena)
 					end,
 				},
-				specialPlate_healthTextOffsetY = {
+				barlessPlate_healthTextOffsetY = {
 					order = 36,
 					type = "range",
 					name = "Offset Y",
@@ -1888,10 +1896,10 @@ KP.MainOptionTable = {
 					max = 50,
 					step = 0.1,
 					disabled = function()
-						return not (KP.dbp.specialPlate_showHealthText or KP.dbp.specialPlate_showNPCHealthText) or not (KP.dbp.specialPlate_showInPvE or KP.dbp.specialPlate_showInBG or KP.dbp.specialPlate_showInArena)
+						return not (KP.dbp.barlessPlate_showHealthText or KP.dbp.barlessPlate_showNPCHealthText) or not (KP.dbp.barlessPlate_showInPvE or KP.dbp.barlessPlate_showInBG or KP.dbp.barlessPlate_showInArena)
 					end,
 				},
-				specialPlate_healthTextSize = {
+				barlessPlate_healthTextSize = {
 					order = 37,
 					type = "range",
 					name = "Font Size",
@@ -1899,28 +1907,28 @@ KP.MainOptionTable = {
 					max = 20,
 					step = 0.1,
 					disabled = function()
-						return not (KP.dbp.specialPlate_showHealthText or KP.dbp.specialPlate_showNPCHealthText) or not (KP.dbp.specialPlate_showInPvE or KP.dbp.specialPlate_showInBG or KP.dbp.specialPlate_showInArena)
+						return not (KP.dbp.barlessPlate_showHealthText or KP.dbp.barlessPlate_showNPCHealthText) or not (KP.dbp.barlessPlate_showInPvE or KP.dbp.barlessPlate_showInBG or KP.dbp.barlessPlate_showInArena)
 					end,
 				},
 				lineBreak14 = {order = 38, type = "description", name = ""},
 				lineBreak15 = {order = 39, type = "description", name = ""},
-				specialPlate_raidIconHeader = {
+				barlessPlate_raidIconHeader = {
 					order = 40,
 					type = "header",
 					name = "Raid Target Icon",
 				},				
 				lineBreak16 = {order = 41, type = "description", name = ""},
-				specialPlate_showRaidTarget = {
+				barlessPlate_showRaidTarget = {
 					order = 42,
 					type = "toggle",
 					name = "Show Raid Target Icon",
 					width = "full",
 					disabled = function()
-						return not (KP.dbp.specialPlate_showInPvE or KP.dbp.specialPlate_showInBG or KP.dbp.specialPlate_showInArena)
+						return not (KP.dbp.barlessPlate_showInPvE or KP.dbp.barlessPlate_showInBG or KP.dbp.barlessPlate_showInArena)
 					end,
 				},
 				lineBreak17 = {order = 43, type = "description", name = ""},
-				specialPlate_raidTargetIconAnchor = {
+				barlessPlate_raidTargetIconAnchor = {
 					order = 44,
 					type = "select", 
 					name = "Anchor",
@@ -1932,16 +1940,16 @@ KP.MainOptionTable = {
 					},
 					set = function(info, val)
 						KP.dbp[info[#info]] = val
-						KP.dbp.specialPlate_raidTargetIconOffsetX = 0
-						KP.dbp.specialPlate_raidTargetIconOffsetY = 0
-						KP:UpdateAllSpecialPlates()
+						KP.dbp.barlessPlate_raidTargetIconOffsetX = 0
+						KP.dbp.barlessPlate_raidTargetIconOffsetY = 0
+						KP:UpdateAllBarlessPlates()
 						KP:UpdateAllShownPlates()
 					end,
 					disabled = function() 
-						return not KP.dbp.specialPlate_showRaidTarget or not (KP.dbp.specialPlate_showInPvE	or KP.dbp.specialPlate_showInBG	or KP.dbp.specialPlate_showInArena)
+						return not KP.dbp.barlessPlate_showRaidTarget or not (KP.dbp.barlessPlate_showInPvE	or KP.dbp.barlessPlate_showInBG	or KP.dbp.barlessPlate_showInArena)
 					end,
 				},
-				specialPlate_raidTargetIconOffsetX = {
+				barlessPlate_raidTargetIconOffsetX = {
 					order = 45,
 					type = "range",
 					name = "Offset X",
@@ -1949,10 +1957,10 @@ KP.MainOptionTable = {
 					max = 50,
 					step = 0.1,
 					disabled = function() 
-						return not KP.dbp.specialPlate_showRaidTarget or not (KP.dbp.specialPlate_showInPvE	or KP.dbp.specialPlate_showInBG	or KP.dbp.specialPlate_showInArena)
+						return not KP.dbp.barlessPlate_showRaidTarget or not (KP.dbp.barlessPlate_showInPvE	or KP.dbp.barlessPlate_showInBG	or KP.dbp.barlessPlate_showInArena)
 					end,
 				},
-				specialPlate_raidTargetIconOffsetY = {
+				barlessPlate_raidTargetIconOffsetY = {
 					order = 46,
 					type = "range",
 					name = "Offset Y",
@@ -1960,10 +1968,10 @@ KP.MainOptionTable = {
 					max = 50,
 					step = 0.1,
 					disabled = function() 
-						return not KP.dbp.specialPlate_showRaidTarget or not (KP.dbp.specialPlate_showInPvE	or KP.dbp.specialPlate_showInBG	or KP.dbp.specialPlate_showInArena)
+						return not KP.dbp.barlessPlate_showRaidTarget or not (KP.dbp.barlessPlate_showInPvE	or KP.dbp.barlessPlate_showInBG	or KP.dbp.barlessPlate_showInArena)
 					end,
 				},
-				specialPlate_raidTargetIconSize = {
+				barlessPlate_raidTargetIconSize = {
 					order = 47,
 					type = "range",
 					name = "Icon Size",
@@ -1971,27 +1979,27 @@ KP.MainOptionTable = {
 					max = 50,
 					step = 0.1,
 					disabled = function() 
-						return not KP.dbp.specialPlate_showRaidTarget or not (KP.dbp.specialPlate_showInPvE or KP.dbp.specialPlate_showInBG or KP.dbp.specialPlate_showInArena)
+						return not KP.dbp.barlessPlate_showRaidTarget or not (KP.dbp.barlessPlate_showInPvE or KP.dbp.barlessPlate_showInBG or KP.dbp.barlessPlate_showInArena)
 					end,
 				},
 				lineBreak18 = {order = 48, type = "description", name = ""},
 				lineBreak19 = {order = 49, type = "description", name = ""},
-				specialPlate_classIconHeader = {
+				barlessPlate_classIconHeader = {
 					order = 50,
 					type = "header",
 					name = "Class Icon",
 				},				
 				lineBreak20 = {order = 51, type = "description", name = ""},
-				specialPlate_showClassIcon = {
+				barlessPlate_showClassIcon = {
 					order = 52,
 					type = "toggle",
 					name = "Show Class Icon",
 					disabled = function() 
-						return not (KP.dbp.specialPlate_showInPvE or KP.dbp.specialPlate_showInBG or KP.dbp.specialPlate_showInArena)
+						return not (KP.dbp.barlessPlate_showInPvE or KP.dbp.barlessPlate_showInBG or KP.dbp.barlessPlate_showInArena)
 					end,
 				},
 				lineBreak21 = {order = 53, type = "description", name = ""},
-				specialPlate_classIconAnchor = {
+				barlessPlate_classIconAnchor = {
 					order = 54,
 					type = "select", 
 					name = "Anchor",
@@ -2003,16 +2011,16 @@ KP.MainOptionTable = {
 					},
 					set = function(info, val)
 						KP.dbp[info[#info]] = val
-						KP.dbp.specialPlate_classIconOffsetX = 0
-						KP.dbp.specialPlate_classIconOffsetY = 0
-						KP:UpdateAllSpecialPlates()
+						KP.dbp.barlessPlate_classIconOffsetX = 0
+						KP.dbp.barlessPlate_classIconOffsetY = 0
+						KP:UpdateAllBarlessPlates()
 						KP:UpdateAllShownPlates()
 					end,
 					disabled = function() 
-						return not KP.dbp.specialPlate_showClassIcon or not (KP.dbp.specialPlate_showInPvE or KP.dbp.specialPlate_showInBG or KP.dbp.specialPlate_showInArena)
+						return not KP.dbp.barlessPlate_showClassIcon or not (KP.dbp.barlessPlate_showInPvE or KP.dbp.barlessPlate_showInBG or KP.dbp.barlessPlate_showInArena)
 					end,
 				},
-				specialPlate_classIconOffsetX = {
+				barlessPlate_classIconOffsetX = {
 					order = 55,
 					type = "range",
 					name = "Offset X",
@@ -2020,10 +2028,10 @@ KP.MainOptionTable = {
 					max = 50,
 					step = 0.1,
 					disabled = function() 
-						return not KP.dbp.specialPlate_showClassIcon or not (KP.dbp.specialPlate_showInPvE or KP.dbp.specialPlate_showInBG or KP.dbp.specialPlate_showInArena)
+						return not KP.dbp.barlessPlate_showClassIcon or not (KP.dbp.barlessPlate_showInPvE or KP.dbp.barlessPlate_showInBG or KP.dbp.barlessPlate_showInArena)
 					end,
 				},
-				specialPlate_classIconOffsetY = {
+				barlessPlate_classIconOffsetY = {
 					order = 56,
 					type = "range",
 					name = "Offset Y",
@@ -2031,10 +2039,10 @@ KP.MainOptionTable = {
 					max = 50,
 					step = 0.1,
 					disabled = function() 
-						return not KP.dbp.specialPlate_showClassIcon or not (KP.dbp.specialPlate_showInPvE or KP.dbp.specialPlate_showInBG or KP.dbp.specialPlate_showInArena)
+						return not KP.dbp.barlessPlate_showClassIcon or not (KP.dbp.barlessPlate_showInPvE or KP.dbp.barlessPlate_showInBG or KP.dbp.barlessPlate_showInArena)
 					end,
 				},
-				specialPlate_classIconSize = {
+				barlessPlate_classIconSize = {
 					order = 57,
 					type = "range",
 					name = "Icon Size",
@@ -2042,26 +2050,26 @@ KP.MainOptionTable = {
 					max = 50,
 					step = 0.1,
 					disabled = function() 
-						return not KP.dbp.specialPlate_showClassIcon or not (KP.dbp.specialPlate_showInPvE or KP.dbp.specialPlate_showInBG or KP.dbp.specialPlate_showInArena)
+						return not KP.dbp.barlessPlate_showClassIcon or not (KP.dbp.barlessPlate_showInPvE or KP.dbp.barlessPlate_showInBG or KP.dbp.barlessPlate_showInArena)
 					end,
 				},
 				lineBreak22 = {order = 58, type = "description", name = ""},
 				lineBreak23 = {order = 59, type = "description", name = ""},
-				specialPlate_BGHiconHeader = {
+				barlessPlate_BGHiconHeader = {
 					order = 60,
 					type = "header",
 					name = "BG Healer Icon",
 				},				
 				lineBreak24 = {order = 61, type = "description", name = ""},
 				lineBreak25 = {order = 62, type = "description", name = ""},
-				specialPlate_BGHiconDesc = {
+				barlessPlate_BGHiconDesc = {
 					order = 63,
 					type = "description",
 					fontSize = "medium",
 					name = function()
 						if not IsAddOnLoaded("BattleGroundHealers") then
 							return "|cff808080This feature is available only when BattleGroundHealers is loaded.|r"
-						elseif not KP.dbp.specialPlate_showInBG then
+						elseif not KP.dbp.barlessPlate_showInBG then
 							return "|cff808080These settings will replace some of BattleGroundHealers’ icon configuration for Barless Plates.|r"
 						else
 							return "These settings will replace some of BattleGroundHealers’ icon configuration for Barless Plates."
@@ -2070,7 +2078,7 @@ KP.MainOptionTable = {
 				},
 				lineBreak26 = {order = 64, type = "description", name = ""},
 				lineBreak27 = {order = 65, type = "description", name = ""},
-				specialPlate_BGHiconAnchor = {
+				barlessPlate_BGHiconAnchor = {
 					order = 66,
 					type = "select", 
 					name = "Anchor",
@@ -2082,16 +2090,16 @@ KP.MainOptionTable = {
 					},
 					set = function(info, val)
 						KP.dbp[info[#info]] = val
-						KP.dbp.specialPlate_BGHiconOffsetX = 0
-						KP.dbp.specialPlate_BGHiconOffsetY = 0
-						KP:UpdateAllSpecialPlates()
+						KP.dbp.barlessPlate_BGHiconOffsetX = 0
+						KP.dbp.barlessPlate_BGHiconOffsetY = 0
+						KP:UpdateAllBarlessPlates()
 						KP:UpdateAllShownPlates()
 					end,
 					disabled = function() 
-						return not (KP.dbp.specialPlate_showInBG and IsAddOnLoaded("BattleGroundHealers"))
+						return not (KP.dbp.barlessPlate_showInBG and IsAddOnLoaded("BattleGroundHealers"))
 					end,
 				},
-				specialPlate_BGHiconOffsetX = {
+				barlessPlate_BGHiconOffsetX = {
 					order = 67,
 					type = "range",
 					name = "Offset X",
@@ -2099,10 +2107,10 @@ KP.MainOptionTable = {
 					max = 50,
 					step = 0.1,
 					disabled = function() 
-						return not (KP.dbp.specialPlate_showInBG and IsAddOnLoaded("BattleGroundHealers"))
+						return not (KP.dbp.barlessPlate_showInBG and IsAddOnLoaded("BattleGroundHealers"))
 					end,
 				},
-				specialPlate_BGHiconOffsetY = {
+				barlessPlate_BGHiconOffsetY = {
 					order = 68,
 					type = "range",
 					name = "Offset Y",
@@ -2110,10 +2118,10 @@ KP.MainOptionTable = {
 					max = 50,
 					step = 0.1,
 					disabled = function() 
-						return not (KP.dbp.specialPlate_showInBG and IsAddOnLoaded("BattleGroundHealers"))
+						return not (KP.dbp.barlessPlate_showInBG and IsAddOnLoaded("BattleGroundHealers"))
 					end,
 				},
-				specialPlate_BGHiconSize = {
+				barlessPlate_BGHiconSize = {
 					order = 69,
 					type = "range",
 					name = "Icon Size",
@@ -2121,7 +2129,7 @@ KP.MainOptionTable = {
 					max = 60,
 					step = 0.1,
 					disabled = function() 
-						return not (KP.dbp.specialPlate_showInBG and IsAddOnLoaded("BattleGroundHealers"))
+						return not (KP.dbp.barlessPlate_showInBG and IsAddOnLoaded("BattleGroundHealers"))
 					end,
 				},
 				lineBreak28 = {order = 70, type = "description", name = ""},

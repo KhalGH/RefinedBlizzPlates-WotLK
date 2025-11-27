@@ -1,11 +1,11 @@
 ## Interface: 30300
 ## Title: KhalPlates
 ## Notes: Lightweight Blizzlike nameplates
-## Version: 1.7.3
+## Version: 1.7.4
 ## Author: Khal
 ## SavedVariables: KhalPlatesDB
 ## X-Repository: https://github.com/KhalGH/KhalPlates-WotLK
-## X-Date: 2025-11-26
+## X-Date: 2025-11-27
 
 Embeds.xml
 Media.lua

@@ -9,7 +9,6 @@ local ipairs, unpack, tonumber, tostring, select, math_exp, math_floor, math_abs
 local NP_WIDTH = 156.65118520899  -- Nameplate original width (don't modify)
 local NP_HEIGHT = 39.162796302247 -- Nameplate original height (don't modify)
 local VirtualPlates = {}          -- Storage table: Virtual nameplate frames
-local RealPlates = {}             -- Storage table: Real nameplate frames
 local PlatesVisible = {}          -- Storage table: currently active nameplates
 local StackablePlates = {}        -- Storage table: Plates filtered for improved stacking
 local ClassByFriendName = {}      -- Storage table: maps friendly player names (party/raid) to their class
@@ -51,6 +50,20 @@ local function ReactionByPlateColor(healthBar)
 end
 
 ------------------------- Customization Functions -------------------------
+local function InitBarTextures(Virtual)
+	Virtual.healthBarBorder:Hide()
+	Virtual.nameText:Hide()
+	Virtual.castBarBorder:SetTexture(ASSETS .. "PlateBorders\\CastBar-Border")
+	if KP.dbp.healthBar_border == "KhalPlates" then
+		Virtual.threatGlow:SetTexture(ASSETS .. "PlateBorders\\HealthBar-ThreatGlow")
+	else
+		Virtual.threatGlow:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Flash")
+	end
+	Virtual.healthBar.barTex:SetDrawLayer("BORDER")
+	Virtual.castBar.barTex:SetTexture(KP.LSM:Fetch("statusbar", KP.dbp.castBar_Tex))
+	Virtual.castBar.barTex:SetDrawLayer("BORDER")
+end
+
 local function SetupHealthBorder(healthBar)
 	if healthBar.healthBarBorder then return end
 	healthBar.healthBarBorder = healthBar:CreateTexture(nil, "ARTWORK")
@@ -159,7 +172,7 @@ local function SetupArenaIDText(healthBar)
 	UpdateArenaIDText(healthBar)
 end
 
-local function UpdateSpecialHealthText(healthText, percent)
+local function UpdateBarlessHealthText(healthText, percent)
     local r, g, b = 1, 1, 0
     if percent <= 15 then
         g = 0
@@ -173,23 +186,23 @@ local function UpdateSpecialHealthText(healthText, percent)
 end
 
 local function UpdateHealthTextValue(healthBar)
-	local Plate = RealPlates[healthBar.parent]
+	local Plate = healthBar.RealPlate
 	local min, max = healthBar:GetMinMaxValues()
 	local val = healthBar:GetValue()
 	if max > 0 then
 		local percent = math_floor((val / max) * 100)
 		if percent < 100 and percent > 0 then
 			healthBar.healthText:SetText(percent .. "%")
-			if Plate.SpecialHealthTextIsShown then
-				UpdateSpecialHealthText(Plate.specialPlate.healthText, percent)
+			if Plate.BarlessHealthTextIsShown then
+				UpdateBarlessHealthText(Plate.barlessPlate.healthText, percent)
 			end
 		else
 			healthBar.healthText:SetText("")
-			if Plate.SpecialHealthTextIsShown then Plate.specialPlate.healthText:SetText("") end
+			if Plate.BarlessHealthTextIsShown then Plate.barlessPlate.healthText:SetText("") end
 		end
 	else
 		healthBar.healthText:SetText("")
-		if Plate.SpecialHealthTextIsShown then Plate.specialPlate.healthText:SetText("") end
+		if Plate.BarlessHealthTextIsShown then Plate.barlessPlate.healthText:SetText("") end
 	end
 end
 
@@ -211,7 +224,6 @@ end
 local function SetupTargetGlow(Virtual)
 	local healthBar = Virtual.healthBar
 	if healthBar.targetGlow then return end
-	local RealPlate = RealPlates[Virtual]
 	healthBar.targetGlow = healthBar:CreateTexture(nil, "OVERLAY")
 	healthBar.targetGlow:Hide()
 	if KP.dbp.healthBar_border == "KhalPlates" then
@@ -261,8 +273,8 @@ local function SetupCastText(Virtual)
 	castBar.castTextDelay = castBar.castTextDelay or CreateFrame("Frame")
 	castBar.castTextDelay:SetScript("OnUpdate", function(self)
 		self:Hide()
-		local Plate = RealPlates[Virtual]
-		if not Plate.specialPlateIsShown and not Plate.totemPlateIsShown then
+		local Plate = Virtual.RealPlate
+		if not Plate.barlessPlateIsShown and not Plate.totemPlateIsShown then
 			local unit = Plate.namePlateUnitToken or Plate.unitToken or (Virtual.isTarget and "target")
 			local spellCasting, spellChanneling, spellName
 			if unit then
@@ -350,7 +362,7 @@ local function SetupCastGlow(Virtual)
 	if KP.dbp.enableCastGlow then
 		local castBar = select(2, Virtual:GetChildren())
 		local castBarBorder = select(3, Virtual:GetRegions())
-		local Plate = RealPlates[Virtual]
+		local Plate = Virtual.RealPlate
 		castBar:HookScript("OnShow", function()
 			local unit = Plate.unitToken
 			if unit and UnitIsUnit(unit.."target", "player") and not UnitIsUnit("target", unit) and castBarBorder:IsShown() then
@@ -466,7 +478,7 @@ local function SetupClassIcon(Virtual)
 	end
 end
 
-local function UpdateCastBorder(Virtual)
+local function SetupCastBorder(Virtual)
 	if KP.dbp.healthBar_border == "KhalPlates" then
 		Virtual.castBarBorder:SetPoint("CENTER", KP.dbp.globalOffsetX, KP.dbp.globalOffsetY -19)
 		Virtual.castBarBorder:SetWidth(145)
@@ -504,113 +516,116 @@ local function SetupTotemPlate(Plate)
 	SetupTotemIcon(Plate)
 end
 
-local function UpdateSpecialPlate(Plate)
-	if not Plate.specialPlate then return end
+local function UpdateBarlessPlate(Plate)
+	if not Plate.barlessPlate then return end
 	if Plate.classKey then
-		Plate.specialPlate.nameText:SetFont(KP.LSM:Fetch("font", KP.dbp.specialPlate_textFont), KP.dbp.specialPlate_textSize, KP.dbp.specialPlate_textOutline)
-		Plate.specialPlate.nameText:SetPoint("TOP", 0, KP.dbp.specialPlate_offset)
-		Plate.specialPlate.healthText:SetFont(KP.LSM:Fetch("font", KP.dbp.specialPlate_textFont), KP.dbp.specialPlate_healthTextSize, KP.dbp.specialPlate_textOutline)
-		Plate.specialPlate.classIcon:SetSize(KP.dbp.specialPlate_classIconSize, KP.dbp.specialPlate_classIconSize)
-		Plate.specialPlate.classIcon:ClearAllPoints()
-		if KP.dbp.specialPlate_classIconAnchor == "Left" then
-			Plate.specialPlate.classIcon:SetPoint("RIGHT", Plate.specialPlate.nameText, "LEFT", KP.dbp.specialPlate_classIconOffsetX, KP.dbp.specialPlate_classIconOffsetY)
-		elseif KP.dbp.specialPlate_classIconAnchor == "Right" then
-			Plate.specialPlate.classIcon:SetPoint("LEFT", Plate.specialPlate.nameText, "RIGHT", KP.dbp.specialPlate_classIconOffsetX, KP.dbp.specialPlate_classIconOffsetY)
-		elseif KP.dbp.specialPlate_classIconAnchor == "Bottom" then
-			Plate.specialPlate.classIcon:SetPoint("TOP", Plate.specialPlate.nameText, "BOTTOM", KP.dbp.specialPlate_classIconOffsetX, KP.dbp.specialPlate_classIconOffsetY)
+		Plate.barlessPlate.nameText:SetFont(KP.LSM:Fetch("font", KP.dbp.barlessPlate_textFont), KP.dbp.barlessPlate_textSize, KP.dbp.barlessPlate_textOutline)
+		Plate.barlessPlate.nameText:SetPoint("TOP", 0, KP.dbp.barlessPlate_offset)
+		Plate.barlessPlate.healthText:SetFont(KP.LSM:Fetch("font", KP.dbp.barlessPlate_textFont), KP.dbp.barlessPlate_healthTextSize, KP.dbp.barlessPlate_textOutline)
+		Plate.barlessPlate.classIcon:SetSize(KP.dbp.barlessPlate_classIconSize, KP.dbp.barlessPlate_classIconSize)
+		Plate.barlessPlate.classIcon:ClearAllPoints()
+		if KP.dbp.barlessPlate_classIconAnchor == "Left" then
+			Plate.barlessPlate.classIcon:SetPoint("RIGHT", Plate.barlessPlate.nameText, "LEFT", KP.dbp.barlessPlate_classIconOffsetX, KP.dbp.barlessPlate_classIconOffsetY)
+		elseif KP.dbp.barlessPlate_classIconAnchor == "Right" then
+			Plate.barlessPlate.classIcon:SetPoint("LEFT", Plate.barlessPlate.nameText, "RIGHT", KP.dbp.barlessPlate_classIconOffsetX, KP.dbp.barlessPlate_classIconOffsetY)
+		elseif KP.dbp.barlessPlate_classIconAnchor == "Bottom" then
+			Plate.barlessPlate.classIcon:SetPoint("TOP", Plate.barlessPlate.nameText, "BOTTOM", KP.dbp.barlessPlate_classIconOffsetX, KP.dbp.barlessPlate_classIconOffsetY)
 		else
-			Plate.specialPlate.classIcon:SetPoint("BOTTOM", Plate.specialPlate.nameText, "TOP", KP.dbp.specialPlate_classIconOffsetX, KP.dbp.specialPlate_classIconOffsetY)
+			Plate.barlessPlate.classIcon:SetPoint("BOTTOM", Plate.barlessPlate.nameText, "TOP", KP.dbp.barlessPlate_classIconOffsetX, KP.dbp.barlessPlate_classIconOffsetY)
 		end
 	else
-		Plate.specialPlate.nameText:SetFont(KP.LSM:Fetch("font", KP.dbp.specialPlate_NPCtextFont), KP.dbp.specialPlate_NPCtextSize, KP.dbp.specialPlate_NPCtextOutline)
-		Plate.specialPlate.nameText:SetPoint("TOP", 0, KP.dbp.specialPlate_NPCoffset)
-		Plate.specialPlate.healthText:SetFont(KP.LSM:Fetch("font", KP.dbp.specialPlate_NPCtextFont), KP.dbp.specialPlate_healthTextSize, KP.dbp.specialPlate_NPCtextOutline)
+		Plate.barlessPlate.nameText:SetFont(KP.LSM:Fetch("font", KP.dbp.barlessPlate_NPCtextFont), KP.dbp.barlessPlate_NPCtextSize, KP.dbp.barlessPlate_NPCtextOutline)
+		Plate.barlessPlate.nameText:SetPoint("TOP", 0, KP.dbp.barlessPlate_NPCoffset)
+		Plate.barlessPlate.healthText:SetFont(KP.LSM:Fetch("font", KP.dbp.barlessPlate_NPCtextFont), KP.dbp.barlessPlate_healthTextSize, KP.dbp.barlessPlate_NPCtextOutline)
 	end
-	Plate.specialPlate.healthText:ClearAllPoints()
-	if KP.dbp.specialPlate_healthTextAnchor == "Left" then
-		Plate.specialPlate.healthText:SetPoint("RIGHT", Plate.specialPlate.nameText, "LEFT", KP.dbp.specialPlate_healthTextOffsetX, KP.dbp.specialPlate_healthTextOffsetY)
-	elseif KP.dbp.specialPlate_healthTextAnchor == "Right" then
-		Plate.specialPlate.healthText:SetPoint("LEFT", Plate.specialPlate.nameText, "RIGHT", KP.dbp.specialPlate_healthTextOffsetX, KP.dbp.specialPlate_healthTextOffsetY)
-	elseif KP.dbp.specialPlate_healthTextAnchor == "Bottom" then
-		Plate.specialPlate.healthText:SetPoint("TOP", Plate.specialPlate.nameText, "BOTTOM", KP.dbp.specialPlate_healthTextOffsetX, KP.dbp.specialPlate_healthTextOffsetY)
+	Plate.barlessPlate.healthText:ClearAllPoints()
+	if KP.dbp.barlessPlate_healthTextAnchor == "Left" then
+		Plate.barlessPlate.healthText:SetPoint("RIGHT", Plate.barlessPlate.nameText, "LEFT", KP.dbp.barlessPlate_healthTextOffsetX, KP.dbp.barlessPlate_healthTextOffsetY)
+	elseif KP.dbp.barlessPlate_healthTextAnchor == "Right" then
+		Plate.barlessPlate.healthText:SetPoint("LEFT", Plate.barlessPlate.nameText, "RIGHT", KP.dbp.barlessPlate_healthTextOffsetX, KP.dbp.barlessPlate_healthTextOffsetY)
+	elseif KP.dbp.barlessPlate_healthTextAnchor == "Bottom" then
+		Plate.barlessPlate.healthText:SetPoint("TOP", Plate.barlessPlate.nameText, "BOTTOM", KP.dbp.barlessPlate_healthTextOffsetX, KP.dbp.barlessPlate_healthTextOffsetY)
 	else
-		Plate.specialPlate.healthText:SetPoint("BOTTOM", Plate.specialPlate.nameText, "TOP", KP.dbp.specialPlate_healthTextOffsetX, KP.dbp.specialPlate_healthTextOffsetY)
+		Plate.barlessPlate.healthText:SetPoint("BOTTOM", Plate.barlessPlate.nameText, "TOP", KP.dbp.barlessPlate_healthTextOffsetX, KP.dbp.barlessPlate_healthTextOffsetY)
 	end	
-	Plate.specialPlate.raidTargetIcon:SetSize(KP.dbp.specialPlate_raidTargetIconSize, KP.dbp.specialPlate_raidTargetIconSize)
-	Plate.specialPlate.raidTargetIcon:ClearAllPoints()
-	if KP.dbp.specialPlate_raidTargetIconAnchor == "Left" then
-		Plate.specialPlate.raidTargetIcon:SetPoint("RIGHT", Plate.specialPlate.nameText, "LEFT", KP.dbp.specialPlate_raidTargetIconOffsetX, KP.dbp.specialPlate_raidTargetIconOffsetY)
-	elseif KP.dbp.specialPlate_raidTargetIconAnchor == "Right" then
-		Plate.specialPlate.raidTargetIcon:SetPoint("LEFT", Plate.specialPlate.nameText, "RIGHT", KP.dbp.specialPlate_raidTargetIconOffsetX, KP.dbp.specialPlate_raidTargetIconOffsetY)
-	elseif KP.dbp.specialPlate_raidTargetIconAnchor == "Bottom" then
-		Plate.specialPlate.raidTargetIcon:SetPoint("TOP", Plate.specialPlate.nameText, "BOTTOM", KP.dbp.specialPlate_raidTargetIconOffsetX, KP.dbp.specialPlate_raidTargetIconOffsetY)
+	Plate.barlessPlate.raidTargetIcon:SetSize(KP.dbp.barlessPlate_raidTargetIconSize, KP.dbp.barlessPlate_raidTargetIconSize)
+	Plate.barlessPlate.raidTargetIcon:ClearAllPoints()
+	if KP.dbp.barlessPlate_raidTargetIconAnchor == "Left" then
+		Plate.barlessPlate.raidTargetIcon:SetPoint("RIGHT", Plate.barlessPlate.nameText, "LEFT", KP.dbp.barlessPlate_raidTargetIconOffsetX, KP.dbp.barlessPlate_raidTargetIconOffsetY)
+	elseif KP.dbp.barlessPlate_raidTargetIconAnchor == "Right" then
+		Plate.barlessPlate.raidTargetIcon:SetPoint("LEFT", Plate.barlessPlate.nameText, "RIGHT", KP.dbp.barlessPlate_raidTargetIconOffsetX, KP.dbp.barlessPlate_raidTargetIconOffsetY)
+	elseif KP.dbp.barlessPlate_raidTargetIconAnchor == "Bottom" then
+		Plate.barlessPlate.raidTargetIcon:SetPoint("TOP", Plate.barlessPlate.nameText, "BOTTOM", KP.dbp.barlessPlate_raidTargetIconOffsetX, KP.dbp.barlessPlate_raidTargetIconOffsetY)
 	else
-		Plate.specialPlate.raidTargetIcon:SetPoint("BOTTOM", Plate.specialPlate.nameText, "TOP", KP.dbp.specialPlate_raidTargetIconOffsetX, KP.dbp.specialPlate_raidTargetIconOffsetY)
+		Plate.barlessPlate.raidTargetIcon:SetPoint("BOTTOM", Plate.barlessPlate.nameText, "TOP", KP.dbp.barlessPlate_raidTargetIconOffsetX, KP.dbp.barlessPlate_raidTargetIconOffsetY)
 	end
 end
 
-local function SetupSpecialPlate(Plate)
-	if Plate.specialPlate then return end
-	Plate.specialPlate = CreateFrame("Frame", nil, WorldFrame)
-	Plate.specialPlate:SetSize(1, 1)
-	Plate.specialPlate:SetPoint("TOP", Plate)
-	Plate.specialPlate:Hide()
-	Plate.specialPlate.nameText = Plate.specialPlate:CreateFontString(nil, "OVERLAY")
-	Plate.specialPlate.nameText:SetShadowOffset(0.5, -0.5)
-	Plate.specialPlate.healthText = Plate.specialPlate:CreateFontString(nil, "OVERLAY")
-	Plate.specialPlate.healthText:SetShadowOffset(0.5, -0.5)
-	Plate.specialPlate.healthText:Hide()
-	Plate.specialPlate.raidTargetIcon = Plate.specialPlate:CreateTexture(nil, "BORDER")
-	Plate.specialPlate.raidTargetIcon:SetTexture("Interface\\TargetingFrame\\UI-RaidTargetingIcons")
-	Plate.specialPlate.raidTargetIcon:Hide()
-	Plate.specialPlate.classIcon = Plate.specialPlate:CreateTexture(nil, "ARTWORK")
-	Plate.specialPlate.classIcon:Hide()
-	UpdateSpecialPlate(Plate)
+local function SetupBarlessPlate(Plate)
+	if Plate.barlessPlate then return end
+	Plate.barlessPlate = CreateFrame("Frame", nil, WorldFrame)
+	Plate.barlessPlate:SetSize(1, 1)
+	Plate.barlessPlate:SetPoint("TOP", Plate)
+	Plate.barlessPlate:Hide()
+	Plate.barlessPlate.nameText = Plate.barlessPlate:CreateFontString(nil, "OVERLAY")
+	Plate.barlessPlate.nameText:SetShadowOffset(0.5, -0.5)
+	Plate.barlessPlate.healthText = Plate.barlessPlate:CreateFontString(nil, "OVERLAY")
+	Plate.barlessPlate.healthText:SetShadowOffset(0.5, -0.5)
+	Plate.barlessPlate.healthText:Hide()
+	Plate.barlessPlate.raidTargetIcon = Plate.barlessPlate:CreateTexture(nil, "BORDER")
+	Plate.barlessPlate.raidTargetIcon:SetTexture("Interface\\TargetingFrame\\UI-RaidTargetingIcons")
+	Plate.barlessPlate.raidTargetIcon:Hide()
+	Plate.barlessPlate.classIcon = Plate.barlessPlate:CreateTexture(nil, "ARTWORK")
+	Plate.barlessPlate.classIcon:Hide()
+	UpdateBarlessPlate(Plate)
 end
 
-local function CheckSpecialPlate(Plate)
-	local Virtual = VirtualPlates[Plate]
-	if ((KP.inBG and KP.dbp.specialPlate_showInBG) 
-	or (KP.inArena and KP.dbp.specialPlate_showInArena) 
-	or (KP.inPvEInstance and KP.dbp.specialPlate_showInPvE))
-	and not Virtual.isTarget then
-		if not Plate.specialPlate then
-			SetupSpecialPlate(Plate)
+local function CheckBarlessPlate(Plate)
+	if Plate.isFriendly and ((KP.inBG and KP.dbp.barlessPlate_showInBG)	or (KP.inArena and KP.dbp.barlessPlate_showInArena) or (KP.inPvEInstance and KP.dbp.barlessPlate_showInPvE)) then
+		if not Plate.barlessPlate then
+			SetupBarlessPlate(Plate)
 		end
-		local specialPlate = Plate.specialPlate
-		local classColor = Plate.classColor
-		local specialNameText = specialPlate.nameText
+		return true
+	end
+end
+
+local function BarlessPlateHandler(Plate)
+	local Virtual = Plate.VirtualPlate
+	local barlessPlate = Plate.barlessPlate
+	if not Virtual.isTarget then
+		local barlessNameText = barlessPlate.nameText
 		if Plate.classKey then
-			if classColor and KP.dbp.specialPlate_classColors then
-				specialNameText:SetTextColor(classColor.r, classColor.g, classColor.b)
+			local classColor = Plate.classColor
+			if classColor and KP.dbp.barlessPlate_classColors then
+				barlessNameText:SetTextColor(classColor.r, classColor.g, classColor.b)
 			else
-				specialNameText:SetTextColor(unpack(KP.dbp.specialPlate_textColor))
+				barlessNameText:SetTextColor(unpack(KP.dbp.barlessPlate_textColor))
 			end
 		else
-			specialNameText:SetTextColor(unpack(KP.dbp.specialPlate_NPCtextColor))
+			barlessNameText:SetTextColor(unpack(KP.dbp.barlessPlate_NPCtextColor))
 		end
-		specialNameText:SetText(Virtual.nameString)
+		barlessNameText:SetText(Virtual.nameString)
 		local healthBarHighlight = Virtual.healthBarHighlight
-		healthBarHighlight:SetTexture(ASSETS .. "PlateBorders\\SpecialPlate-MouseoverGlow")
+		healthBarHighlight:SetTexture(ASSETS .. "PlateBorders\\BarlessPlate-MouseoverGlow")
 		healthBarHighlight:ClearAllPoints()
-		healthBarHighlight:SetPoint("CENTER", specialNameText, 0, -1.3)
-		healthBarHighlight:SetSize(specialNameText:GetWidth() + 30, specialNameText:GetHeight() + 20)
-		if (Plate.classKey and KP.dbp.specialPlate_showHealthText) or (not Plate.classKey and KP.dbp.specialPlate_showNPCHealthText) then
-			specialPlate.healthText:Show()
-			Plate.SpecialHealthTextIsShown = true
+		healthBarHighlight:SetPoint("CENTER", barlessNameText, 0, -1.3)
+		healthBarHighlight:SetSize(barlessNameText:GetWidth() + 30, barlessNameText:GetHeight() + 20)
+		if (Plate.classKey and KP.dbp.barlessPlate_showHealthText) or (not Plate.classKey and KP.dbp.barlessPlate_showNPCHealthText) then
+			barlessPlate.healthText:Show()
+			Plate.BarlessHealthTextIsShown = true
 			UpdateHealthTextValue(Virtual.healthBar)
 		end
-		if Plate.hasRaidTarget and KP.dbp.specialPlate_showRaidTarget then
-			specialPlate.raidTargetIcon:SetTexCoord(Virtual.raidTargetIcon:GetTexCoord())
-			specialPlate.raidTargetIcon:Show()
+		if Plate.hasRaidIcon and KP.dbp.barlessPlate_showRaidTarget then
+			barlessPlate.raidTargetIcon:SetTexCoord(Virtual.raidTargetIcon:GetTexCoord())
+			barlessPlate.raidTargetIcon:Show()
 		end
-		if Plate.classKey and KP.dbp.specialPlate_showClassIcon then
-			specialPlate.classIcon:SetTexture(ASSETS .. "Classes\\" .. (ClassByFriendName[Virtual.nameString] or ""))
-			specialPlate.classIcon:Show()
+		if Plate.classKey and KP.dbp.barlessPlate_showClassIcon then
+			barlessPlate.classIcon:SetTexture(ASSETS .. "Classes\\" .. (ClassByFriendName[Virtual.nameString] or ""))
+			barlessPlate.classIcon:Show()
 		end
-		UpdateSpecialPlate(Plate)
-		specialPlate:Show()
-		Plate.specialPlateIsShown = true
+		UpdateBarlessPlate(Plate)
+		barlessPlate:Show()
+		Plate.barlessPlateIsShown = true
 		Virtual.healthBar:Hide()
 		Virtual.castBar:Hide()
 		Virtual.castBarBorder:Hide()
@@ -621,24 +636,24 @@ local function CheckSpecialPlate(Plate)
 		Virtual.raidTargetIcon:Hide()
 		Virtual.eliteIcon:Hide()
 		if Virtual.BGHframe then
-			if KP.dbp.specialPlate_BGHiconAnchor == "Left" then
-				Virtual.BGHframe:ModifyIcon(true, specialPlate, KP.dbp.specialPlate_BGHiconSize, "RIGHT", specialNameText, "LEFT", KP.dbp.specialPlate_BGHiconOffsetX, KP.dbp.specialPlate_BGHiconOffsetY)
-			elseif KP.dbp.specialPlate_BGHiconAnchor == "Right" then
-				Virtual.BGHframe:ModifyIcon(true, specialPlate, KP.dbp.specialPlate_BGHiconSize, "LEFT", specialNameText, "RIGHT", KP.dbp.specialPlate_BGHiconOffsetX, KP.dbp.specialPlate_BGHiconOffsetY)
-			elseif KP.dbp.specialPlate_BGHiconAnchor == "Bottom" then
-				Virtual.BGHframe:ModifyIcon(true, specialPlate, KP.dbp.specialPlate_BGHiconSize, "TOP", specialNameText, "BOTTOM", KP.dbp.specialPlate_BGHiconOffsetX, KP.dbp.specialPlate_BGHiconOffsetY)
+			if KP.dbp.barlessPlate_BGHiconAnchor == "Left" then
+				Virtual.BGHframe:ModifyIcon(true, barlessPlate, KP.dbp.barlessPlate_BGHiconSize, "RIGHT", barlessNameText, "LEFT", KP.dbp.barlessPlate_BGHiconOffsetX, KP.dbp.barlessPlate_BGHiconOffsetY)
+			elseif KP.dbp.barlessPlate_BGHiconAnchor == "Right" then
+				Virtual.BGHframe:ModifyIcon(true, barlessPlate, KP.dbp.barlessPlate_BGHiconSize, "LEFT", barlessNameText, "RIGHT", KP.dbp.barlessPlate_BGHiconOffsetX, KP.dbp.barlessPlate_BGHiconOffsetY)
+			elseif KP.dbp.barlessPlate_BGHiconAnchor == "Bottom" then
+				Virtual.BGHframe:ModifyIcon(true, barlessPlate, KP.dbp.barlessPlate_BGHiconSize, "TOP", barlessNameText, "BOTTOM", KP.dbp.barlessPlate_BGHiconOffsetX, KP.dbp.barlessPlate_BGHiconOffsetY)
 			else
-				Virtual.BGHframe:ModifyIcon(true, specialPlate, KP.dbp.specialPlate_BGHiconSize, "BOTTOM", specialNameText, "TOP", KP.dbp.specialPlate_BGHiconOffsetX, KP.dbp.specialPlate_BGHiconOffsetY)
+				Virtual.BGHframe:ModifyIcon(true, barlessPlate, KP.dbp.barlessPlate_BGHiconSize, "BOTTOM", barlessNameText, "TOP", KP.dbp.barlessPlate_BGHiconOffsetX, KP.dbp.barlessPlate_BGHiconOffsetY)
 			end
 		elseif Plate.firstProcessing then
-			if KP.dbp.specialPlate_BGHiconAnchor == "Left" then
-				Virtual.shouldModifyBGH = {true, specialPlate, KP.dbp.specialPlate_BGHiconSize, "RIGHT", specialNameText, "LEFT", KP.dbp.specialPlate_BGHiconOffsetX, KP.dbp.specialPlate_BGHiconOffsetY}
-			elseif KP.dbp.specialPlate_BGHiconAnchor == "Right" then
-				Virtual.shouldModifyBGH = {true, specialPlate, KP.dbp.specialPlate_BGHiconSize, "LEFT", specialNameText, "RIGHT", KP.dbp.specialPlate_BGHiconOffsetX, KP.dbp.specialPlate_BGHiconOffsetY}
-			elseif KP.dbp.specialPlate_BGHiconAnchor == "Bottom" then
-				Virtual.shouldModifyBGH = {true, specialPlate, KP.dbp.specialPlate_BGHiconSize, "TOP", specialNameText, "BOTTOM", KP.dbp.specialPlate_BGHiconOffsetX, KP.dbp.specialPlate_BGHiconOffsetY}
+			if KP.dbp.barlessPlate_BGHiconAnchor == "Left" then
+				Virtual.shouldModifyBGH = {true, barlessPlate, KP.dbp.barlessPlate_BGHiconSize, "RIGHT", barlessNameText, "LEFT", KP.dbp.barlessPlate_BGHiconOffsetX, KP.dbp.barlessPlate_BGHiconOffsetY}
+			elseif KP.dbp.barlessPlate_BGHiconAnchor == "Right" then
+				Virtual.shouldModifyBGH = {true, barlessPlate, KP.dbp.barlessPlate_BGHiconSize, "LEFT", barlessNameText, "RIGHT", KP.dbp.barlessPlate_BGHiconOffsetX, KP.dbp.barlessPlate_BGHiconOffsetY}
+			elseif KP.dbp.barlessPlate_BGHiconAnchor == "Bottom" then
+				Virtual.shouldModifyBGH = {true, barlessPlate, KP.dbp.barlessPlate_BGHiconSize, "TOP", barlessNameText, "BOTTOM", KP.dbp.barlessPlate_BGHiconOffsetX, KP.dbp.barlessPlate_BGHiconOffsetY}
 			else
-				Virtual.shouldModifyBGH = {true, specialPlate, KP.dbp.specialPlate_BGHiconSize, "BOTTOM", specialNameText, "TOP", KP.dbp.specialPlate_BGHiconOffsetX, KP.dbp.specialPlate_BGHiconOffsetY}
+				Virtual.shouldModifyBGH = {true, barlessPlate, KP.dbp.barlessPlate_BGHiconSize, "BOTTOM", barlessNameText, "TOP", KP.dbp.barlessPlate_BGHiconOffsetX, KP.dbp.barlessPlate_BGHiconOffsetY}
 			end
 		end
 	else
@@ -649,21 +664,18 @@ local function CheckSpecialPlate(Plate)
 			Virtual.levelText:Show()
 		end
 		Virtual.bossIcon:Hide()
-		if Plate.hasRaidTarget then
+		if Plate.hasRaidIcon then
 			Virtual.raidTargetIcon:Show()
 		end
 		if Plate.hasEliteIcon then
 			Virtual.eliteIcon:Show()
 		end
-		local specialPlate = Plate.specialPlate
-		if specialPlate then
-			specialPlate:Hide()
-			specialPlate.healthText:Hide()
-			specialPlate.raidTargetIcon:Hide()
-			specialPlate.classIcon:Hide()
-		end
-		Plate.specialPlateIsShown = nil
-		Plate.SpecialHealthTextIsShown = nil
+		barlessPlate:Hide()
+		barlessPlate.healthText:Hide()
+		barlessPlate.raidTargetIcon:Hide()
+		barlessPlate.classIcon:Hide()
+		Plate.barlessPlateIsShown = nil
+		Plate.BarlessHealthTextIsShown = nil
 		if Virtual.BGHframe then
 			Virtual.BGHframe:ModifyIcon()
 		end
@@ -672,7 +684,7 @@ end
 
 local function SetupTargetHandler(Plate)
 	if Plate.targetHandler then return end
-	local Virtual = VirtualPlates[Plate]
+	local Virtual = Plate.VirtualPlate
 	Plate.targetHandler = CreateFrame("Frame")
 	Plate.targetHandler:SetScript("OnUpdate", function(self)
 		self:Hide()
@@ -688,8 +700,8 @@ local function SetupTargetHandler(Plate)
 			if Plate.totemPlate then Plate.totemPlate.targetGlow:Hide() end
 		end
 		if Virtual.isShown then
-			if Plate.isFriendly and KP.inInstance and not Plate.totemPlateIsShown then	
-				CheckSpecialPlate(Plate)
+			if Plate.isBarlessPlate then	
+				BarlessPlateHandler(Plate)
 			end
 			if not Plate.isFriendly and not KP.dbp.stackingEnabled then
 				if (Virtual.isTarget and KP.dbp.clampTarget) or (Plate.isBoss and KP.dbp.clampBoss and KP.inPvEInstance) then
@@ -710,22 +722,14 @@ local function UpdateTarget(Plate)
 end
 
 local function SetupKhalPlate(Virtual)
-	local threatGlow, healthBarBorder, castBarBorder, shieldCastBarBorder, spellIcon, healthBarHighlight, nameText, levelText, bossIcon, raidTargetIcon, eliteIcon = Virtual:GetRegions()
-	Virtual.threatGlow = threatGlow
-	Virtual.castBarBorder = castBarBorder
-	Virtual.shieldCastBarBorder = shieldCastBarBorder
-	Virtual.spellIcon = spellIcon
-	Virtual.healthBarHighlight = healthBarHighlight
-	Virtual.nameText = nameText
-	Virtual.levelText = levelText
-	Virtual.bossIcon = bossIcon
-	Virtual.raidTargetIcon = raidTargetIcon
-	Virtual.eliteIcon = eliteIcon
+	local Plate = Virtual.RealPlate
+	Plate.firstProcessing = true
+	Virtual.threatGlow, Virtual.healthBarBorder, Virtual.castBarBorder, Virtual.shieldCastBarBorder, Virtual.spellIcon, Virtual.healthBarHighlight, Virtual.nameText, Virtual.levelText, Virtual.bossIcon, Virtual.raidTargetIcon, Virtual.eliteIcon = Virtual:GetRegions()
 	Virtual.healthBar, Virtual.castBar = Virtual:GetChildren()
-	Virtual.healthBar.parent = Virtual
-	Virtual.castBar.parent = Virtual
 	Virtual.healthBar.barTex = Virtual.healthBar:GetRegions()
 	Virtual.castBar.barTex = Virtual.castBar:GetRegions()
+	Virtual.healthBar.RealPlate = Plate
+	InitBarTextures(Virtual)
 	SetupHealthBorder(Virtual.healthBar)
 	SetupNameText(Virtual.healthBar)
 	SetupLevelText(Virtual)
@@ -741,27 +745,14 @@ local function SetupKhalPlate(Virtual)
 	SetupRaidTargetIcon(Virtual)
 	SetupEliteIcon(Virtual)
 	SetupClassIcon(Virtual)
-	UpdateCastBorder(Virtual)
-	healthBarBorder:Hide()
-	nameText:Hide()
-	castBarBorder:SetTexture(ASSETS .. "PlateBorders\\CastBar-Border")
-	if KP.dbp.healthBar_border == "KhalPlates" then
-		threatGlow:SetTexture(ASSETS .. "PlateBorders\\HealthBar-ThreatGlow")
-	else
-		threatGlow:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Flash")
-	end
-	Virtual.healthBar.barTex:SetDrawLayer("BORDER")
-	if ClassByPlateColor(Virtual.healthBar) then
+	SetupCastBorder(Virtual)
+	SetupTargetHandler(Plate)
+	--[[ if ClassByPlateColor(Virtual.healthBar) then
 		Virtual.healthBar.barTex:SetTexture(KP.LSM:Fetch("statusbar", KP.dbp.healthBar_playerTex))
 	else
 		Virtual.healthBar.barTex:SetTexture(KP.LSM:Fetch("statusbar", KP.dbp.healthBar_npcTex))
 	end
-	Virtual.castBar.barTex:SetDrawLayer("BORDER")
-	Virtual.castBar.barTex:SetTexture(KP.LSM:Fetch("statusbar", KP.dbp.castBar_Tex))
-	Virtual.healthBar.nameText:SetText(nameText:GetText())
-	local Plate = RealPlates[Virtual]
-	Plate.firstProcessing = true
-	SetupTargetHandler(Plate)
+	Virtual.healthBar.nameText:SetText(Virtual.nameText:GetText()) ]]
 end
 
 local firstChecked
@@ -795,7 +786,7 @@ delayedSUIV:SetScript("OnUpdate", function(self, elapsed)
     if self.timeLeft <= 0 then
         self:Hide()
 		SetUIVisibility(true)
-        KP:UpdateAllShownPlates()
+        KP:UpdateAllShownPlates(false, true)
     end
 end)
 local function DelayedSetUIVisibility()
@@ -890,8 +881,10 @@ SecureHandlerWrapScript(ResizeHitBox, "OnShow", ResizeHitBox,
 	local WorldFrame = self:GetFrameRef("WorldFrame")
 	local normalWidth = self:GetAttribute("normalWidth")
 	local normalHeight = self:GetAttribute("normalHeight")
-	local reducedWidth = self:GetAttribute("reducedWidth")
-	local reducedHeight = self:GetAttribute("reducedHeight")
+	local totemWidth = self:GetAttribute("totemWidth")
+	local totemHeight = self:GetAttribute("totemHeight")
+	local barlessWidth = self:GetAttribute("barlessWidth")
+	local barlessHeight = self:GetAttribute("barlessHeight")
 	Plates = Plates or table.new()
 	for plate, shown in pairs(Plates) do
 		if shown and not plate:IsShown() then
@@ -908,8 +901,11 @@ SecureHandlerWrapScript(ResizeHitBox, "OnShow", ResizeHitBox,
 				nameplate:SetWidth(0.01)
 				nameplate:SetHeight(0.01)
 			elseif WorldFrame:GetID() == 2 then
-				nameplate:SetWidth(reducedWidth)
-				nameplate:SetHeight(reducedHeight)				
+				nameplate:SetWidth(totemWidth)
+				nameplate:SetHeight(totemHeight)
+			elseif WorldFrame:GetID() == 3 then
+				nameplate:SetWidth(barlessWidth)
+				nameplate:SetHeight(barlessHeight)				
 			end
 		end
 	end
@@ -925,7 +921,7 @@ local SetWorldFrameID0 = CreateFrame("Frame", "SetWorldFrameID0SecureHandler", U
 SetWorldFrameID0:SetFrameRef("WorldFrame", WorldFrame)
 SecureHandlerWrapScript(SetWorldFrameID0, "OnShow", SetWorldFrameID0, [[self:GetFrameRef("WorldFrame"):SetID(0)]])
 TriggerFrames["SetWorldFrameID0SecureHandler"] = SetWorldFrameID0
-local function NormalizePlateHitbox()
+local function SetNormalHitbox()
 	if WorldFrame:GetID() ~= 0 then
 		ToggleFrame(SetWorldFrameID0)
 		ToggleFrame(SetWorldFrameID0)
@@ -935,7 +931,7 @@ local SetWorldFrameID1 = CreateFrame("Frame", "SetWorldFrameID1SecureHandler", U
 SetWorldFrameID1:SetFrameRef("WorldFrame", WorldFrame)
 SecureHandlerWrapScript(SetWorldFrameID1, "OnShow", SetWorldFrameID1, [[self:GetFrameRef("WorldFrame"):SetID(1)]])
 TriggerFrames["SetWorldFrameID1SecureHandler"] = SetWorldFrameID1
-local function NullifyPlateHitbox()
+local function SetNullHitbox()
 	if WorldFrame:GetID() ~= 1 then
 		ToggleFrame(SetWorldFrameID1)
 		ToggleFrame(SetWorldFrameID1)
@@ -945,10 +941,20 @@ local SetWorldFrameID2 = CreateFrame("Frame", "SetWorldFrameID2SecureHandler", U
 SetWorldFrameID2:SetFrameRef("WorldFrame", WorldFrame)
 SecureHandlerWrapScript(SetWorldFrameID2, "OnShow", SetWorldFrameID2, [[self:GetFrameRef("WorldFrame"):SetID(2)]])
 TriggerFrames["SetWorldFrameID2SecureHandler"] = SetWorldFrameID2
-local function ReducePlateHitbox()
+local function SetTotemHitbox()
 	if WorldFrame:GetID() ~= 2 then
 		ToggleFrame(SetWorldFrameID2)
 		ToggleFrame(SetWorldFrameID2)
+	end
+end
+local SetWorldFrameID3 = CreateFrame("Frame", "SetWorldFrameID3SecureHandler", UIParent, "SecureHandlerShowHideTemplate") 
+SetWorldFrameID3:SetFrameRef("WorldFrame", WorldFrame)
+SecureHandlerWrapScript(SetWorldFrameID3, "OnShow", SetWorldFrameID3, [[self:GetFrameRef("WorldFrame"):SetID(3)]])
+TriggerFrames["SetWorldFrameID3SecureHandler"] = SetWorldFrameID3
+local function SetBarlessHitbox()
+	if WorldFrame:GetID() ~= 3 then
+		ToggleFrame(SetWorldFrameID3)
+		ToggleFrame(SetWorldFrameID3)
 	end
 end
 local SetWorldFrameID5 = CreateFrame("Frame", "SetWorldFrameID5SecureHandler", UIParent, "SecureHandlerShowHideTemplate") 
@@ -980,16 +986,32 @@ local function HitboxAttributeUpdater()
 		KP.ResizeHitBox:SetAttribute("normalWidth", NP_WIDTH * KP.dbp.globalScale)
 		KP.ResizeHitBox:SetAttribute("normalHeight", NP_HEIGHT * KP.dbp.globalScale)
 	end
-	KP.ResizeHitBox:SetAttribute("reducedWidth", KP.dbp.totemSize * 1.2)
-	KP.ResizeHitBox:SetAttribute("reducedHeight", KP.dbp.totemSize * 1.2)
+	KP.ResizeHitBox:SetAttribute("totemWidth", KP.dbp.totemSize * 1.2)
+	KP.ResizeHitBox:SetAttribute("totemHeight", KP.dbp.totemSize * 1.2)
+	KP.ResizeHitBox:SetAttribute("barlessWidth", 2*KP.dbp.barlessPlate_textSize + 50)
+	KP.ResizeHitBox:SetAttribute("barlessHeight", KP.dbp.barlessPlate_textSize + 5)
+end
+
+local function UpdateHitboxInCombat(Plate)
+	if not Plate.VirtualPlate.isShown or (Plate.isFriendly and KP.dbp.friendlyClickthrough and KP.inInstance) then
+		SetNullHitbox()
+	elseif Plate.totemPlateIsShown then
+		SetTotemHitbox()
+	elseif Plate.isBarlessPlate then
+		SetBarlessHitbox()
+	else
+		SetNormalHitbox()
+	end
+	ExecuteHitboxSecureScript()
 end
 
 local function UpdateHitboxOutOfCombat(Plate)
-	local Virtual = VirtualPlates[Plate]
-	if not Virtual.isShown or (Plate.isFriendly and KP.dbp.friendlyClickthrough and KP.inInstance) then
+	if not Plate.VirtualPlate.isShown or (Plate.isFriendly and KP.dbp.friendlyClickthrough and KP.inInstance) then
 		Plate:SetSize(0.01, 0.01)
 	elseif Plate.totemPlateIsShown then
 		Plate:SetSize(KP.dbp.totemSize * 1.2, KP.dbp.totemSize * 1.2)
+	elseif Plate.isBarlessPlate then
+		Plate:SetSize(2*KP.dbp.barlessPlate_textSize + 50, KP.dbp.barlessPlate_textSize + 5)
 	else
 		if KP.dbp.healthBar_border == "KhalPlates" then
 			Plate:SetSize(NP_WIDTH * KP.dbp.globalScale * 0.9, NP_HEIGHT * KP.dbp.globalScale * 0.7)
@@ -1000,19 +1022,12 @@ local function UpdateHitboxOutOfCombat(Plate)
 end
 
 local function UpdateKhalPlate(Plate)
-	local Virtual = VirtualPlates[Plate]
+	local Virtual = Plate.VirtualPlate
 	local healthBar = Virtual.healthBar
 	local level = tonumber(Virtual.levelText:GetText())
 	local name = Virtual.nameText:GetText()
 	healthBar.nameText:SetText(name)
 	Virtual.nameString = name
-	if Virtual.raidTargetIcon:IsShown() then
-		Plate.hasRaidTarget = true
-	end
-	if Virtual.eliteIcon:IsShown() then
-		Plate.hasEliteIcon = true
-	end
-	Plate.isFriendly = ReactionByPlateColor(healthBar) == "FRIENDLY"
 	if not level or level >= KP.dbp.levelFilter then
 		local totemKey = KP.Totems[name]
 		local totemCheck = KP.dbp.TotemsCheck[totemKey]
@@ -1054,7 +1069,7 @@ local function UpdateKhalPlate(Plate)
 		else
 			Virtual:Show()
 			Virtual.isShown = true
-			UpdateCastBorder(Virtual)
+			SetupCastBorder(Virtual)
 			UpdateMouseoverGlow(Virtual)
 			local levelText = Virtual.levelText
 			if Virtual.bossIcon:IsShown() then
@@ -1073,6 +1088,7 @@ local function UpdateKhalPlate(Plate)
 			else
 				nameText:Show()	
 			end
+			Plate.isBarlessPlate = CheckBarlessPlate(Plate)
 			local class = ClassByPlateColor(healthBar)
 			local classColor	
 			if class then
@@ -1167,22 +1183,10 @@ local function UpdateKhalPlate(Plate)
 			end
 		end	
 	end
-	if KP.inCombat then
-		if not Virtual.isShown or (Plate.isFriendly and KP.dbp.friendlyClickthrough and KP.inInstance) then
-			NullifyPlateHitbox()
-		elseif Plate.totemPlateIsShown then
-			ReducePlateHitbox()
-		else
-			NormalizePlateHitbox()
-		end
-		ExecuteHitboxSecureScript()
-	else
-		UpdateHitboxOutOfCombat(Plate)
-	end
 end
 
 local function ResetKhalPlate(Plate)
-	local Virtual = VirtualPlates[Plate]
+	local Virtual = Plate.VirtualPlate
 	Virtual:Hide()
 	Virtual:SetScale(KP.dbp.globalScale)
 	Virtual.classIcon:Hide()
@@ -1192,7 +1196,6 @@ local function ResetKhalPlate(Plate)
 	Virtual.nameString = nil
 	Virtual.nameTextIsYellow = nil
 	Plate.isBoss = nil
-	Plate.isFriendly = nil
 	Plate.classKey = nil
 	Plate.classColor = nil
 	Plate.unitToken = nil
@@ -1201,17 +1204,16 @@ local function ResetKhalPlate(Plate)
 		Plate.totemPlate:Hide()
 		Plate.totemPlate.border:Hide()
 	end
-	local specialPlate = Plate.specialPlate
-	if specialPlate then
-		specialPlate:Hide()
-		specialPlate.healthText:Hide()
-		specialPlate.raidTargetIcon:Hide()
-		specialPlate.classIcon:Hide()
+	local barlessPlate = Plate.barlessPlate
+	if barlessPlate then
+		barlessPlate:Hide()
+		barlessPlate.healthText:Hide()
+		barlessPlate.raidTargetIcon:Hide()
+		barlessPlate.classIcon:Hide()
 	end
-	Plate.specialPlateIsShown = nil
-	Plate.SpecialHealthTextIsShown = nil
-	Plate.hasRaidTarget = nil
-	Plate.hasEliteIcon = nil
+	Plate.isBarlessPlate = nil
+	Plate.barlessPlateIsShown = nil
+	Plate.BarlessHealthTextIsShown = nil
 	StackablePlates[Plate] = nil
 	Plate:SetClampedToScreen(false)
 	Plate:SetClampRectInsets(0, 0, 0, 0)
@@ -1220,16 +1222,13 @@ local function ResetKhalPlate(Plate)
 	else
 		Virtual.shouldModifyBGH = nil
 	end
-	if KP.inCombat then
-		ExecuteHitboxSecureScript()
-	end	
 end
 
 local DelayedUpdateAllShownPlatesHandler = CreateFrame("Frame")
 DelayedUpdateAllShownPlatesHandler:Hide()
 DelayedUpdateAllShownPlatesHandler:SetScript("OnUpdate", function(self)
 	self:Hide()
-	KP:UpdateAllShownPlates()
+	KP:UpdateAllShownPlates(false, true)
 end)
 local function DelayedUpdateAllShownPlates()
 	DelayedUpdateAllShownPlatesHandler:Show()
@@ -1263,7 +1262,7 @@ local function UpdateStacking()
     for Plate1, Plate1_StackData in pairs(StackablePlates) do
         local width, height = Plate1:GetSize()
 		local x, y = select(4, Plate1:GetPoint(1))
-		local Virtual1 = VirtualPlates[Plate1]
+		local Virtual1 = Plate1.VirtualPlate
 		StackablePlates[Plate1].xpos = x
 		StackablePlates[Plate1].ypos = y
         if KP.dbp.FreezeMouseover and Virtual1.healthBarHighlight:IsShown() then  -- Freeze Mouseover Nameplate
@@ -1419,13 +1418,13 @@ function KP:UpdateAllIcons()
 		SetupEliteIcon(Virtual)
 		SetupClassIcon(Virtual)
 		SetupTotemIcon(Plate)
-		UpdateSpecialPlate(Plate)
+		UpdateBarlessPlate(Plate)
 	end
 end
 
-function KP:UpdateAllSpecialPlates()
+function KP:UpdateAllBarlessPlates()
 	for Plate in pairs(VirtualPlates) do
-		UpdateSpecialPlate(Plate)
+		UpdateBarlessPlate(Plate)
 	end
 end
 
@@ -1459,7 +1458,7 @@ end
 
 function KP:UpdateAllCastBarBorders()
 	for _, Virtual in pairs(VirtualPlates) do
-		UpdateCastBorder(Virtual)
+		SetupCastBorder(Virtual)
 	end
 end
 
@@ -1472,25 +1471,20 @@ function KP:UpdateWorldFrameHeight(init)
 	end
 end
 
-function KP:UpdateAllShownPlates()
+function KP:UpdateAllShownPlates(updateRaidIcon, updateReaction)
 	for Plate in pairs(PlatesVisible) do
-		local hadRaidTarget = Plate.hasRaidTarget
-		local hadEliteIcon = Plate.hasEliteIcon
+		if updateRaidIcon then
+			Plate.hasRaidIcon = Virtual.raidTargetIcon:IsShown() and true
+		end
+		if updateReaction then
+			Plate.isFriendly = ReactionByPlateColor(healthBar) == "FRIENDLY"
+		end
 		ResetKhalPlate(Plate)
 		UpdateKhalPlate(Plate)
-		Plate.hasRaidTarget = hadRaidTarget
-		Plate.hasEliteIcon = hadEliteIcon
 		UpdateTarget(Plate)
-	end
-end
-
-function KP:UpdateAllShownPlatesRaidTarget()
-	for Plate in pairs(PlatesVisible) do
-		local hadEliteIcon = Plate.hasEliteIcon
-		ResetKhalPlate(Plate)
-		UpdateKhalPlate(Plate)
-		Plate.hasEliteIcon = hadEliteIcon
-		UpdateTarget(Plate)
+		if not self.inCombat then
+			UpdateHitboxOutOfCombat(Plate)
+		end
 	end
 end
 
@@ -1509,7 +1503,7 @@ function KP:UpdateProfile()
 	self:UpdateAllHealthBars()
 	self:UpdateAllCastBars()
 	self:UpdateAllIcons()
-	self:UpdateAllSpecialPlates()
+	self:UpdateAllBarlessPlates()
 	self:UpdateAllGlows()
 	self:UpdateAllCastBarBorders()
 	self:BuildBlacklistUI()
@@ -1522,8 +1516,8 @@ end
 KP.NP_WIDTH = NP_WIDTH
 KP.NP_HEIGHT = NP_HEIGHT
 KP.VirtualPlates = VirtualPlates
-KP.RealPlates = RealPlates
 KP.PlatesVisible = PlatesVisible
+KP.ReactionByPlateColor = ReactionByPlateColor
 KP.UpdateTarget = UpdateTarget
 KP.SetupKhalPlate = SetupKhalPlate
 KP.ForceLevelHide = ForceLevelHide
@@ -1533,8 +1527,10 @@ KP.UpdateArenaInfo = UpdateArenaInfo
 KP.UpdateClassColorNames = UpdateClassColorNames
 KP.ExecuteHitboxSecureScript = ExecuteHitboxSecureScript
 KP.InitPlatesHitboxes = InitPlatesHitboxes
+KP.HitboxAttributeUpdater = HitboxAttributeUpdater
+KP.UpdateHitboxInCombat = UpdateHitboxInCombat
+KP.UpdateHitboxOutOfCombat = UpdateHitboxOutOfCombat
 KP.UpdateKhalPlate = UpdateKhalPlate
 KP.ResetKhalPlate = ResetKhalPlate
 KP.DelayedUpdateAllShownPlates = DelayedUpdateAllShownPlates
-KP.HitboxAttributeUpdater = HitboxAttributeUpdater
 KP.UpdateStacking = UpdateStacking

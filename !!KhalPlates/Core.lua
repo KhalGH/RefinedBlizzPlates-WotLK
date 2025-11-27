@@ -13,8 +13,8 @@ local select, next, pairs, ipairs, unpack, sort, wipe, CreateFrame, UnitName, Un
 local NP_WIDTH = KP.NP_WIDTH
 local NP_HEIGHT = KP.NP_HEIGHT
 local VirtualPlates = KP.VirtualPlates
-local RealPlates = KP.RealPlates
 local PlatesVisible = KP.PlatesVisible
+local ReactionByPlateColor = KP.ReactionByPlateColor
 local UpdateTarget = KP.UpdateTarget
 local SetupKhalPlate = KP.SetupKhalPlate
 local ForceLevelHide = KP.ForceLevelHide
@@ -24,10 +24,12 @@ local UpdateArenaInfo = KP.UpdateArenaInfo
 local UpdateClassColorNames = KP.UpdateClassColorNames
 local ExecuteHitboxSecureScript = KP.ExecuteHitboxSecureScript
 local InitPlatesHitboxes = KP.InitPlatesHitboxes
+local HitboxAttributeUpdater = KP.HitboxAttributeUpdater
+local UpdateHitboxInCombat = KP.UpdateHitboxInCombat
+local UpdateHitboxOutOfCombat = KP.UpdateHitboxOutOfCombat
 local UpdateKhalPlate = KP.UpdateKhalPlate
 local ResetKhalPlate = KP.ResetKhalPlate
 local DelayedUpdateAllShownPlates = KP.DelayedUpdateAllShownPlates
-local HitboxAttributeUpdater = KP.HitboxAttributeUpdater
 local UpdateStacking = KP.UpdateStacking
 
 -- Local definitions
@@ -59,7 +61,7 @@ do
 	local SortOrder, Depths = {}, {}
 
 	local function PlateOnShow(Plate)
-		local Virtual = VirtualPlates[Plate]
+		local Virtual = Plate.VirtualPlate
 		PlatesVisible[Plate] = Virtual
 		ExistsVisiblePlates = true
 		NextUpdate = 0 -- sorts instantly
@@ -72,14 +74,28 @@ do
 				end
 			end
 		end
+		Plate.hasRaidIcon = Virtual.raidTargetIcon:IsShown() and true
+		Plate.hasEliteIcon = Virtual.eliteIcon:IsShown() and true
+		Plate.isFriendly = ReactionByPlateColor(Virtual.healthBar) == "FRIENDLY"
 		UpdateKhalPlate(Plate)
 		UpdateTarget(Plate)
+		if KP.inCombat then
+			UpdateHitboxInCombat(Plate)
+		else
+			UpdateHitboxOutOfCombat(Plate)
+		end
 	end
 
 	local function PlateOnHide(Plate)
 		PlatesVisible[Plate] = nil
 		ExistsVisiblePlates = next(PlatesVisible) ~= nil
+		Plate.hasRaidIcon = nil
+		Plate.hasEliteIcon = nil
+		Plate.isFriendly = nil
 		ResetKhalPlate(Plate)
+		if KP.inCombat then
+			ExecuteHitboxSecureScript()
+		end
 	end
 
 	--- Update all visible nameplates
@@ -124,8 +140,8 @@ do
 				if Plate.totemPlateIsShown then
 					SetFrameLevel(Plate.totemPlate, Index * PlateLevels)
 				end
-				if Plate.specialPlateIsShown then
-					SetFrameLevel(Plate.specialPlate, Index * PlateLevels + 1)
+				if Plate.barlessPlateIsShown then
+					SetFrameLevel(Plate.barlessPlate, Index * PlateLevels + 1)
 				end
 				BGHframe = Virtual.BGHframe
 				if BGHframe then
@@ -140,7 +156,7 @@ do
 	-- @ param Plate  Original nameplate children are being removed from.
 	-- @ param ...  Children of Plate to be reparented.
 	local function ReparentChildren(Plate, ...)
-		local Virtual = VirtualPlates[Plate]
+		local Virtual = Plate.VirtualPlate
 		for Index = 1, select("#", ...) do
 			local Child = select(Index, ...)
 			if Child ~= Virtual then
@@ -155,7 +171,7 @@ do
 	--- Parents all plate regions to the Virtual, similar to ReparentChildren.
 	-- @ see ReparentChildren
 	local function ReparentRegions(Plate, ...)
-		local Virtual = VirtualPlates[Plate]
+		local Virtual = Plate.VirtualPlate
 		for Index = 1, select("#", ...) do
 			local Region = select(Index, ...)
 			Region:SetParent(Virtual)
@@ -166,7 +182,7 @@ do
 	-- Creates a semi-transparent hitbox texture for debugging
 	local function SetupHitboxTexture(Plate)
 		Plate.hitBox = Plate:CreateTexture(nil, "OVERLAY")
-		Plate.hitBox:SetTexture(0,0,0,0.5)
+		Plate.hitBox:SetTexture(1,0,0,0.5)
 		Plate.hitBox:SetAllPoints(Plate)
 	end
 
@@ -174,11 +190,9 @@ do
 	-- @ param Plate  Newly found default nameplate to be hooked.
 	local function PlateAdd(Plate)
 		local Virtual = CreateFrame("Frame", nil, Plate)
-
+		Plate.VirtualPlate = Virtual
+		Virtual.RealPlate = Plate
 		VirtualPlates[Plate] = Virtual
-		RealPlates[Virtual] = Plate
-		Plate.VirtualPlate = Plate.VirtualPlate or Virtual
-		Virtual.RealPlate = Virtual.RealPlate or Plate
 	
 		Virtual:Hide() -- Gets explicitly shown on plate show
 		Virtual:SetPoint("TOP")
@@ -246,7 +260,7 @@ do
 		local Count = select("#", ...)
 		for Index = 1, Count do
 			local Frame = select(Index, ...)
-			Children[Index] = VirtualPlates[Frame] or Frame
+			Children[Index] = Frame.VirtualPlate or Frame
 		end
 		for Index = Count + 1, #Children do -- Remove any extras from the last call
 			Children[Index] = nil
@@ -280,7 +294,7 @@ end
 do
 	--- Wrapper for plate OnUpdate scripts to replace their self parameter with the plate's Virtual.
 	local function OnUpdateOverride(self, ...)
-		self.OnUpdate(VirtualPlates[self], ...)
+		self.OnUpdate(self.VirtualPlate, ...)
 	end
 	local type = type
 
@@ -486,7 +500,7 @@ function EventHandler:UNIT_AURA(event, unit)
 end
 
 function EventHandler:RAID_TARGET_UPDATE()
-	KP:UpdateAllShownPlatesRaidTarget()
+	KP:UpdateAllShownPlates(true)
 end
 
 function EventHandler:NAME_PLATE_UNIT_ADDED(event, token)
