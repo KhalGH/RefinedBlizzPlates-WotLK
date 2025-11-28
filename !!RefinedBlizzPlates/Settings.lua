@@ -126,6 +126,7 @@ RBP.dbp.classIcon_offsetY = 0
 RBP.dbp.barlessPlate_showInBG = true
 RBP.dbp.barlessPlate_showInArena = false
 RBP.dbp.barlessPlate_showInPvE = true
+RBP.dbp.barlessPlate_NameColorByHP = true
 RBP.dbp.barlessPlate_textFont = "Friz Quadrata TT"
 RBP.dbp.barlessPlate_textSize = 14
 RBP.dbp.barlessPlate_textOutline = "OUTLINE"
@@ -1667,6 +1668,12 @@ RBP.MainOptionTable = {
 					type = "toggle",
 					name = "Enable in Arenas",
 					desc = "Replace friendly nameplates with a barless layout: name text and anchored indicators.",
+				},
+				barlessPlate_NameColorByHP = {
+					order = 7.1,
+					type = "toggle",
+					name = "FriendlyNameColorByHP",
+					desc = "Change friendly player names from right to left based on remaining health percentage.",
 				},
 				lineBreak4 = {order = 8, type = "description", name = ""},
 				lineBreak5 = {order = 9, type = "description", name = ""},

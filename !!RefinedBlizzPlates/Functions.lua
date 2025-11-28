@@ -2,8 +2,8 @@
 local AddonFile, RBP = ... -- namespace
 
 ----------------------------- API -----------------------------
-local ipairs, unpack, tonumber, tostring, select, math_exp, math_floor, math_abs, SetCVar, wipe, WorldFrame, CreateFrame, UnitCastingInfo, UnitChannelInfo, UnitName, UnitClass, UnitIsUnit, UnitCanAttack, GetNumArenaOpponents, GetNumPartyMembers, GetNumRaidMembers, GetRaidRosterInfo, RAID_CLASS_COLORS, SecureHandlerWrapScript, ToggleFrame, UIPanelWindows, SetUIVisibility =
-      ipairs, unpack, tonumber, tostring, select, math.exp, math.floor, math.abs, SetCVar, wipe, WorldFrame, CreateFrame, UnitCastingInfo, UnitChannelInfo, UnitName, UnitClass, UnitIsUnit, UnitCanAttack, GetNumArenaOpponents, GetNumPartyMembers, GetNumRaidMembers, GetRaidRosterInfo, RAID_CLASS_COLORS, SecureHandlerWrapScript, ToggleFrame, UIPanelWindows, SetUIVisibility
+local ipairs, unpack, tonumber, tostring, select, math_exp, math_floor, math_abs, SetCVar, wipe, WorldFrame, CreateFrame, UnitCastingInfo, UnitChannelInfo, UnitName, UnitClass, UnitIsUnit, UnitCanAttack, GetNumArenaOpponents, GetNumPartyMembers, GetNumRaidMembers, GetRaidRosterInfo, RAID_CLASS_COLORS, SecureHandlerWrapScript, ToggleFrame, UIPanelWindows, SetUIVisibility, string_format =
+      ipairs, unpack, tonumber, tostring, select, math.exp, math.floor, math.abs, SetCVar, wipe, WorldFrame, CreateFrame, UnitCastingInfo, UnitChannelInfo, UnitName, UnitClass, UnitIsUnit, UnitCanAttack, GetNumArenaOpponents, GetNumPartyMembers, GetNumRaidMembers, GetRaidRosterInfo, RAID_CLASS_COLORS, SecureHandlerWrapScript, ToggleFrame, UIPanelWindows, SetUIVisibility, string.format
 
 ------------------------- Core Variables -------------------------
 local NP_WIDTH = 156.65118520899  -- Nameplate original width (don't modify)
@@ -185,25 +185,176 @@ local function UpdateBarlessHealthText(healthText, percent)
     healthText:SetTextColor(r, g, b)
 end
 
+local function utf8chars(str)
+    local chars = {}
+    local i = 1
+    while i <= #str do
+        local c = str:byte(i)
+        if c < 128 then
+            -- 单字节字符
+            table.insert(chars, string.char(c))
+            i = i + 1
+        elseif c < 224 then
+            -- 双字节字符
+            table.insert(chars, string.sub(str, i, i+1))
+            i = i + 2
+        elseif c < 240 then
+            -- 三字节字符
+            table.insert(chars, string.sub(str, i, i+2))
+            i = i + 3
+        else
+            -- 四字节字符
+            table.insert(chars, string.sub(str, i, i+3))
+            i = i + 4
+        end
+    end
+    return chars
+end
+
+local function utf8len(str)
+    local count = 0
+    local i = 1
+    while i <= #str do
+        local c = str:byte(i)
+        if c < 128 then
+            i = i + 1
+        elseif c < 224 then
+            i = i + 2
+        elseif c < 240 then
+            i = i + 3
+        else
+            i = i + 4
+        end
+        count = count + 1
+    end
+    return count
+end
+
+-- 使用基于健康值的灰色颜色更新
+local function UpdateBarlessPlateNameText(Plate, Virtual)
+    if not Plate.barlessPlate or not Virtual.nameString then return end
+    
+    local barlessPlateNameText = Plate.barlessPlate.nameText
+    local healthBar = Virtual.healthBar
+    
+    if RBP.dbp.barlessPlate_NameColorByHP and Plate.classKey and (Plate.classKey == "FRIENDLY PLAYER" or UnitIsFriend("player", Virtual.nameString)) then
+        -- 计算生命百分比
+        local min, max = healthBar:GetMinMaxValues()
+        local val = healthBar:GetValue()
+        local healthPercent = (max > 0) and (val / max) or 0
+        
+        -- 获取职业颜色
+        local classColor = Plate.classColor
+        if not classColor then
+            if Plate.classKey == "FRIENDLY PLAYER" and ClassByFriendName[Virtual.nameString] then
+                classColor = RAID_CLASS_COLORS[ClassByFriendName[Virtual.nameString]]
+            elseif Plate.classKey ~= "FRIENDLY PLAYER" then
+                classColor = RAID_CLASS_COLORS[Plate.classKey]
+            end
+        end
+        
+        if classColor then
+            local name = Virtual.nameString
+            local nameLen = utf8len(name)
+            if nameLen > 0 then
+            	local chars = utf8chars(name)
+                -- 计算应该变灰的字符数量
+                local grayLength = nameLen * (1 - healthPercent)
+                local grayCountFloor = math_floor(grayLength)
+                local grayFraction = grayLength - grayCountFloor
+                local i_start = nameLen - grayCountFloor + 1
+                
+                -- 颜色混合函数
+                local function mixColor(original, gray, alpha)
+                    return {
+                        r = original.r * (1 - alpha) + gray.r * alpha,
+                        g = original.g * (1 - alpha) + gray.g * alpha,
+                        b = original.b * (1 - alpha) + gray.b * alpha
+                    }
+                end
+                
+                local grayColor = {r=0.3, g=0.3, b=0.3} -- 定义灰色
+                local coloredText = ""
+                
+                for i = 1, nameLen do
+                    local char = chars[i]
+                    local charColor
+                    
+                    if i >= i_start then
+                        -- 灰色部分
+                        charColor = grayColor
+                    elseif i == i_start - 1 and grayFraction > 0 then
+                        -- 过渡区域混合颜色
+                        charColor = mixColor(classColor, grayColor, grayFraction)
+                    else
+                        -- 正常颜色部分
+                        charColor = classColor
+                    end
+                    
+                    -- 使用正确的format函数
+                    coloredText = coloredText .. string_format("|cff%02x%02x%02x%s|r", 
+                        math_floor(charColor.r * 255), math_floor(charColor.g * 255), math_floor(charColor.b * 255), char)
+                end
+                
+                barlessPlateNameText:SetText(coloredText)
+                return
+            end
+        end
+    end
+    
+    -- 默认行为：如果不使用生命值着色
+    if Plate.classKey then
+        if Plate.classColor and RBP.dbp.barlessPlate_classColors then
+            barlessPlateNameText:SetTextColor(Plate.classColor.r, Plate.classColor.g, Plate.classColor.b)
+        else
+            barlessPlateNameText:SetTextColor(unpack(RBP.dbp.barlessPlate_textColor))
+        end
+    else
+        barlessPlateNameText:SetTextColor(unpack(RBP.dbp.barlessPlate_NPCtextColor))
+    end
+    barlessPlateNameText:SetText(Virtual.nameString)
+end
+
 local function UpdateHealthTextValue(healthBar)
-	local Plate = healthBar.RealPlate
-	local min, max = healthBar:GetMinMaxValues()
-	local val = healthBar:GetValue()
-	if max > 0 then
-		local percent = math_floor((val / max) * 100)
-		if percent < 100 and percent > 0 then
-			healthBar.healthText:SetText(percent .. "%")
-			if Plate.BarlessHealthTextIsShown then
-				UpdateBarlessHealthText(Plate.barlessPlate.healthText, percent)
-			end
-		else
-			healthBar.healthText:SetText("")
-			if Plate.BarlessHealthTextIsShown then Plate.barlessPlate.healthText:SetText("") end
-		end
-	else
-		healthBar.healthText:SetText("")
-		if Plate.BarlessHealthTextIsShown then Plate.barlessPlate.healthText:SetText("") end
-	end
+    local Plate = healthBar.RealPlate
+    if not Plate then return end
+    
+    local Virtual = Plate.VirtualPlate
+    if not Virtual then return end
+    
+    local min, max = healthBar:GetMinMaxValues()
+    local val = healthBar:GetValue()
+    if max > 0 then
+        local percent = math_floor((val / max) * 100)
+        if percent < 100 and percent > 0 then
+            healthBar.healthText:SetText(percent .. "%")
+            if Plate.BarlessHealthTextIsShown then
+                UpdateBarlessHealthText(Plate.barlessPlate.healthText, percent)
+            end
+            -- 添加：实时更新特殊名字颜色
+            if Plate.barlessPlateIsShown and RBP.dbp.barlessPlate_NameColorByHP then
+                UpdateBarlessPlateNameText(Plate, Virtual)
+            end
+        else
+            healthBar.healthText:SetText("")
+            if Plate.BarlessHealthTextIsShown then
+                Plate.barlessPlate.healthText:SetText("")
+            end
+            -- 添加：生命值为0或100%时也更新名字颜色
+            if Plate.barlessPlateIsShown and RBP.dbp.barlessPlate_NameColorByHP then
+                UpdateBarlessPlateNameText(Plate, Virtual)
+            end
+        end
+    else
+        healthBar.healthText:SetText("")
+        if Plate.BarlessHealthTextIsShown then
+            Plate.barlessPlate.healthText:SetText("")
+        end
+        -- 添加：最大生命值为0时也更新名字颜色
+        if Plate.barlessPlateIsShown and RBP.dbp.barlessPlate_NameColorByHP then
+            UpdateBarlessPlateNameText(Plate, Virtual)
+        end
+    end
 end
 
 local function SetupHealthText(healthBar)
@@ -594,17 +745,10 @@ local function BarlessPlateHandler(Plate)
 	local barlessPlate = Plate.barlessPlate
 	if not Virtual.isTarget then
 		local barlessNameText = barlessPlate.nameText
-		if Plate.classKey then
-			local classColor = Plate.classColor
-			if classColor and RBP.dbp.barlessPlate_classColors then
-				barlessNameText:SetTextColor(classColor.r, classColor.g, classColor.b)
-			else
-				barlessNameText:SetTextColor(unpack(RBP.dbp.barlessPlate_textColor))
-			end
-		else
-			barlessNameText:SetTextColor(unpack(RBP.dbp.barlessPlate_NPCtextColor))
-		end
-		barlessNameText:SetText(Virtual.nameString)
+
+		-- Apply health-based coloring if enabled
+		UpdateBarlessPlateNameText(Plate, Virtual)
+
 		local healthBarHighlight = Virtual.healthBarHighlight
 		healthBarHighlight:SetTexture(ASSETS .. "PlateBorders\\BarlessPlate-MouseoverGlow")
 		healthBarHighlight:ClearAllPoints()
