@@ -2,8 +2,8 @@
 local AddonFile, RBP = ... -- namespace
 
 ----------------------------- API -----------------------------
-local ipairs, unpack, tonumber, tostring, select, math_exp, math_floor, math_abs, SetCVar, wipe, WorldFrame, CreateFrame, UnitCastingInfo, UnitChannelInfo, UnitName, UnitClass, UnitIsUnit, UnitCanAttack, GetNumArenaOpponents, GetNumPartyMembers, GetNumRaidMembers, GetRaidRosterInfo, RAID_CLASS_COLORS, SecureHandlerWrapScript, ToggleFrame, UIPanelWindows, SetUIVisibility =
-      ipairs, unpack, tonumber, tostring, select, math.exp, math.floor, math.abs, SetCVar, wipe, WorldFrame, CreateFrame, UnitCastingInfo, UnitChannelInfo, UnitName, UnitClass, UnitIsUnit, UnitCanAttack, GetNumArenaOpponents, GetNumPartyMembers, GetNumRaidMembers, GetRaidRosterInfo, RAID_CLASS_COLORS, SecureHandlerWrapScript, ToggleFrame, UIPanelWindows, SetUIVisibility
+local ipairs, unpack, tonumber, tostring, select, math_exp, math_floor, math_abs, string_format, string_char, string_sub, table_insert, SetCVar, wipe, WorldFrame, CreateFrame, UnitCastingInfo, UnitChannelInfo, UnitName, UnitClass, UnitIsUnit, UnitCanAttack, GetNumArenaOpponents, GetNumPartyMembers, GetNumRaidMembers, GetRaidRosterInfo, RAID_CLASS_COLORS, SecureHandlerWrapScript, ToggleFrame, UIPanelWindows, SetUIVisibility =
+      ipairs, unpack, tonumber, tostring, select, math.exp, math.floor, math.abs, string.format, string.char, string.sub, table.insert, SetCVar, wipe, WorldFrame, CreateFrame, UnitCastingInfo, UnitChannelInfo, UnitName, UnitClass, UnitIsUnit, UnitCanAttack, GetNumArenaOpponents, GetNumPartyMembers, GetNumRaidMembers, GetRaidRosterInfo, RAID_CLASS_COLORS, SecureHandlerWrapScript, ToggleFrame, UIPanelWindows, SetUIVisibility
 
 ------------------------- Core Variables -------------------------
 local NP_WIDTH = 156.65118520899  -- Nameplate original width (don't modify)
@@ -185,6 +185,82 @@ local function UpdateBarlessHealthText(healthText, percent)
     healthText:SetTextColor(r, g, b)
 end
 
+local function utf8chars(str)
+    local chars = {}
+    local i = 1
+    while i <= #str do
+        local c = str:byte(i)
+        if c < 128 then
+            table_insert(chars, string_char(c))
+            i = i + 1
+        elseif c < 224 then
+            table_insert(chars, string_sub(str, i, i+1))
+            i = i + 2
+        elseif c < 240 then
+            table_insert(chars, string_sub(str, i, i+2))
+            i = i + 3
+        else
+            table_insert(chars, string_sub(str, i, i+3))
+            i = i + 4
+        end
+    end
+    return chars
+end
+
+local function utf8len(str)
+    local count = 0
+    local i = 1
+    while i <= #str do
+        local c = str:byte(i)
+        if c < 128 then
+            i = i + 1
+        elseif c < 224 then
+            i = i + 2
+        elseif c < 240 then
+            i = i + 3
+        else
+            i = i + 4
+        end
+        count = count + 1
+    end
+    return count
+end
+
+local grayColor = {0.35, 0.35, 0.35}
+
+local function MixColor(original, grayFraction)
+	return {
+		original[1] * (1 - grayFraction) + grayColor[1] * grayFraction,
+		original[2] * (1 - grayFraction) + grayColor[2] * grayFraction,
+		original[3] * (1 - grayFraction) + grayColor[3] * grayFraction
+	}
+end
+
+local function UpdateBarlessNameText(Plate, percent)
+	local name = Plate.VirtualPlate.nameString
+	local nameLen = utf8len(name)
+	if nameLen > 0 then
+		local chars = utf8chars(name)
+		local grayLength = nameLen * (100 - percent) / 100
+		local grayCountFloor = math_floor(grayLength)
+		local grayFraction = grayLength - grayCountFloor
+		local i_start = nameLen - grayCountFloor + 1
+		local coloredText = ""
+		for i = 1, nameLen do
+			local charColor
+			if i >= i_start then
+				charColor = grayColor
+			elseif i == i_start - 1 and grayFraction > 0 then
+				charColor = MixColor(Plate.barlessNameTextRGB, grayFraction)
+			else
+				charColor = Plate.barlessNameTextRGB
+			end
+			coloredText = coloredText .. string_format("|cff%02x%02x%02x%s|r", math_floor(charColor[1] * 255), math_floor(charColor[2] * 255), math_floor(charColor[3] * 255), chars[i])
+		end
+		Plate.barlessPlate.nameText:SetText(coloredText)
+	end
+end
+
 local function UpdateHealthTextValue(healthBar)
 	local Plate = healthBar.RealPlate
 	local min, max = healthBar:GetMinMaxValues()
@@ -198,11 +274,21 @@ local function UpdateHealthTextValue(healthBar)
 			end
 		else
 			healthBar.healthText:SetText("")
-			if Plate.BarlessHealthTextIsShown then Plate.barlessPlate.healthText:SetText("") end
+			if Plate.BarlessHealthTextIsShown then 
+				Plate.barlessPlate.healthText:SetText("")
+			end
+		end
+		if Plate.barlessNameTextGrayOut and Plate.barlessPlateIsShown then
+			UpdateBarlessNameText(Plate, percent)
 		end
 	else
 		healthBar.healthText:SetText("")
-		if Plate.BarlessHealthTextIsShown then Plate.barlessPlate.healthText:SetText("") end
+		if Plate.BarlessHealthTextIsShown then
+			Plate.barlessPlate.healthText:SetText("")
+		end
+		if Plate.barlessNameTextGrayOut and Plate.barlessPlateIsShown then
+			UpdateBarlessNameText(Plate, 0)
+		end
 	end
 end
 
@@ -585,6 +671,7 @@ local function CheckBarlessPlate(Plate)
 		if not Plate.barlessPlate then
 			SetupBarlessPlate(Plate)
 		end
+		Plate.isBarlessPlate = true
 		return true
 	end
 end
@@ -594,16 +681,7 @@ local function BarlessPlateHandler(Plate)
 	local barlessPlate = Plate.barlessPlate
 	if not Virtual.isTarget then
 		local barlessNameText = barlessPlate.nameText
-		if Plate.classKey then
-			local classColor = Plate.classColor
-			if classColor and RBP.dbp.barlessPlate_classColors then
-				barlessNameText:SetTextColor(classColor.r, classColor.g, classColor.b)
-			else
-				barlessNameText:SetTextColor(unpack(RBP.dbp.barlessPlate_textColor))
-			end
-		else
-			barlessNameText:SetTextColor(unpack(RBP.dbp.barlessPlate_NPCtextColor))
-		end
+		barlessNameText:SetTextColor(unpack(Plate.barlessNameTextRGB))
 		barlessNameText:SetText(Virtual.nameString)
 		local healthBarHighlight = Virtual.healthBarHighlight
 		healthBarHighlight:SetTexture(ASSETS .. "PlateBorders\\BarlessPlate-MouseoverGlow")
@@ -612,8 +690,7 @@ local function BarlessPlateHandler(Plate)
 		healthBarHighlight:SetSize(barlessNameText:GetWidth() + 30, barlessNameText:GetHeight() + 20)
 		if (Plate.classKey and RBP.dbp.barlessPlate_showHealthText) or (not Plate.classKey and RBP.dbp.barlessPlate_showNPCHealthText) then
 			barlessPlate.healthText:Show()
-			Plate.BarlessHealthTextIsShown = true
-			UpdateHealthTextValue(Virtual.healthBar)
+			Plate.BarlessHealthTextIsShown = true	
 		end
 		if Plate.hasRaidIcon and RBP.dbp.barlessPlate_showRaidTarget then
 			barlessPlate.raidTargetIcon:SetTexCoord(Virtual.raidTargetIcon:GetTexCoord())
@@ -626,6 +703,7 @@ local function BarlessPlateHandler(Plate)
 		UpdateBarlessPlate(Plate)
 		barlessPlate:Show()
 		Plate.barlessPlateIsShown = true
+		UpdateHealthTextValue(Virtual.healthBar)
 		Virtual.healthBar:Hide()
 		Virtual.castBar:Hide()
 		Virtual.castBarBorder:Hide()
@@ -1082,7 +1160,7 @@ local function UpdateRefinedPlate(Plate)
 			else
 				nameText:Show()	
 			end
-			Plate.isBarlessPlate = CheckBarlessPlate(Plate)
+
 			local class = ClassByPlateColor(healthBar)
 			local classColor	
 			if class then
@@ -1166,6 +1244,24 @@ local function UpdateRefinedPlate(Plate)
 			end
 			nameText:SetTextColor(Virtual.nameColorR, Virtual.nameColorG, Virtual.nameColorB)
 			Virtual.nameTextIsYellow = false
+			----------------- BarlessPlate Check -----------------
+			if CheckBarlessPlate(Plate) then
+				if class then
+					if classColor and RBP.dbp.barlessPlate_classColors then
+						Plate.barlessNameTextRGB = {classColor.r, classColor.g, classColor.b}
+					else
+						Plate.barlessNameTextRGB = RBP.dbp.barlessPlate_textColor
+					end
+					if RBP.dbp.barlessPlate_nameColorByHP then
+						Plate.barlessNameTextGrayOut = true
+					end
+				else
+					Plate.barlessNameTextRGB = RBP.dbp.barlessPlate_NPCtextColor
+					if RBP.dbp.barlessPlate_NPCnameColorByHP then
+						Plate.barlessNameTextGrayOut = true
+					end					
+				end
+			end
 			----------------- Init Enhanced Plate Stacking -----------------
 			if not Plate.isFriendly then
 				if RBP.dbp.stackingEnabled and not StackablePlates[Plate] then
@@ -1208,6 +1304,8 @@ local function ResetRefinedPlate(Plate)
 	Plate.isBarlessPlate = nil
 	Plate.barlessPlateIsShown = nil
 	Plate.BarlessHealthTextIsShown = nil
+	Plate.barlessNameTextRGB = nil
+	Plate.barlessNameTextGrayOut = nil
 	StackablePlates[Plate] = nil
 	Plate:SetClampedToScreen(false)
 	Plate:SetClampRectInsets(0, 0, 0, 0)

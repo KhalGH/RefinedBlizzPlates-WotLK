@@ -126,12 +126,14 @@ RBP.dbp.classIcon_offsetY = 0
 RBP.dbp.barlessPlate_showInBG = true
 RBP.dbp.barlessPlate_showInArena = false
 RBP.dbp.barlessPlate_showInPvE = true
+RBP.dbp.barlessPlate_nameColorByHP = false
 RBP.dbp.barlessPlate_textFont = "Friz Quadrata TT"
 RBP.dbp.barlessPlate_textSize = 14
 RBP.dbp.barlessPlate_textOutline = "OUTLINE"
 RBP.dbp.barlessPlate_textColor = {0.2, 0.2, 0.9}
 RBP.dbp.barlessPlate_classColors = true
 RBP.dbp.barlessPlate_offset = 0
+RBP.dbp.barlessPlate_NPCnameColorByHP = false
 RBP.dbp.barlessPlate_NPCtextFont = "Arial Narrow"
 RBP.dbp.barlessPlate_NPCtextSize = 13
 RBP.dbp.barlessPlate_NPCtextOutline = "OUTLINE"
@@ -1748,25 +1750,33 @@ RBP.MainOptionTable = {
 						return not (RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena)
 					end,
 				},
-				barlessPlate_classColors = {
+				barlessPlate_nameColorByHP = {
 					order = 17,
+					type = "toggle",
+					name = "Gray Out by Health %",
+					desc = "Progressively grays the name from right to left based on remaining health.",
+					disabled = function()
+						return not (RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena)
+					end,
+				},
+				barlessPlate_classColors = {
+					order = 18,
 					type = "toggle",
 					name = "Use class color",
 					disabled = function()
 						return not (RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena)
 					end,
 				},
-
-				lineBreak7 = {order = 18, type = "description", name = ""},
-				lineBreak8 = {order = 19, type = "description", name = ""},
+				lineBreak7 = {order = 19, type = "description", name = ""},
+				lineBreak8 = {order = 20, type = "description", name = ""},
 				barlessPlate_NPCnameHeader = {
-					order = 20,
+					order = 21,
 					type = "header",
 					name = "NPC Name Text",
 				},
-				lineBreak9 = {order = 21, type = "description", name = ""},
+				lineBreak9 = {order = 22, type = "description", name = ""},
 				barlessPlate_NPCtextFont = {
-					order = 22,
+					order = 23,
 					type = "select",
 					name = "Text Font",
 					values = RBP.LSM:HashTable("font"),
@@ -1776,7 +1786,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				barlessPlate_NPCtextSize = {
-					order = 23,
+					order = 24,
 					type = "range",
 					name = "Font Size",
 					min = 8,
@@ -1787,7 +1797,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				barlessPlate_NPCtextOutline = {
-					order = 24,
+					order = 25,
 					type = "select", 
 					name = "Outline",
 					values = {
@@ -1803,7 +1813,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				barlessPlate_NPCoffset = {
-					order = 25,
+					order = 26,
 					type = "range",
 					name = "Offset Y",
 					desc = "Adjusts the visual vertical position (does not affect the hitbox).",
@@ -1815,7 +1825,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				barlessPlate_NPCtextColor = {
-					order = 26,
+					order = 27,
 					type = "color",
 					name = "Text color",
 					get = function(info)
@@ -1831,16 +1841,25 @@ RBP.MainOptionTable = {
 						return not (RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena)
 					end,
 				},
-				lineBreak10 = {order = 27, type = "description", name = ""},
-				lineBreak11 = {order = 28, type = "description", name = ""},
+				barlessPlate_NPCnameColorByHP = {
+					order = 28,
+					type = "toggle",
+					name = "Gray Out by Health %",
+					desc = "Progressively grays the name from right to left based on remaining health.",
+					disabled = function()
+						return not (RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena)
+					end,
+				},
+				lineBreak10 = {order = 29, type = "description", name = ""},
+				lineBreak11 = {order = 30, type = "description", name = ""},
 				barlessPlate_healthHeader = {
-					order = 29,
+					order = 31,
 					type = "header",
 					name = "Health Text",
 				},				
-				lineBreak12 = {order = 30, type = "description", name = ""},
+				lineBreak12 = {order = 32, type = "description", name = ""},
 				barlessPlate_showHealthText = {
-					order = 31,
+					order = 33,
 					type = "toggle",
 					name = "Show in Players",
 					disabled = function()
@@ -1848,16 +1867,16 @@ RBP.MainOptionTable = {
 					end,
 				},
 				barlessPlate_showNPCHealthText = {
-					order = 32,
+					order = 34,
 					type = "toggle",
 					name = "Show in NPCs",
 					disabled = function()
 						return not (RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena)
 					end,
 				},
-				lineBreak13 = {order = 33, type = "description", name = ""},
+				lineBreak13 = {order = 35, type = "description", name = ""},
 				barlessPlate_healthTextAnchor = {
-					order = 34,
+					order = 36,
 					type = "select", 
 					name = "Anchor",
 					values = {
@@ -1878,7 +1897,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				barlessPlate_healthTextOffsetX = {
-					order = 35,
+					order = 37,
 					type = "range",
 					name = "Offset X",
 					min = -50,
@@ -1889,7 +1908,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				barlessPlate_healthTextOffsetY = {
-					order = 36,
+					order = 38,
 					type = "range",
 					name = "Offset Y",
 					min = -50,
@@ -1900,7 +1919,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				barlessPlate_healthTextSize = {
-					order = 37,
+					order = 39,
 					type = "range",
 					name = "Font Size",
 					min = 8,
@@ -1910,16 +1929,16 @@ RBP.MainOptionTable = {
 						return not (RBP.dbp.barlessPlate_showHealthText or RBP.dbp.barlessPlate_showNPCHealthText) or not (RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena)
 					end,
 				},
-				lineBreak14 = {order = 38, type = "description", name = ""},
-				lineBreak15 = {order = 39, type = "description", name = ""},
+				lineBreak14 = {order = 40, type = "description", name = ""},
+				lineBreak15 = {order = 41, type = "description", name = ""},
 				barlessPlate_raidIconHeader = {
-					order = 40,
+					order = 42,
 					type = "header",
 					name = "Raid Target Icon",
 				},				
-				lineBreak16 = {order = 41, type = "description", name = ""},
+				lineBreak16 = {order = 43, type = "description", name = ""},
 				barlessPlate_showRaidTarget = {
-					order = 42,
+					order = 44,
 					type = "toggle",
 					name = "Show Raid Target Icon",
 					width = "full",
@@ -1927,9 +1946,9 @@ RBP.MainOptionTable = {
 						return not (RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena)
 					end,
 				},
-				lineBreak17 = {order = 43, type = "description", name = ""},
+				lineBreak17 = {order = 45, type = "description", name = ""},
 				barlessPlate_raidTargetIconAnchor = {
-					order = 44,
+					order = 46,
 					type = "select", 
 					name = "Anchor",
 					values = {
@@ -1950,7 +1969,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				barlessPlate_raidTargetIconOffsetX = {
-					order = 45,
+					order = 47,
 					type = "range",
 					name = "Offset X",
 					min = -50,
@@ -1961,7 +1980,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				barlessPlate_raidTargetIconOffsetY = {
-					order = 46,
+					order = 48,
 					type = "range",
 					name = "Offset Y",
 					min = -50,
@@ -1972,7 +1991,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				barlessPlate_raidTargetIconSize = {
-					order = 47,
+					order = 49,
 					type = "range",
 					name = "Icon Size",
 					min = 20,
@@ -1982,25 +2001,25 @@ RBP.MainOptionTable = {
 						return not RBP.dbp.barlessPlate_showRaidTarget or not (RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena)
 					end,
 				},
-				lineBreak18 = {order = 48, type = "description", name = ""},
-				lineBreak19 = {order = 49, type = "description", name = ""},
+				lineBreak18 = {order = 50, type = "description", name = ""},
+				lineBreak19 = {order = 51, type = "description", name = ""},
 				barlessPlate_classIconHeader = {
-					order = 50,
+					order = 52,
 					type = "header",
 					name = "Class Icon",
 				},				
-				lineBreak20 = {order = 51, type = "description", name = ""},
+				lineBreak20 = {order = 53, type = "description", name = ""},
 				barlessPlate_showClassIcon = {
-					order = 52,
+					order = 54,
 					type = "toggle",
 					name = "Show Class Icon",
 					disabled = function() 
 						return not (RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena)
 					end,
 				},
-				lineBreak21 = {order = 53, type = "description", name = ""},
+				lineBreak21 = {order = 55, type = "description", name = ""},
 				barlessPlate_classIconAnchor = {
-					order = 54,
+					order = 56,
 					type = "select", 
 					name = "Anchor",
 					values = {
@@ -2021,7 +2040,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				barlessPlate_classIconOffsetX = {
-					order = 55,
+					order = 57,
 					type = "range",
 					name = "Offset X",
 					min = -50,
@@ -2032,7 +2051,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				barlessPlate_classIconOffsetY = {
-					order = 56,
+					order = 58,
 					type = "range",
 					name = "Offset Y",
 					min = -50,
@@ -2043,7 +2062,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				barlessPlate_classIconSize = {
-					order = 57,
+					order = 59,
 					type = "range",
 					name = "Icon Size",
 					min = 20,
@@ -2053,17 +2072,17 @@ RBP.MainOptionTable = {
 						return not RBP.dbp.barlessPlate_showClassIcon or not (RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena)
 					end,
 				},
-				lineBreak22 = {order = 58, type = "description", name = ""},
-				lineBreak23 = {order = 59, type = "description", name = ""},
+				lineBreak22 = {order = 60, type = "description", name = ""},
+				lineBreak23 = {order = 61, type = "description", name = ""},
 				barlessPlate_BGHiconHeader = {
-					order = 60,
+					order = 62,
 					type = "header",
 					name = "BG Healer Icon",
 				},				
-				lineBreak24 = {order = 61, type = "description", name = ""},
-				lineBreak25 = {order = 62, type = "description", name = ""},
+				lineBreak24 = {order = 63, type = "description", name = ""},
+				lineBreak25 = {order = 64, type = "description", name = ""},
 				barlessPlate_BGHiconDesc = {
-					order = 63,
+					order = 65,
 					type = "description",
 					fontSize = "medium",
 					name = function()
@@ -2076,10 +2095,10 @@ RBP.MainOptionTable = {
 						end
 					end,
 				},
-				lineBreak26 = {order = 64, type = "description", name = ""},
-				lineBreak27 = {order = 65, type = "description", name = ""},
+				lineBreak26 = {order = 66, type = "description", name = ""},
+				lineBreak27 = {order = 67, type = "description", name = ""},
 				barlessPlate_BGHiconAnchor = {
-					order = 66,
+					order = 68,
 					type = "select", 
 					name = "Anchor",
 					values = {
@@ -2100,7 +2119,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				barlessPlate_BGHiconOffsetX = {
-					order = 67,
+					order = 69,
 					type = "range",
 					name = "Offset X",
 					min = -50,
@@ -2111,7 +2130,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				barlessPlate_BGHiconOffsetY = {
-					order = 68,
+					order = 70,
 					type = "range",
 					name = "Offset Y",
 					min = -50,
@@ -2122,7 +2141,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				barlessPlate_BGHiconSize = {
-					order = 69,
+					order = 71,
 					type = "range",
 					name = "Icon Size",
 					min = 20,
@@ -2132,8 +2151,8 @@ RBP.MainOptionTable = {
 						return not (RBP.dbp.barlessPlate_showInBG and IsAddOnLoaded("BattleGroundHealers"))
 					end,
 				},
-				lineBreak28 = {order = 70, type = "description", name = ""},
-				lineBreak29 = {order = 71, type = "description", name = ""},
+				lineBreak28 = {order = 72, type = "description", name = ""},
+				lineBreak29 = {order = 73, type = "description", name = ""},
 			},
 		},
 		Totems = {
