@@ -27,6 +27,8 @@ local InitPlatesHitboxes = RBP.InitPlatesHitboxes
 local HitboxAttributeUpdater = RBP.HitboxAttributeUpdater
 local UpdateHitboxInCombat = RBP.UpdateHitboxInCombat
 local UpdateHitboxOutOfCombat = RBP.UpdateHitboxOutOfCombat
+local UpdatePlateFlags = RBP.UpdatePlateFlags
+local ResetPlateFlags = RBP.ResetPlateFlags
 local UpdateRefinedPlate = RBP.UpdateRefinedPlate
 local ResetRefinedPlate = RBP.ResetRefinedPlate
 local DelayedUpdateAllShownPlates = RBP.DelayedUpdateAllShownPlates
@@ -74,9 +76,7 @@ do
 				end
 			end
 		end
-		Plate.hasRaidIcon = Virtual.raidTargetIcon:IsShown() and true
-		Plate.hasEliteIcon = Virtual.eliteIcon:IsShown() and true
-		Plate.isFriendly = ReactionByPlateColor(Virtual.healthBar) == "FRIENDLY"
+		UpdatePlateFlags(Plate)
 		UpdateRefinedPlate(Plate)
 		UpdateTarget(Plate)
 		if RBP.inCombat then
@@ -89,9 +89,7 @@ do
 	local function PlateOnHide(Plate)
 		PlatesVisible[Plate] = nil
 		ExistsVisiblePlates = next(PlatesVisible) ~= nil
-		Plate.hasRaidIcon = nil
-		Plate.hasEliteIcon = nil
-		Plate.isFriendly = nil
+		ResetPlateFlags(Plate)
 		ResetRefinedPlate(Plate)
 		if RBP.inCombat then
 			ExecuteHitboxSecureScript()
@@ -117,7 +115,7 @@ do
 					healthBarHighlight = Virtual.healthBarHighlight
 					nameText = Virtual.healthBar.nameText
 					if healthBarHighlight:IsShown() then
-						if Virtual.nameString ~= mouseoverName then
+						if Plate.nameString ~= mouseoverName then
 							healthBarHighlight:Hide()
 						elseif not Virtual.nameTextIsYellow then
 							nameText:SetTextColor(1, 1, 0)

@@ -237,7 +237,7 @@ local function MixColor(original, grayFraction)
 end
 
 local function UpdateBarlessNameText(Plate, percent)
-	local name = Plate.VirtualPlate.nameString
+	local name = Plate.nameString
 	local nameLen = utf8len(name)
 	if nameLen > 0 then
 		local chars = utf8chars(name)
@@ -667,7 +667,7 @@ local function SetupBarlessPlate(Plate)
 end
 
 local function CheckBarlessPlate(Plate)
-	if Plate.isFriendly and ((RBP.inBG and RBP.dbp.barlessPlate_showInBG)	or (RBP.inArena and RBP.dbp.barlessPlate_showInArena) or (RBP.inPvEInstance and RBP.dbp.barlessPlate_showInPvE)) then
+	if Plate.isFriendly and ((RBP.inBG and RBP.dbp.barlessPlate_showInBG) or (RBP.inArena and RBP.dbp.barlessPlate_showInArena) or (RBP.inPvEInstance and RBP.dbp.barlessPlate_showInPvE)) then
 		if not Plate.barlessPlate then
 			SetupBarlessPlate(Plate)
 		end
@@ -682,7 +682,7 @@ local function BarlessPlateHandler(Plate)
 	if not Virtual.isTarget then
 		local barlessNameText = barlessPlate.nameText
 		barlessNameText:SetTextColor(unpack(Plate.barlessNameTextRGB))
-		barlessNameText:SetText(Virtual.nameString)
+		barlessNameText:SetText(Plate.nameString)
 		local healthBarHighlight = Virtual.healthBarHighlight
 		healthBarHighlight:SetTexture(ASSETS .. "PlateBorders\\BarlessPlate-MouseoverGlow")
 		healthBarHighlight:ClearAllPoints()
@@ -697,7 +697,7 @@ local function BarlessPlateHandler(Plate)
 			barlessPlate.raidTargetIcon:Show()
 		end
 		if Plate.classKey and RBP.dbp.barlessPlate_showClassIcon then
-			barlessPlate.classIcon:SetTexture(ASSETS .. "Classes\\" .. (ClassByFriendName[Virtual.nameString] or ""))
+			barlessPlate.classIcon:SetTexture(ASSETS .. "Classes\\" .. (ClassByFriendName[Plate.nameString] or ""))
 			barlessPlate.classIcon:Show()
 		end
 		UpdateBarlessPlate(Plate)
@@ -741,7 +741,9 @@ local function BarlessPlateHandler(Plate)
 			SetupLevelText(Virtual)
 			Virtual.levelText:Show()
 		end
-		Virtual.bossIcon:Hide()
+		if Plate.hasBossIcon then
+			Virtual.bossIcon:Show()
+		end
 		if Plate.hasRaidIcon then
 			Virtual.raidTargetIcon:Show()
 		end
@@ -766,7 +768,7 @@ local function SetupTargetHandler(Plate)
 	Plate.targetHandler = CreateFrame("Frame")
 	Plate.targetHandler:SetScript("OnUpdate", function(self)
 		self:Hide()
-		if Virtual.nameString == UnitName("target") and Virtual:GetAlpha() == 1 then
+		if Plate.nameString == UnitName("target") and Virtual:GetAlpha() == 1 then
 			Virtual.isTarget = true
 			Virtual.healthBar.targetGlow:Show()
 			Virtual:SetScale(RBP.dbp.globalScale * RBP.dbp.targetScale)
@@ -782,7 +784,7 @@ local function SetupTargetHandler(Plate)
 				BarlessPlateHandler(Plate)
 			end
 			if not Plate.isFriendly and not RBP.dbp.stackingEnabled then
-				if (Virtual.isTarget and RBP.dbp.clampTarget) or (Plate.isBoss and RBP.dbp.clampBoss and RBP.inPvEInstance) then
+				if (Virtual.isTarget and RBP.dbp.clampTarget) or (Plate.hasBossIcon and RBP.dbp.clampBoss and RBP.inPvEInstance) then
 					Plate:SetClampedToScreen(true)
 					Plate:SetClampRectInsets(80*RBP.dbp.globalScale, -80*RBP.dbp.globalScale, RBP.dbp.upperborder, 0)
 				else
@@ -924,7 +926,7 @@ local function UpdateClassColorNames()
 	local class, name
 	for Plate, Virtual in pairs(PlatesVisible) do
 		class = Plate.classKey
-		name = Virtual.nameString
+		name = Plate.nameString
 		local classColor
 		if class then
 			if class == "FRIENDLY PLAYER" and ClassByFriendName[name] then
@@ -1093,14 +1095,32 @@ local function UpdateHitboxOutOfCombat(Plate)
 	end
 end
 
+local function UpdatePlateFlags(Plate)
+	local Virtual = Plate.VirtualPlate
+	Plate.hasRaidIcon = Virtual.raidTargetIcon:IsShown() and true
+	Plate.hasEliteIcon = Virtual.eliteIcon:IsShown() and true
+	Plate.hasBossIcon = Virtual.bossIcon:IsShown() and true
+	Plate.isFriendly = ReactionByPlateColor(Virtual.healthBar) == "FRIENDLY"
+	Plate.levelNumber = tonumber(Virtual.levelText:GetText())
+	Plate.nameString = Virtual.nameText:GetText()
+	Virtual.healthBar.nameText:SetText(Plate.nameString)
+end
+
+local function ResetPlateFlags(Plate)
+	local Virtual = Plate.VirtualPlate
+	Plate.hasRaidIcon = nil
+	Plate.hasEliteIcon = nil
+	Plate.hasBossIcon = nil
+	Plate.isFriendly = nil
+	Plate.levelNumber = nil
+	Plate.nameString = nil
+end
+
 local function UpdateRefinedPlate(Plate)
 	local Virtual = Plate.VirtualPlate
-	local healthBar = Virtual.healthBar
-	local level = tonumber(Virtual.levelText:GetText())
-	local name = Virtual.nameText:GetText()
-	healthBar.nameText:SetText(name)
-	Virtual.nameString = name
-	if not level or level >= RBP.dbp.levelFilter then
+	local name = Plate.nameString
+	local level = Plate.levelNumber
+	if not level or level >= RBP.dbp.levelFilter or Plate.hasBossIcon then
 		local totemKey = RBP.Totems[name]
 		local totemCheck = RBP.dbp.TotemsCheck[totemKey]
 		local blacklisted = RBP.dbp.Blacklist[name]
@@ -1145,7 +1165,6 @@ local function UpdateRefinedPlate(Plate)
 			UpdateMouseoverGlow(Virtual)
 			local levelText = Virtual.levelText
 			if Virtual.bossIcon:IsShown() then
-				Plate.isBoss = true
 				levelText:Hide()
 			else
 				SetupLevelText(Virtual)
@@ -1154,18 +1173,17 @@ local function UpdateRefinedPlate(Plate)
 			if RBP.dbp.levelText_hide then
 				levelText:Hide()
 			end
+			local healthBar = Virtual.healthBar
 			local nameText = healthBar.nameText
 			if RBP.dbp.nameText_hide then
 				nameText:Hide()
 			else
 				nameText:Show()	
 			end
-
 			local class = ClassByPlateColor(healthBar)
 			local classColor	
 			if class then
 				Plate.classKey = class
-				Plate.isBoss = nil
 				if class == "FRIENDLY PLAYER" then
 					classColor = ClassByFriendName[name] and RAID_CLASS_COLORS[ClassByFriendName[name]]
 					Plate.classColor = classColor
@@ -1266,7 +1284,7 @@ local function UpdateRefinedPlate(Plate)
 			if not Plate.isFriendly then
 				if RBP.dbp.stackingEnabled and not StackablePlates[Plate] then
 					StackablePlates[Plate] = {xpos = 0, ypos = 0, position = 0}
-				elseif Plate.isBoss and RBP.dbp.clampBoss and RBP.inPvEInstance then
+				elseif Plate.hasBossIcon and RBP.dbp.clampBoss and RBP.inPvEInstance then
 					Plate:SetClampedToScreen(true)
 					Plate:SetClampRectInsets(80*RBP.dbp.globalScale, -80*RBP.dbp.globalScale, RBP.dbp.upperborder, 0)
 				end
@@ -1283,9 +1301,7 @@ local function ResetRefinedPlate(Plate)
 	Virtual.healthBar:Show()
 	Virtual.healthBar.ArenaIDText:Hide()
 	Virtual.isShown = nil
-	Virtual.nameString = nil
 	Virtual.nameTextIsYellow = nil
-	Plate.isBoss = nil
 	Plate.classKey = nil
 	Plate.classColor = nil
 	Plate.unitToken = nil
@@ -1393,7 +1409,7 @@ local function UpdateStacking()
             end
             Plate1_StackData.position = newposition
             Plate1:SetClampedToScreen(true)
-			if (Virtual1.isTarget and RBP.dbp.clampTarget) or (Plate1.isBoss and RBP.dbp.clampBoss and RBP.inPvEInstance) then
+			if (Virtual1.isTarget and RBP.dbp.clampTarget) or (Plate1.hasBossIcon and RBP.dbp.clampBoss and RBP.inPvEInstance) then
 				Plate1:SetClampRectInsets(0.5*width, -0.5*width, RBP.dbp.upperborder, - Plate1_StackData.ypos - newposition - RBP.dbp.originpos + height)
 			else
 				Plate1:SetClampRectInsets(0.5*width, -0.5*width, -height, - Plate1_StackData.ypos - newposition - RBP.dbp.originpos + height)
@@ -1622,6 +1638,8 @@ RBP.InitPlatesHitboxes = InitPlatesHitboxes
 RBP.HitboxAttributeUpdater = HitboxAttributeUpdater
 RBP.UpdateHitboxInCombat = UpdateHitboxInCombat
 RBP.UpdateHitboxOutOfCombat = UpdateHitboxOutOfCombat
+RBP.UpdatePlateFlags = UpdatePlateFlags
+RBP.ResetPlateFlags = ResetPlateFlags
 RBP.UpdateRefinedPlate = UpdateRefinedPlate
 RBP.ResetRefinedPlate = ResetRefinedPlate
 RBP.DelayedUpdateAllShownPlates = DelayedUpdateAllShownPlates
