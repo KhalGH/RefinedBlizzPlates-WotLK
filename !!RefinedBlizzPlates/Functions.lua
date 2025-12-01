@@ -737,12 +737,11 @@ local function BarlessPlateHandler(Plate)
 	else
 		Virtual.healthBar:Show()
 		UpdateMouseoverGlow(Virtual)
-		if not RBP.dbp.levelText_hide and not (RBP.inArena and RBP.dbp.PartyIDText_show and RBP.dbp.PartyIDText_HideLevel) then
-			SetupLevelText(Virtual)
-			Virtual.levelText:Show()
-		end
 		if Plate.hasBossIcon then
 			Virtual.bossIcon:Show()
+		elseif not RBP.dbp.levelText_hide and not (RBP.inArena and RBP.dbp.PartyIDText_show and RBP.dbp.PartyIDText_HideLevel) then
+			SetupLevelText(Virtual)
+			Virtual.levelText:Show()
 		end
 		if Plate.hasRaidIcon then
 			Virtual.raidTargetIcon:Show()
