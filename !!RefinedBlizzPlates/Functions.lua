@@ -778,12 +778,20 @@ local function SetupTargetHandler(Plate)
 		if Plate.nameString == UnitName("target") and Virtual:GetAlpha() == 1 then
 			Plate.isTarget = true
 			Virtual.targetGlow:Show()
-			Virtual:SetScale(RBP.dbp.globalScale * RBP.dbp.targetScale)
+			if Plate.isFriendly then
+				Virtual:SetScale(RBP.dbp.globalScale * RBP.dbp.friendlyScale * RBP.dbp.targetScale)
+			else
+				Virtual:SetScale(RBP.dbp.globalScale * RBP.dbp.targetScale)
+			end
 			if Plate.totemPlate_targetGlow then Plate.totemPlate_targetGlow:Show() end
 		else
 			Plate.isTarget = false
 			Virtual.targetGlow:Hide()
-			Virtual:SetScale(RBP.dbp.globalScale)
+			if Plate.isFriendly then
+				Virtual:SetScale(RBP.dbp.globalScale * RBP.dbp.friendlyScale)
+			else
+				Virtual:SetScale(RBP.dbp.globalScale)
+			end
 			if Plate.totemPlate_targetGlow then Plate.totemPlate_targetGlow:Hide() end
 		end
 		if Virtual.isShown then
@@ -1003,6 +1011,8 @@ SecureHandlerWrapScript(ResizeHitBox, "OnShow", ResizeHitBox,
 	local totemHeight = self:GetAttribute("totemHeight")
 	local barlessWidth = self:GetAttribute("barlessWidth")
 	local barlessHeight = self:GetAttribute("barlessHeight")
+	local friendlyWidth = self:GetAttribute("friendlyWidth")
+	local friendlyHeight = self:GetAttribute("friendlyHeight")
 	Plates = Plates or table.new()
 	for plate, shown in pairs(Plates) do
 		if shown and not plate:IsShown() then
@@ -1023,7 +1033,10 @@ SecureHandlerWrapScript(ResizeHitBox, "OnShow", ResizeHitBox,
 				nameplate:SetHeight(totemHeight)
 			elseif WorldFrame:GetID() == 3 then
 				nameplate:SetWidth(barlessWidth)
-				nameplate:SetHeight(barlessHeight)				
+				nameplate:SetHeight(barlessHeight)
+			elseif WorldFrame:GetID() == 4 then
+				nameplate:SetWidth(friendlyWidth)
+				nameplate:SetHeight(friendlyHeight)
 			end
 		end
 	end
@@ -1075,6 +1088,16 @@ local function SetBarlessHitbox()
 		ToggleFrame(SetWorldFrameID3)
 	end
 end
+local SetWorldFrameID4 = CreateFrame("Frame", "SetWorldFrameID4SecureHandler", UIParent, "SecureHandlerShowHideTemplate") 
+SetWorldFrameID4:SetFrameRef("WorldFrame", WorldFrame)
+SecureHandlerWrapScript(SetWorldFrameID4, "OnShow", SetWorldFrameID4, [[self:GetFrameRef("WorldFrame"):SetID(4)]])
+TriggerFrames["SetWorldFrameID4SecureHandler"] = SetWorldFrameID4
+local function SetFriendlyHitbox()
+	if WorldFrame:GetID() ~= 4 then
+		ToggleFrame(SetWorldFrameID4)
+		ToggleFrame(SetWorldFrameID4)
+	end
+end
 local SetWorldFrameID5 = CreateFrame("Frame", "SetWorldFrameID5SecureHandler", UIParent, "SecureHandlerShowHideTemplate") 
 SetWorldFrameID5:SetFrameRef("WorldFrame", WorldFrame)
 SecureHandlerWrapScript(SetWorldFrameID5, "OnShow", SetWorldFrameID5, [[self:GetFrameRef("WorldFrame"):SetID(5)]])
@@ -1100,9 +1123,13 @@ local function HitboxAttributeUpdater()
 	if RBP.dbp.healthBar_border == "Blizzard" then
 		RBP.ResizeHitBox:SetAttribute("normalWidth", NP_WIDTH * RBP.dbp.globalScale)
 		RBP.ResizeHitBox:SetAttribute("normalHeight", NP_HEIGHT * RBP.dbp.globalScale)
+		RBP.ResizeHitBox:SetAttribute("friendlyWidth", NP_WIDTH * RBP.dbp.globalScale * RBP.dbp.friendlyScale)
+		RBP.ResizeHitBox:SetAttribute("friendlyHeight", NP_HEIGHT * RBP.dbp.globalScale * RBP.dbp.friendlyScale)
 	else
 		RBP.ResizeHitBox:SetAttribute("normalWidth", NP_WIDTH * RBP.dbp.globalScale * 0.9)
 		RBP.ResizeHitBox:SetAttribute("normalHeight", NP_HEIGHT * RBP.dbp.globalScale * 0.7)
+		RBP.ResizeHitBox:SetAttribute("friendlyWidth", NP_WIDTH * RBP.dbp.globalScale * RBP.dbp.friendlyScale * 0.9)
+		RBP.ResizeHitBox:SetAttribute("friendlyHeight", NP_HEIGHT * RBP.dbp.globalScale * RBP.dbp.friendlyScale * 0.7)
 	end
 	RBP.ResizeHitBox:SetAttribute("totemWidth", RBP.dbp.totemSize * 1.2)
 	RBP.ResizeHitBox:SetAttribute("totemHeight", RBP.dbp.totemSize * 1.2)
@@ -1117,6 +1144,8 @@ local function UpdateHitboxInCombat(Plate)
 		SetTotemHitbox()
 	elseif Plate.isBarlessPlate then
 		SetBarlessHitbox()
+	elseif Plate.VirtualPlate.isShown and Plate.isFriendly then
+		SetFriendlyHitbox()
 	else
 		SetNormalHitbox()
 	end
@@ -1130,6 +1159,12 @@ local function UpdateHitboxOutOfCombat(Plate)
 		Plate:SetSize(RBP.dbp.totemSize * 1.2, RBP.dbp.totemSize * 1.2)
 	elseif Plate.isBarlessPlate then
 		Plate:SetSize(2*RBP.dbp.barlessPlate_textSize + 50, RBP.dbp.barlessPlate_textSize + 5)
+	elseif Plate.VirtualPlate.isShown and Plate.isFriendly then
+		if RBP.dbp.healthBar_border == "Blizzard" then
+			Plate:SetSize(NP_WIDTH * RBP.dbp.globalScale * RBP.dbp.friendlyScale, NP_HEIGHT * RBP.dbp.globalScale * RBP.dbp.friendlyScale)
+		else
+			Plate:SetSize(NP_WIDTH * RBP.dbp.globalScale * RBP.dbp.friendlyScale * 0.9, NP_HEIGHT * RBP.dbp.globalScale * RBP.dbp.friendlyScale * 0.7)
+		end
 	else
 		if RBP.dbp.healthBar_border == "Blizzard" then
 			Plate:SetSize(NP_WIDTH * RBP.dbp.globalScale, NP_HEIGHT * RBP.dbp.globalScale)
@@ -1482,9 +1517,17 @@ end
 function RBP:UpdateAllVirtualsScale()
 	for Plate, Virtual in pairs(VirtualPlates) do
 		if Plate.isTarget then
-			Virtual:SetScale(RBP.dbp.globalScale * RBP.dbp.targetScale)
+			if Plate.isFriendly then
+				Virtual:SetScale(RBP.dbp.globalScale * RBP.dbp.friendlyScale * RBP.dbp.targetScale)
+			else
+				Virtual:SetScale(RBP.dbp.globalScale * RBP.dbp.targetScale)
+			end
 		else
-			Virtual:SetScale(RBP.dbp.globalScale)
+			if Plate.isFriendly then
+				Virtual:SetScale(RBP.dbp.globalScale * RBP.dbp.friendlyScale)
+			else
+				Virtual:SetScale(RBP.dbp.globalScale)
+			end
 		end
 		if not self.inCombat then
 			UpdateHitboxOutOfCombat(Plate)

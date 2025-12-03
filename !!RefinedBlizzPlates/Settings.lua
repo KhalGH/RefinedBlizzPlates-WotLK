@@ -11,11 +11,12 @@ RBP.dbp.globalScale = 1    -- Global scale for nameplates
 RBP.dbp.globalOffsetX = 0  -- Global offset X for nameplates
 RBP.dbp.globalOffsetY = 21 -- Global offset Y for nameplates
 RBP.dbp.targetScale = 1    -- Target scale factor
+RBP.dbp.friendlyScale = 1  -- Friendly scale factor
 RBP.dbp.friendlyClickthrough = false -- Disables hitbox on friendly nameplates
-RBP.dbp.levelFilter = 1    -- Minimum unit level to show its nameplate
 RBP.dbp.clampTarget = false
 RBP.dbp.clampBoss = false
 RBP.dbp.upperborder = 35
+RBP.dbp.levelFilter = 1    -- Minimum unit level to show its nameplate
 RBP.dbp.LDWfix = false      -- Hide nameplates when controlled by LDW
 -- Enhanced Stacking
 RBP.dbp.stackingEnabled = false
@@ -391,24 +392,25 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllVirtualsScale()
 					end,
 				},
-				friendlyClickthrough = {
+				friendlyScale = {
 					order = 15,
+					type = "range",
+					name = "Friendly Scale Factor",
+					desc = "Adjusts friendly nameplate scale, applied multiplicatively with the global scale.",
+					min = 0.5,
+					max = 1,
+					step = 0.01,
+					set = function(info, val)
+						RBP.dbp[info[#info]] = val
+						RBP:UpdateAllVirtualsScale()
+						RBP:UpdateHitboxAttributes()
+					end,
+				},
+				friendlyClickthrough = {
+					order = 16,
 					type = "toggle",
 					name = "Click-through Friendly Nameplates",
 					desc = "Disable friendly nameplates hitboxes inside PvE and PvP instances.",
-				},
-				levelFilter = {
-					order = 16,
-					type = "range",
-					name = "Level Filter",
-					desc = "Minimum unit level required for the nameplate to be shown.",
-					min = 1,
-					max = 80,
-					step = 1,
-					set = function(info, val)
-						RBP.dbp[info[#info]] = val
-						RBP:UpdateAllShownPlates()
-					end,
 				},
 				clampTarget = {
 					order = 17,
@@ -448,8 +450,21 @@ RBP.MainOptionTable = {
 						return not RBP.dbp.clampTarget and not RBP.dbp.clampBoss
 					end,
 				},
-				LDWfix = {
+				levelFilter = {
 					order = 20,
+					type = "range",
+					name = "Level Filter",
+					desc = "Minimum unit level required for the nameplate to be shown.",
+					min = 1,
+					max = 80,
+					step = 1,
+					set = function(info, val)
+						RBP.dbp[info[#info]] = val
+						RBP:UpdateAllShownPlates()
+					end,
+				},
+				LDWfix = {
+					order = 21,
 					type = "toggle",
 					name = "Hide on LDW MC",
 					desc = "Hide nameplates when mind-controlled by Lady Deathwhisper.",
@@ -479,16 +494,16 @@ RBP.MainOptionTable = {
 						end
 					end,
 				},
-				lineBreak9 = {order = 21, type = "description", name = ""},
-				lineBreak10 = {order = 22, type = "description", name = ""},
+				lineBreak9 = {order = 22, type = "description", name = ""},
+				lineBreak10 = {order = 23, type = "description", name = ""},
 				stacking_header = {
-					order = 23,
+					order = 24,
 					type = "header",
 					name = "Retail-like Stacking",
 				},
-				lineBreak11 = {order = 24, type = "description", name = ""},
+				lineBreak11 = {order = 25, type = "description", name = ""},
 				stackingEnabled = {
-					order = 25,
+					order = 26,
 					type = "toggle",
 					name = "Enable",
 					desc = "Simulates Retail's nameplate stacking for enemies. This feature has a high CPU cost, use it with discretion.",
@@ -498,10 +513,10 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllShownPlates()
 					end,
 				},
-				lineBreak12 = {order = 26, type = "description", name = ""},
-				lineBreak13 = {order = 27, type = "description", name = ""},
+				lineBreak12 = {order = 27, type = "description", name = ""},
+				lineBreak13 = {order = 28, type = "description", name = ""},
 				xspace = {
-					order = 28,
+					order = 29,
 					type = "range",
 					name = "Collider Width",
 					desc = "Sets the width of the virtual collider centered on each nameplate used to detect overlaps.",
@@ -513,7 +528,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				yspace = {
-					order = 29,
+					order = 30,
 					type = "range",
 					name = "Collider Height",
 					desc = "Sets the height of the virtual collider centered on each nameplate used to detect overlaps.",
@@ -525,7 +540,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				originpos = {
-					order = 30,
+					order = 31,
 					type = "range",
 					name = "Vertical Offset",
 					desc = "Vertically offsets the entire nameplate, including its hitbox.",
@@ -536,10 +551,10 @@ RBP.MainOptionTable = {
 						return not RBP.dbp.stackingEnabled
 					end,
 				},
-				lineBreak14 = {order = 31, type = "description", name = ""},
-				lineBreak15 = {order = 32, type = "description", name = ""},
+				lineBreak14 = {order = 32, type = "description", name = ""},
+				lineBreak15 = {order = 33, type = "description", name = ""},
 				FreezeMouseover = {
-					order = 33,
+					order = 34,
 					type = "toggle",
 					name = "Freeze Mouseover",
 					desc = "Stops the nameplate you're mousing over from moving for better selection.",
@@ -548,7 +563,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				stackingInInstance = {
-					order = 34,
+					order = 35,
 					type = "toggle",
 					name = "Disable in Open World",
 					desc = "Only process stacking inside PvE and PvP instances. This will reduce CPU usage in the open world.",
@@ -560,8 +575,8 @@ RBP.MainOptionTable = {
 						return not RBP.dbp.stackingEnabled
 					end,
 				},
-				lineBreak16 = {order = 35, type = "description", name = ""},
-				lineBreak17 = {order = 36, type = "description", name = ""},
+				lineBreak16 = {order = 36, type = "description", name = ""},
+				lineBreak17 = {order = 37, type = "description", name = ""},
 			},
 		},
 		Text = {
