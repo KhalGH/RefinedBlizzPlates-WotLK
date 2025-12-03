@@ -1158,10 +1158,6 @@ local function ResetPlateFlags(Plate)
 	Plate.classKey = nil
 	Plate.levelNumber = nil
 	Plate.nameString = nil
-	Virtual.hasThreat = nil
-	Virtual.hasOrangeThreat = nil
-	Virtual.isNearThreat = nil
-	Virtual.threatGlowWasVisible = nil
 end
 
 local function UpdateRefinedPlate(Plate)
