@@ -34,8 +34,10 @@ local ClassByKey = {
 SetCVar("ShowClassColorInNameplate", 1) -- "Class Colors in Nameplates" must be enabled to identify enemy players
 
 local function ReactionByPlateColor(r, g, b)
-	if r < 0.01 and ((g > 0.99 and b < 0.01) or (b > 0.99 and g < 0.01)) then
+	if r < 0.01 and ((g > 0.99 and b < 0.01) or (g < 0.01 and b > 0.99)) then
 		return "FRIENDLY"
+	elseif r > .99 and g > .99 and b < .01 then
+		return "NEUTRAL"
 	else
 		return "HOSTILE"
 	end
@@ -1180,7 +1182,9 @@ local function UpdatePlateFlags(Plate)
 	Plate.hasEliteIcon = Virtual.eliteIcon:IsShown() and true
 	Plate.hasBossIcon = Virtual.bossIcon:IsShown() and true
 	Virtual.healthBarColor = {Virtual.healthBar:GetStatusBarColor()}
-	Plate.isFriendly = ReactionByPlateColor(unpack(Virtual.healthBarColor)) == "FRIENDLY"
+	local reaction = ReactionByPlateColor(unpack(Virtual.healthBarColor))
+	Plate.isFriendly = reaction == "FRIENDLY"
+	Plate.isHostile = reaction == "HOSTILE"
 	Plate.classKey = ClassByPlateColor(unpack(Virtual.healthBarColor))
 	Plate.levelNumber = tonumber(Virtual.levelText:GetText())
 	Plate.nameString = Virtual.ogNameText:GetText()
@@ -1194,6 +1198,7 @@ local function ResetPlateFlags(Plate)
 	Plate.hasBossIcon = nil
 	Virtual.healthBarColor = nil
 	Plate.isFriendly = nil
+	Plate.isHostile = nil
 	Plate.classKey = nil
 	Plate.levelNumber = nil
 	Plate.nameString = nil
@@ -1336,7 +1341,7 @@ local function UpdateRefinedPlate(Plate)
 				end
 				Virtual.healthBarTex:SetTexture(RBP.LSM:Fetch("statusbar", RBP.dbp.healthBar_playerTex))
 			else
-				if RBP.dbp.enableAggroColoring and not Plate.isFriendly and RBP.inPvEInstance then
+				if RBP.dbp.enableAggroColoring and Plate.isHostile and RBP.inPvEInstance then
 					if not Virtual.aggroOverlay then
 						SetupAggroOverlay(Virtual)
 					end
@@ -1688,7 +1693,9 @@ function RBP:UpdateAllShownPlates(updateRaidIcon, updateReaction)
 			Plate.hasRaidIcon = Virtual.raidTargetIcon:IsShown() and true
 		end
 		if updateReaction then
-			Plate.isFriendly = ReactionByPlateColor(unpack(Virtual.healthBarColor)) == "FRIENDLY"
+			local reaction = ReactionByPlateColor(unpack(Virtual.healthBarColor))
+			Plate.isFriendly = reaction == "FRIENDLY"
+			Plate.isHostile = reaction == "HOSTILE"
 			Plate.classKey = ClassByPlateColor(unpack(Virtual.healthBarColor))
 		end
 		ResetRefinedPlate(Plate)

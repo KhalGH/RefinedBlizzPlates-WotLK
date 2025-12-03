@@ -82,10 +82,10 @@ RBP.dbp.healthText_offsetY = 0
 RBP.dbp.healthText_color = {1, 1, 1} -- white
 -- Threat Overlay
 RBP.dbp.enableAggroColoring = false
-RBP.dbp.aggroColor = {1, 0, 0}
-RBP.dbp.gainingAggroColor = {0.9, 0.2, 0.8}
+RBP.dbp.aggroColor = {0.2, 0.8, 0.6}
+RBP.dbp.gainingAggroColor = {0.2, 0.5, 0.5}
 RBP.dbp.losingAggroColor = {0.7, 0.2, 0.4}
-RBP.dbp.noAggroColor = {0.6, 0.6, 0.6}
+RBP.dbp.noAggroColor = {1, 0, 0}
 -- CastBar
 RBP.dbp.castBar_Tex = "KhalBar"
 -- Cast Text
@@ -638,9 +638,9 @@ RBP.MainOptionTable = {
 					type = "select", 
 					name = "Anchor",
 					values = {
-						["LEFT"] = "LEFT",
-						["CENTER"] = "CENTER",
-						["RIGHT"] = "RIGHT"
+						["LEFT"] = "Left",
+						["CENTER"] = "Center",
+						["RIGHT"] = "Right"
 					},
 					set = function(info, val)
 						RBP.dbp[info[#info]] = val
@@ -2189,9 +2189,9 @@ RBP.MainOptionTable = {
 					fontSize = "medium",
 					name = function()
 						if not IsAddOnLoaded("BattleGroundHealers") then
-							return "|cff808080This feature is available only when BattleGroundHealers is loaded.|r"
+							return "|cff808080" .. "This feature is available only when BattleGroundHealers is loaded." .. "|r"
 						elseif not RBP.dbp.barlessPlate_showInBG then
-							return "|cff808080These settings will replace some of BattleGroundHealers’ icon configuration for Barless Plates.|r"
+							return "|cff808080" .. "These settings will replace some of BattleGroundHealers’ icon configuration for Barless Plates." .. "|r"
 						else
 							return "These settings will replace some of BattleGroundHealers’ icon configuration for Barless Plates."
 						end
