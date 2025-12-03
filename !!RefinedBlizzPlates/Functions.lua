@@ -96,7 +96,7 @@ local function SetupCastBarBackground(Virtual)
 end
 
 local function UpdateNameText(Virtual)
-	local nameText = Virtual.nameText
+	local nameText = Virtual.newNameText
 	if not nameText then return end
 	nameText:SetFont(RBP.LSM:Fetch("font", RBP.dbp.nameText_font), RBP.dbp.nameText_size, RBP.dbp.nameText_outline)
 	nameText:ClearAllPoints()
@@ -115,12 +115,12 @@ local function UpdateNameText(Virtual)
 end
 
 local function SetupNameText(Virtual)
-	if Virtual.nameText then return end
-	Virtual.nameText = Virtual.healthBar:CreateFontString(nil, "OVERLAY")
-	Virtual.nameText:SetShadowOffset(0.5, -0.5)
-	Virtual.nameText:SetNonSpaceWrap(false)
-	Virtual.nameText:SetWordWrap(false)
-	Virtual.nameText:Hide()
+	if Virtual.newNameText then return end
+	Virtual.newNameText = Virtual.healthBar:CreateFontString(nil, "OVERLAY")
+	Virtual.newNameText:SetShadowOffset(0.5, -0.5)
+	Virtual.newNameText:SetNonSpaceWrap(false)
+	Virtual.newNameText:SetWordWrap(false)
+	Virtual.newNameText:Hide()
 	UpdateNameText(Virtual)
 end
 
@@ -985,7 +985,7 @@ local function UpdateClassColorNames()
 		if classColor and ((class == "FRIENDLY PLAYER" and RBP.dbp.nameText_classColorFriends) or (class ~= "FRIENDLY PLAYER" and RBP.dbp.nameText_classColorEnemies)) then
 			Virtual.nameColorR, Virtual.nameColorG, Virtual.nameColorB = classColor.r, classColor.g, classColor.b
 		end
-		Virtual.nameText:SetTextColor(Virtual.nameColorR, Virtual.nameColorG, Virtual.nameColorB)
+		Virtual.newNameText:SetTextColor(Virtual.nameColorR, Virtual.nameColorG, Virtual.nameColorB)
 		Virtual.nameTextIsYellow = false
 	end
 end
@@ -1149,7 +1149,7 @@ local function UpdatePlateFlags(Plate)
 	Plate.classKey = ClassByPlateColor(unpack(Virtual.healthBarColor))
 	Plate.levelNumber = tonumber(Virtual.levelText:GetText())
 	Plate.nameString = Virtual.ogNameText:GetText()
-	Virtual.nameText:SetText(Plate.nameString)
+	Virtual.newNameText:SetText(Plate.nameString)
 end
 
 local function ResetPlateFlags(Plate)
@@ -1223,7 +1223,7 @@ local function UpdateRefinedPlate(Plate)
 				levelText:Hide()
 			end
 			local healthBar = Virtual.healthBar
-			local nameText = Virtual.nameText
+			local nameText = Virtual.newNameText
 			if RBP.dbp.nameText_hide then
 				nameText:Hide()
 			else

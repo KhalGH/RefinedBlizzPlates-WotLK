@@ -116,11 +116,11 @@ do
 						if Plate.nameString ~= mouseoverName then
 							Virtual.healthBarHighlight:Hide()
 						elseif not Virtual.nameTextIsYellow then
-							Virtual.nameText:SetTextColor(1, 1, 0)
+							Virtual.newNameText:SetTextColor(1, 1, 0)
 							Virtual.nameTextIsYellow  = true
 						end
 					elseif Virtual.nameTextIsYellow then
-						Virtual.nameText:SetTextColor(Virtual.nameColorR, Virtual.nameColorG, Virtual.nameColorB)
+						Virtual.newNameText:SetTextColor(Virtual.nameColorR, Virtual.nameColorG, Virtual.nameColorB)
 						Virtual.nameTextIsYellow = false
 					end
 					---------------- Aggro Coloring ----------------
