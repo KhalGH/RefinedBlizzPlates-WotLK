@@ -41,11 +41,11 @@ It preserves a Blizzlike appearance while adding functional and visual improveme
 </p>
 
 ## Installation  
-1. [Download](https://github.com/KhalGH/RefinedBlizzPlates-WotLK/releases/download/v1.8.3/RefinedBlizzPlates-v1.8.3.zip) the addon
+1. [Download](https://github.com/KhalGH/RefinedBlizzPlates-WotLK/releases/download/v1.8.4/RefinedBlizzPlates-v1.8.4.zip) the addon
 2. Extract the **!!RefinedBlizzPlates** folder into `World of Warcraft/Interface/AddOns/`.  
 3. Restart the game and enable the addon.  
 
 ## Information  
-- **Addon Version:** 1.8.3  
+- **Addon Version:** 1.8.4  
 - **Game Version:** 3.3.5a (WotLK)  
 - **Author:** Khal  
