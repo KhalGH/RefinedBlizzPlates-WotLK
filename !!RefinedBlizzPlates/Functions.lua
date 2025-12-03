@@ -847,7 +847,14 @@ local function UpdateAggroOverlay(Virtual)
 	elseif aggroStatus == 0 then
 		aggroOverlay:SetVertexColor(unpack(RBP.dbp.noAggroColor))
 	end
-	aggroOverlay:Show()
+end
+
+local function PlatesAggroUpdate()
+	for Plate, Virtual in pairs(PlatesVisible) do
+		if Virtual.aggroColoring then
+			UpdateAggroOverlay(Virtual)
+		end
+	end
 end
 
 local function SetupRefinedPlate(Virtual)
@@ -1348,6 +1355,7 @@ local function UpdateRefinedPlate(Plate)
 					Virtual.threatGlow:SetTexture(nil)
 					Virtual.healthBarTex:SetTexture(nil)
 					UpdateAggroOverlay(Virtual)
+					Virtual.aggroOverlay:Show()
 					Virtual.aggroColoring = true
 				else
 					Virtual.healthBarTex:SetTexture(RBP.LSM:Fetch("statusbar", RBP.dbp.healthBar_npcTex))
@@ -1755,3 +1763,4 @@ RBP.ResetRefinedPlate = ResetRefinedPlate
 RBP.DelayedUpdateAllShownPlates = DelayedUpdateAllShownPlates
 RBP.UpdateStacking = UpdateStacking
 RBP.UpdateAggroOverlay = UpdateAggroOverlay
+RBP.PlatesAggroUpdate = PlatesAggroUpdate

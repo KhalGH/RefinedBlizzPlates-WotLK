@@ -33,13 +33,16 @@ local ResetRefinedPlate = RBP.ResetRefinedPlate
 local DelayedUpdateAllShownPlates = RBP.DelayedUpdateAllShownPlates
 local UpdateStacking = RBP.UpdateStacking
 local UpdateAggroOverlay = RBP.UpdateAggroOverlay
+local PlatesAggroUpdate = RBP.PlatesAggroUpdate
 
 -- Local definitions
 local EventHandler = CreateFrame("Frame", nil, WorldFrame) -- Main addon frame (event handler + access to native frame methods)
 local PlateOverrides = {}	 -- Storage table: [MethodName] = override function for virtual plates
 local PlateLevels = 3 	     -- Frame level difference between plates so one plate's children don't overlap the next closest plate
 local NextUpdate = 0.05		 -- Time controller for PlatesUpdate
-local UpdateRate = 0.05	     -- Minimum time between plates are updated.
+local UpdateRate = 0.05	     -- Minimum time between PlatesUpdate.
+local NextSecUpdate = 0.2    -- Time controller for PlatesAggroUpdate
+local SecUpdateRate = 0.2	 -- Minimum time between PlatesAggroUpdate.
 
 -- Backup of native frame methods
 local WorldFrame_GetChildren = WorldFrame.GetChildren
@@ -122,10 +125,6 @@ do
 					elseif Virtual.nameTextIsYellow then
 						Virtual.newNameText:SetTextColor(Virtual.nameColorR, Virtual.nameColorG, Virtual.nameColorB)
 						Virtual.nameTextIsYellow = false
-					end
-					---------------- Aggro Coloring ----------------
-					if Virtual.aggroColoring then
-						UpdateAggroOverlay(Virtual)
 					end
 				end
 			end
@@ -247,7 +246,12 @@ do
 		NextUpdate = NextUpdate - elapsed
 		if NextUpdate <= 0 then
 			NextUpdate = UpdateRate
-			return PlatesUpdate()
+			PlatesUpdate()
+		end
+		NextSecUpdate = NextSecUpdate - elapsed
+		if NextSecUpdate <= 0 then
+			NextSecUpdate = SecUpdateRate
+			PlatesAggroUpdate()
 		end
 	end
 end
