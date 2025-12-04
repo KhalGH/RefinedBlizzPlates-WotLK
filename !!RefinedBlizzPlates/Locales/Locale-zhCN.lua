@@ -141,7 +141,7 @@ RBP.LDWZoneText = "诅咒祷堂"
 
 local L = RBP.L
 
--- 通用设置 --
+-- General --
 L["General"] = "通用"
 L["General Settings"] = "通用设置"
 L["Nameplate Style Preset"] = "姓名板样式预设"
@@ -183,7 +183,7 @@ L["Stops the nameplate you're mousing over from moving for better selection."] =
 L["Disable in Open World"] = "野外禁用"
 L["Only process stacking inside PvE and PvP instances. This will reduce CPU usage in the open world."] = "仅在PvE/PvP副本启用堆叠（减少野外CPU占用）"
 
--- 文字设置 --
+-- Text --
 L["Text"] = "文字"
 L["Name Text"] = "名称文字"
 L["Text Font"] = "文字字体"
@@ -228,7 +228,7 @@ L["Hide name text on party"] = "隐藏队伍成员名称"
 L["Hide Friend Level"] = "隐藏友方等级"
 L["Hide level text on party"] = "隐藏队伍成员等级"
 
--- 血条设置 --
+-- Health Bar --
 L["Health Bar"] = "生命条"
 L["Appearance"] = "外观"
 L["Player Bar Texture"] = "玩家生命条纹理"
@@ -249,7 +249,7 @@ L["Gaining Aggro"] = "获得仇恨"
 L["Losing Aggro"] = "失去仇恨"  
 L["No Aggro"] = "无仇恨"  
 
--- 施法条设置 --
+-- Cast Bar --
 L["Cast Bar"] = "施法条"
 L["Bar Texture"] = "施法条纹理"
 L["Cast Text"] = "施法文字"
@@ -257,7 +257,7 @@ L["Hide Cast Text"] = "隐藏施法文字"
 L["Cast Timer Text"] = "施法计时文字"
 L["Hide Cast Timer Text"] = "隐藏施法计时文字"
 
--- 图标设置 --
+-- Icons --
 L["Icons"] = "图标"
 L["Elite Icon"] = "精英图标"
 L["Tint"] = "着色"
@@ -269,7 +269,7 @@ L["Show on Friends"] = "友方显示"
 L["Show on Enemies"] = "敌方显示"
 L["Class icons will only be shown inside PvE or PvP instances."] = "职业图标仅在PvE/PvP副本中显示"   
 
--- 无血条模式 --
+-- Barless Plate --
 L["Barless Plate"] = "无血条模式"
 L["Barless Plate Enabling"] = "无血条模式启用"
 L["Enable in PvE"] = "副本中启用"
@@ -290,7 +290,7 @@ L["BG Healer Icon"] = "战场治疗者图标"
 L["This feature is available only when BattleGroundHealers is loaded."] = "此功能需加载BattleGroundHealers才可用"
 L["These settings will replace some of BattleGroundHealers’ icon configuration for Barless Plates."] = "这些设置将覆盖BattleGroundHealers的部分图标配置"
 
--- 图腾设置 --
+-- Totems --
 L["Totems"] = "图腾"
 L["Totem Icon"] = "图腾图标" 
 L["Adjusts the vertical position of all Totem and Blacklisted icons (does not affect plate hitbox)."] = "调整所有图腾/黑名单图标的垂直位置（不影响点击区域）"   
@@ -302,7 +302,7 @@ L["Hide Totem"] = "隐藏图腾"
 L["Completely hides the nameplate and the totemplate for this totem."] = "完全隐藏此图腾的姓名板和图腾板"
 L["Controls the size of all Totem and Blacklisted icons."] = "控制所有图腾/黑名单图标尺寸"
 
--- 黑名单设置 --
+-- Blacklist --
 L["Blacklist"] = "黑名单"
 L["Unit name"] = "单位名称"
 L["Add the exact name of a unit whose nameplate you want to hide or replace with an icon. Blacklisted nameplates will always be click-through."] = "添加需隐藏/替换为图标的单位名称（黑名单单位始终可点击穿透）"
