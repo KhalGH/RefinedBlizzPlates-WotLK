@@ -561,19 +561,26 @@ local function SetupRaidTargetIcon(Virtual)
 	end
 end
 
+local eliteIconPath = {"Interface\\AddOns\\!!RefinedBlizzPlates\\Assets\\PlateBorders\\EliteIcon"}
 local function SetupEliteIcon(Virtual)
 	local eliteIcon = Virtual.eliteIcon
 	eliteIcon:SetVertexColor(unpack(RBP.dbp.eliteIcon_Tint))
-	eliteIcon:ClearAllPoints()
+	eliteIcon:ClearAllPoints()    
+    eliteIcon:SetTexture("") 
+    
 	if RBP.dbp.eliteIcon_anchor == "Left" then
-		eliteIcon:SetTexCoord(0.578125, 0, 0.578125, 0.84375, 0, 0, 0, 0.84375)
-		eliteIcon:SetPoint("LEFT", Virtual.healthBar, "LEFT", -18, -1.5)
+		eliteIcon:SetTexture(unpack(eliteIconPath))
+		eliteIcon:SetTexCoord(0.87, 0.14, 0.87, 0.97, 0.1, 0.1, 0.14, 0.97)		
+		eliteIcon:SetPoint("LEFT", Virtual.healthBar, "LEFT", -17, -1)
 	else
-		eliteIcon:SetTexCoord(0, 0, 0, 0.84375, 0.578125, 0, 0.578125, 0.84375)
 		if RBP.dbp.healthBar_border == "Blizzard" then
-			eliteIcon:SetPoint("RIGHT", Virtual.healthBar, "RIGHT", 18, -1.5)
-		else
-			eliteIcon:SetPoint("RIGHT", Virtual.healthBar, "RIGHT", 39, -1)
+            eliteIcon:SetTexture(unpack(eliteIconPath))
+            eliteIcon:SetTexCoord(0.14, 0.1, 0.1, 0.97, 0.87, 0.14, 0.87, 0.97)			
+			eliteIcon:SetPoint("RIGHT", Virtual.healthBar, "RIGHT", 39, -1.5)
+		else            
+            eliteIcon:SetTexture(unpack(eliteIconPath))
+            eliteIcon:SetTexCoord(0, 1, 0, 0.8)			
+			eliteIcon:SetPoint("RIGHT", Virtual.healthBar, "RIGHT", 39, 4.5)
 		end
 	end
 end
