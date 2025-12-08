@@ -13,7 +13,15 @@ RBP.dbp.globalOffsetX = 0  -- Global offset X for nameplates
 RBP.dbp.globalOffsetY = 21 -- Global offset Y for nameplates
 RBP.dbp.targetScale = 1    -- Target scale factor
 RBP.dbp.friendlyScale = 1  -- Friendly scale factor
-RBP.dbp.friendlyClickthrough = false -- Disables hitbox on friendly nameplates
+-- Runtime references for previous values in profile changes
+RBP.globalOffsetX = RBP.dbp.globalOffsetX
+RBP.globalOffsetY = RBP.dbp.globalOffsetY
+-- Box Selection Space
+RBP.dbp.clickboxWidthFactor = 1
+RBP.dbp.clickboxHeightFactor = 1
+RBP.dbp.friendlyClickthrough = false -- Disables clickbox on friendly nameplates
+RBP.dbp.showClickbox = false
+-- Misc Settings
 RBP.dbp.clampTarget = false
 RBP.dbp.clampBoss = false
 RBP.dbp.upperborder = 35
@@ -24,11 +32,8 @@ RBP.dbp.stackingEnabled = false
 RBP.dbp.xspace = 130
 RBP.dbp.yspace = 15
 RBP.dbp.originpos = 0
-RBP.dbp.stackingInInstance = false
 RBP.dbp.FreezeMouseover = false
--- Runtime references for previous values in profile changes
-RBP.globalOffsetX = RBP.dbp.globalOffsetX
-RBP.globalOffsetY = RBP.dbp.globalOffsetY
+RBP.dbp.stackingInInstance = false
 -- Name Text
 RBP.dbp.nameText_hide = false
 RBP.dbp.nameText_font = RBP.RefinedFontKey
@@ -89,6 +94,7 @@ RBP.dbp.losingAggroColor = {0.7, 0.2, 0.4}
 RBP.dbp.noAggroColor = {1, 0, 0}
 -- CastBar
 RBP.dbp.castBar_Tex = "KhalBar"
+RBP.dbp.castBar_showSpark = true
 -- Cast Text
 RBP.dbp.castText_hide = false
 RBP.dbp.castText_font = RBP.RefinedFontKey
@@ -328,7 +334,7 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllGlows()
 						RBP:UpdateAllCastBarBorders()
 						RBP:UpdateAllShownPlates()
-						RBP:UpdateHitboxAttributes()
+						RBP:UpdateClickboxAttributes()
 						RBP.globalOffsetX = RBP.dbp.globalOffsetX
 					end,
 				},
@@ -339,21 +345,21 @@ RBP.MainOptionTable = {
 					order = 8,
 					type = "range",
 					name = L["Global Scale"],
-					desc = L["Scales both the visual size and the clickable hitbox of nameplates."],
+					desc = L["Scales both the visual size and the clickbox of nameplates."],
 					min = 0.5,
 					max = 2.5,
 					step = 0.01,
 					set = function(info, val)
 						RBP.dbp[info[#info]] = val
 						RBP:UpdateAllVirtualsScale()
-						RBP:UpdateHitboxAttributes()
+						RBP:UpdateClickboxAttributes()
 					end,
 				},
 				globalOffsetX = {
 					order = 9,
 					type = "range",
 					name = L["Global Offset X"],
-					desc = L["Affects only the nameplate's visual regions. The real hitbox can't be moved using this feature."],
+					desc = L["Affects only the nameplate's visual regions. The clickbox can't be moved using this feature."],
 					min = -50,
 					max = 50,
 					step = 1,
@@ -367,7 +373,7 @@ RBP.MainOptionTable = {
 					order = 10,
 					type = "range",
 					name = L["Global Offset Y"],
-					desc = L["Affects only the nameplate's visual regions. The real hitbox can't be moved using this feature."],
+					desc = L["Affects only the nameplate's visual regions. The clickbox can't be moved using this feature."],
 					min = -50,
 					max = 50,
 					step = 1,
@@ -379,9 +385,8 @@ RBP.MainOptionTable = {
 				},
 				lineBreak6 = {order = 11, type = "description", name = ""},
 				lineBreak7 = {order = 12, type = "description", name = ""},
-				lineBreak8 = {order = 13, type = "description", name = ""},
 				targetScale = {
-					order = 14,
+					order = 13,
 					type = "range",
 					name = L["Target Scale Factor"],
 					desc = L["Adjusts the target nameplate’s scale, applied multiplicatively with the global scale."],
@@ -394,27 +399,87 @@ RBP.MainOptionTable = {
 					end,
 				},
 				friendlyScale = {
-					order = 15,
+					order = 14,
 					type = "range",
 					name = L["Friendly Scale Factor"],
-					desc = L["Adjusts friendly nameplate scale, applied multiplicatively with the global scale."],
+					desc = L["Adjusts friendly nameplate scale, applied multiplicatively with the global scale. Affects the visual size and the clickbox"],
 					min = 0.5,
 					max = 1,
 					step = 0.01,
 					set = function(info, val)
 						RBP.dbp[info[#info]] = val
 						RBP:UpdateAllVirtualsScale()
-						RBP:UpdateHitboxAttributes()
+						RBP:UpdateClickboxAttributes()
+					end,
+				},
+				lineBreak8 = {order = 15, type = "description", name = ""},
+				lineBreak9 = {order = 16, type = "description", name = ""},
+				clickbox_header = {
+					order = 17,
+					type = "header",
+					name = L["Box Selection Space"],
+				},
+				lineBreak10 = {order = 18, type = "description", name = ""},
+				lineBreak11 = {order = 19, type = "description", name = ""},
+				clickboxWidthFactor = {
+					order = 20,
+					type = "range",
+					name = L["Clickbox Width Factor"],
+					desc = L["Scales the nameplate clickbox relative to its original size. Recommended to change this setting while out of combat."],
+					min = 0.25,
+					max = 1.5,
+					step = 0.01,
+					set = function(info, val)
+						RBP.dbp[info[#info]] = val
+						RBP:UpdateAllShownPlates()
+						RBP:UpdateClickboxAttributes()
+					end,
+				},
+				clickboxHeightFactor = {
+					order = 21,
+					type = "range",
+					name = L["Clickbox Height Factor"],
+					desc = L["Scales the nameplate clickbox relative to its original size. Recommended to change this setting while out of combat."],
+					min = 0.25,
+					max = 1.5,
+					step = 0.01,
+					set = function(info, val)
+						RBP.dbp[info[#info]] = val
+						RBP:UpdateAllShownPlates()
+						RBP:UpdateClickboxAttributes()
 					end,
 				},
 				friendlyClickthrough = {
-					order = 16,
+					order = 22,
 					type = "toggle",
 					name = L["Click-through Friendly Nameplates"],
-					desc = L["Disable friendly nameplates hitboxes inside PvE and PvP instances."],
+					desc = L["Disable friendly nameplates clickboxes inside PvE and PvP instances."],
+					set = function(info, val)
+						RBP.dbp[info[#info]] = val
+						RBP:UpdateAllShownPlates()
+						RBP:UpdateClickboxAttributes()
+					end,
 				},
+				showClickbox = {
+					order = 23,
+					type = "toggle",
+					name = L["Show Clickbox"],
+					desc = L["Displays the Box Selection Space (Clickbox) of nameplates"],
+					set = function(info, val)
+						RBP.dbp[info[#info]] = val
+						RBP:UpdateAllClickboxTextures()
+					end,
+				},
+				lineBreak12 = {order = 24, type = "description", name = ""},
+				lineBreak13 = {order = 25, type = "description", name = ""},
+				misc_header = {
+					order = 26,
+					type = "header",
+					name = L["Miscellaneous Settings"],
+				},
+				lineBreak14 = {order = 27, type = "description", name = ""},
 				clampTarget = {
-					order = 17,
+					order = 29,
 					type = "toggle",
 					name = L["Clamp Target"],
 					desc = L["Prevents targeted enemy nameplate from going above the top of the screen."],
@@ -425,7 +490,7 @@ RBP.MainOptionTable = {
 					end,					
 				},
 				clampBoss = {
-					order = 18,
+					order = 30,
 					type = "toggle",
 					name = L["Clamp Bosses"],
 					desc = L["Prevents boss nameplates inside instances from going above the top of the screen."],
@@ -436,7 +501,7 @@ RBP.MainOptionTable = {
 					end,		
 				},
 				upperborder = {
-					order = 19,
+					order = 31,
 					type = "range",
 					name = L["Clamping Top Inset"],
 					desc = L["Adjusts the distance below the top of the screen where clamped nameplates will stop."],
@@ -452,7 +517,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				levelFilter = {
-					order = 20,
+					order = 32,
 					type = "range",
 					name = L["Level Filter"],
 					desc = L["Minimum unit level required for the nameplate to be shown."],
@@ -465,7 +530,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				LDWfix = {
-					order = 21,
+					order = 33,
 					type = "toggle",
 					name = L["Hide on LDW MC"],
 					desc = L["Hide nameplates when mind-controlled by Lady Deathwhisper."],
@@ -495,16 +560,16 @@ RBP.MainOptionTable = {
 						end
 					end,
 				},
-				lineBreak9 = {order = 22, type = "description", name = ""},
-				lineBreak10 = {order = 23, type = "description", name = ""},
+				lineBreak16 = {order = 34, type = "description", name = ""},
+				lineBreak17 = {order = 35, type = "description", name = ""},
 				stacking_header = {
-					order = 24,
+					order = 36,
 					type = "header",
 					name = L["Retail-like Stacking"],
 				},
-				lineBreak11 = {order = 25, type = "description", name = ""},
+				lineBreak18 = {order = 37, type = "description", name = ""},
 				stackingEnabled = {
-					order = 26,
+					order = 38,
 					type = "toggle",
 					name = L["Enable"],
 					desc = L["Simulates Retail's nameplate stacking for enemies. This feature has a high CPU cost, use it with discretion."],
@@ -514,10 +579,10 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllShownPlates()
 					end,
 				},
-				lineBreak12 = {order = 27, type = "description", name = ""},
-				lineBreak13 = {order = 28, type = "description", name = ""},
+				lineBreak19 = {order = 39, type = "description", name = ""},
+				lineBreak20 = {order = 40, type = "description", name = ""},
 				xspace = {
-					order = 29,
+					order = 41,
 					type = "range",
 					name = L["Collider Width"],
 					desc = L["Sets the width of the virtual collider centered on each nameplate used to detect overlaps."],
@@ -529,7 +594,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				yspace = {
-					order = 30,
+					order = 42,
 					type = "range",
 					name = L["Collider Height"],
 					desc = L["Sets the height of the virtual collider centered on each nameplate used to detect overlaps."],
@@ -541,10 +606,10 @@ RBP.MainOptionTable = {
 					end,
 				},
 				originpos = {
-					order = 31,
+					order = 43,
 					type = "range",
 					name = L["Vertical Offset"],
-					desc = L["Vertically offsets the entire nameplate, including its hitbox."],
+					desc = L["Vertically offsets the entire nameplate, including its clickbox."],
 					min = 0,
 					max = 50,
 					step = 1,
@@ -552,10 +617,8 @@ RBP.MainOptionTable = {
 						return not RBP.dbp.stackingEnabled
 					end,
 				},
-				lineBreak14 = {order = 32, type = "description", name = ""},
-				lineBreak15 = {order = 33, type = "description", name = ""},
 				FreezeMouseover = {
-					order = 34,
+					order = 44,
 					type = "toggle",
 					name = L["Freeze Mouseover"],
 					desc = L["Stops the nameplate you're mousing over from moving for better selection."],
@@ -564,7 +627,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				stackingInInstance = {
-					order = 35,
+					order = 45,
 					type = "toggle",
 					name = L["Disable in Open World"],
 					desc = L["Only process stacking inside PvE and PvP instances. This will reduce CPU usage in the open world."],
@@ -576,8 +639,8 @@ RBP.MainOptionTable = {
 						return not RBP.dbp.stackingEnabled
 					end,
 				},
-				lineBreak16 = {order = 36, type = "description", name = ""},
-				lineBreak17 = {order = 37, type = "description", name = ""},
+				lineBreak21 = {order = 46, type = "description", name = ""},
+				lineBreak22 = {order = 47, type = "description", name = ""},
 			},
 		},
 		Text = {
@@ -1304,16 +1367,21 @@ RBP.MainOptionTable = {
 					dialogControl = "LSM30_Statusbar",
 					values = AceGUIWidgetLSMlists.statusbar,
 				},
-				lineBreak3 = {order = 5, type = "description", name = ""},
-				lineBreak4 = {order = 6, type = "description", name = ""},
+				castBar_showSpark = {
+					order = 5,
+					type = "toggle",
+					name = L["Show Spark"],
+				},
+				lineBreak3 = {order = 6, type = "description", name = ""},
+				lineBreak4 = {order = 7, type = "description", name = ""},
 				castText_header = {
-					order = 7,
+					order = 8,
 					type = "header",
 					name = L["Cast Text"],
 				},
-				lineBreak5 = {order = 8, type = "description", name = ""},
+				lineBreak5 = {order = 9, type = "description", name = ""},
 				castText_font = {
-					order = 9,
+					order = 10,
 					type = "select",
 					name = L["Text Font"],
 					values = RBP.LSM:HashTable("font"),
@@ -1323,7 +1391,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castText_size = {
-					order = 10,
+					order = 11,
 					type = "range",
 					name = L["Font Size"],
 					min = 6,
@@ -1334,7 +1402,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castText_outline = {
-					order = 11,
+					order = 12,
 					type = "select", 
 					name = L["Outline"],
 					values = {
@@ -1350,7 +1418,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castText_anchor = {
-					order = 12,
+					order = 13,
 					type = "select", 
 					name = L["Anchor"],
 					values = {
@@ -1369,7 +1437,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castText_offsetX = {
-					order = 13,
+					order = 14,
 					type = "range",
 					name = L["Offset X"],
 					min = -50,
@@ -1380,7 +1448,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castText_offsetY = {
-					order = 14,
+					order = 15,
 					type = "range",
 					name = L["Offset Y"],
 					min = -50,
@@ -1391,7 +1459,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castText_width = {
-					order = 15,
+					order = 16,
 					type = "range",
 					name = L["Width"],
 					min = 50,
@@ -1402,7 +1470,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castText_color = {
-					order = 16,
+					order = 17,
 					type = "color",
 					name = L["Text Color"],
 					get = function(info)
@@ -1418,20 +1486,20 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castText_hide = {
-					order = 17,
+					order = 18,
 					type = "toggle",
 					name = L["Hide Cast Text"],
 				},
-				lineBreak6 = {order = 18, type = "description", name = ""},
-				lineBreak7 = {order = 19, type = "description",	name = ""},
+				lineBreak6 = {order = 19, type = "description", name = ""},
+				lineBreak7 = {order = 20, type = "description",	name = ""},
 				castTimerText_header = {
-					order = 20,
+					order = 21,
 					type = "header",
 					name = L["Cast Timer Text"],
 				},
-				lineBreak8 = {order = 21, type = "description", name = ""},
+				lineBreak8 = {order = 22, type = "description", name = ""},
 				castTimerText_font = {
-					order = 22,
+					order = 23,
 					type = "select",
 					name = L["Text Font"],
 					values = RBP.LSM:HashTable("font"),
@@ -1441,7 +1509,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castTimerText_size = {
-					order = 23,
+					order = 24,
 					type = "range",
 					name = L["Font Size"],
 					min = 6,
@@ -1452,7 +1520,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castTimerText_outline = {
-					order = 24,
+					order = 25,
 					type = "select", 
 					name = L["Outline"],
 					values = {
@@ -1468,7 +1536,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castTimerText_anchor = {
-					order = 25,
+					order = 26,
 					type = "select", 
 					name = L["Anchor"],
 					values = {
@@ -1487,7 +1555,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castTimerText_offsetX = {
-					order = 26,
+					order = 27,
 					type = "range",
 					name = L["Offset X"],
 					min = -50,
@@ -1498,7 +1566,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castTimerText_offsetY = {
-					order = 27,
+					order = 28,
 					type = "range",
 					name = L["Offset Y"],
 					min = -50,
@@ -1509,7 +1577,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castTimerText_color = {
-					order = 28,
+					order = 29,
 					type = "color",
 					name = L["Text Color"],
 					get = function(info)
@@ -1525,12 +1593,12 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castTimerText_hide = {
-					order = 29,
+					order = 30,
 					type = "toggle",
 					name = L["Hide Cast Timer Text"],
 				},
-				lineBreak9 = {order = 30, type = "description", name = ""},
-				lineBreak10 = {order = 31, type = "description", name = ""},
+				lineBreak9 = {order = 31, type = "description", name = ""},
+				lineBreak10 = {order = 32, type = "description", name = ""},
 			},
 		},
 		Icons = {
@@ -1802,7 +1870,7 @@ RBP.MainOptionTable = {
 						RBP.dbp[info[#info]] = val
 						RBP:UpdateAllBarlessPlates()
 						RBP:UpdateAllShownPlates()
-						RBP:UpdateHitboxAttributes()
+						RBP:UpdateClickboxAttributes()
 					end,
 					disabled = function()
 						return not (RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena)
@@ -1828,7 +1896,7 @@ RBP.MainOptionTable = {
 					order = 15,
 					type = "range",
 					name = L["Offset Y"],
-					desc = L["Adjusts the visual vertical position (does not affect the hitbox)."],
+					desc = L["Adjusts the visual vertical position (does not affect the clickbox)."],
 					min = -50,
 					max = 50,
 					step = 0.1,
@@ -1919,7 +1987,7 @@ RBP.MainOptionTable = {
 					order = 26,
 					type = "range",
 					name = L["Offset Y"],
-					desc = L["Adjusts the visual vertical position (does not affect the hitbox)."],
+					desc = L["Adjusts the visual vertical position (does not affect the clickbox)."],
 					min = -50,
 					max = 50,
 					step = 0.1,
@@ -2283,14 +2351,14 @@ RBP.MainOptionTable = {
 						RBP.dbp[info[#info]] = val
 						RBP:UpdateAllIcons()
 						RBP:UpdateAllShownPlates()
-						RBP:UpdateHitboxAttributes()
+						RBP:UpdateClickboxAttributes()
 					end,
 				},
 				totemOffset = {
 					order = 6,
 					type = "range",
 					name = L["Offset Y"],
-					desc = L["Adjusts the vertical position of all Totem and Blacklisted icons (does not affect plate hitbox)."],
+					desc = L["Adjusts the vertical position of all Totem and Blacklisted icons (does not affect plate clickbox)."],
 					min = -50,
 					max = 50,
 					step = 0.1,
@@ -2324,7 +2392,7 @@ RBP.MainOptionTable = {
 					order = 1,
 					type = "input",
 					name = L["Unit name"],
-					desc = L["Add the exact name of a unit whose nameplate you want to hide or replace with an icon. Blacklisted nameplates will always be click-through."],
+					desc = L["Add the exact name of a unit whose nameplate you want to hide or replace with an icon."],
 					get = function() return tmpNewName end,
 					set = function(_, val) tmpNewName = val end,
 				},

@@ -14,6 +14,7 @@ local NP_WIDTH = RBP.NP_WIDTH
 local NP_HEIGHT = RBP.NP_HEIGHT
 local VirtualPlates = RBP.VirtualPlates
 local PlatesVisible = RBP.PlatesVisible
+local UpdateCastText = RBP.UpdateCastText
 local UpdateTarget = RBP.UpdateTarget
 local SetupRefinedPlate = RBP.SetupRefinedPlate
 local ForceLevelHide = RBP.ForceLevelHide
@@ -21,11 +22,11 @@ local CheckDominateMind = RBP.CheckDominateMind
 local UpdateGroupInfo = RBP.UpdateGroupInfo
 local UpdateArenaInfo = RBP.UpdateArenaInfo
 local UpdateClassColorNames = RBP.UpdateClassColorNames
-local ExecuteHitboxSecureScript = RBP.ExecuteHitboxSecureScript
-local InitPlatesHitboxes = RBP.InitPlatesHitboxes
-local HitboxAttributeUpdater = RBP.HitboxAttributeUpdater
-local UpdateHitboxInCombat = RBP.UpdateHitboxInCombat
-local UpdateHitboxOutOfCombat = RBP.UpdateHitboxOutOfCombat
+local ExecuteClickboxSecureScript = RBP.ExecuteClickboxSecureScript
+local InitPlatesClickboxes = RBP.InitPlatesClickboxes
+local ClickboxAttributeUpdater = RBP.ClickboxAttributeUpdater
+local UpdateClickboxInCombat = RBP.UpdateClickboxInCombat
+local UpdateClickboxOutOfCombat = RBP.UpdateClickboxOutOfCombat
 local UpdatePlateFlags = RBP.UpdatePlateFlags
 local ResetPlateFlags = RBP.ResetPlateFlags
 local UpdateRefinedPlate = RBP.UpdateRefinedPlate
@@ -83,9 +84,9 @@ do
 		UpdateRefinedPlate(Plate)
 		UpdateTarget(Plate)
 		if RBP.inCombat then
-			UpdateHitboxInCombat(Plate)
+			UpdateClickboxInCombat(Plate)
 		else
-			UpdateHitboxOutOfCombat(Plate)
+			UpdateClickboxOutOfCombat(Plate)
 		end
 	end
 
@@ -95,7 +96,7 @@ do
 		ResetPlateFlags(Plate)
 		ResetRefinedPlate(Plate)
 		if RBP.inCombat then
-			ExecuteHitboxSecureScript()
+			ExecuteClickboxSecureScript()
 		end
 	end
 
@@ -106,6 +107,7 @@ do
 		mouseoverName = UnitName("mouseover")
 		for Plate, Virtual in pairs(PlatesVisible) do
 			Depth = Virtual:GetEffectiveDepth()
+
 			if Depth > 0 then
 				SortOrder[#SortOrder + 1] = Plate
 				if Plate.isTarget then
@@ -121,6 +123,9 @@ do
 						elseif not Virtual.nameTextIsYellow then
 							Virtual.newNameText:SetTextColor(1, 1, 0)
 							Virtual.nameTextIsYellow  = true
+							if Virtual.castBarIsShown and not Virtual.castText:GetText() then
+								UpdateCastText(Virtual, "mouseover")
+							end
 						end
 					elseif Virtual.nameTextIsYellow then
 						Virtual.newNameText:SetTextColor(Virtual.nameColorR, Virtual.nameColorG, Virtual.nameColorB)
@@ -134,13 +139,23 @@ do
 			sort(SortOrder, function(a, b) return Depths[a] > Depths[b] end)
 			for Index, Plate in ipairs(SortOrder) do
 				Virtual = Plate.VirtualPlate
-				SetFrameLevel(Virtual, Index * PlateLevels)
-				SetFrameLevel(Virtual.healthBar, Index * PlateLevels)
+				if RBP.dbp.showClickbox then
+					SetFrameLevel(Plate, Index * PlateLevels + 1)
+				end
 				if Plate.totemPlateIsShown then
 					SetFrameLevel(Plate.totemPlate, Index * PlateLevels)
 				end
 				if Plate.barlessPlateIsShown then
 					SetFrameLevel(Plate.barlessPlate, Index * PlateLevels + 1)
+				end
+				if Virtual.isShown then
+					SetFrameLevel(Virtual, Index * PlateLevels)
+				end
+				if Virtual.healthBarIsShown then
+					SetFrameLevel(Virtual.healthBar, Index * PlateLevels)
+				end
+				if Virtual.castBarIsShown then
+					SetFrameLevel(Virtual.castBar, Index * PlateLevels - 1)
 				end
 				if Virtual.BGHframe then
 					SetFrameLevel(Virtual.BGHframe, Index * PlateLevels + 1) 
@@ -177,13 +192,6 @@ do
 		end
 	end
 
-	-- Creates a semi-transparent hitbox texture for debugging
-	local function SetupHitboxTexture(Plate)
-		Plate.hitBox = Plate:CreateTexture(nil, "OVERLAY")
-		Plate.hitBox:SetTexture(1,0,0,0.5)
-		Plate.hitBox:SetAllPoints(Plate)
-	end
-
 	--- Adds and skins a new nameplate.
 	-- @ param Plate  Newly found default nameplate to be hooked.
 	local function PlateAdd(Plate)
@@ -210,7 +218,6 @@ do
 		end
 
 		SetupRefinedPlate(Virtual)
-		--SetupHitboxTexture(Plate)
 
 		if Plate:IsVisible() then
 			PlateOnShow(Plate)
@@ -369,7 +376,7 @@ function RBP:Initialize()
 
 	RBP:BuildBlacklistUI()
 
-	HitboxAttributeUpdater()
+	ClickboxAttributeUpdater()
 
 	if RBP.dbp.stackingEnabled then
 		SetCVar("nameplateAllowOverlap", 1)
@@ -407,16 +414,16 @@ end
 
 function EventHandler:PLAYER_REGEN_ENABLED()
 	RBP.inCombat = false
-	if RBP.delayedHitboxUpdate then
-		RBP.delayedHitboxUpdate = false
-		HitboxAttributeUpdater()
+	if RBP.delayedClickboxUpdate then
+		RBP.delayedClickboxUpdate = false
+		ClickboxAttributeUpdater()
 	end
 end
 
 function EventHandler:PLAYER_REGEN_DISABLED()
 	RBP.inCombat = true
-	InitPlatesHitboxes()
-	ExecuteHitboxSecureScript()
+	InitPlatesClickboxes()
+	ExecuteClickboxSecureScript()
 end
 
 function EventHandler:PLAYER_TARGET_CHANGED()
