@@ -265,6 +265,12 @@ L["Hide Cast Timer Text"] = "Скрыть текст таймера заклин
 -- Icons --
 L["Icons"] = "Иконки"
 L["Elite Icon"] = "Иконка элиты"
+L["Style"] = "Стиль"
+L["Default"] = "По умолчанию"
+L["Minimalist"] = "Минималистичный"
+L["Modern"] = "Современный"
+L["Width Factor"] = "Коэффициент ширины"
+L["Height Factor"] = "Коэффициент высоты"
 L["Tint"] = "Тонировка"
 L["Boss Icon"] = "Иконка босса"
 L["Icon Size"] = "Размер иконки"

@@ -265,6 +265,12 @@ L["Hide Cast Timer Text"] = true
 -- Icons --
 L["Icons"] = true
 L["Elite Icon"] = true
+L["Style"] = true
+L["Default"] = true
+L["Minimalist"] = true
+L["Modern"] = true
+L["Width Factor"] = true
+L["Height Factor"] = true
 L["Tint"] = true
 L["Boss Icon"] = true
 L["Icon Size"] = true

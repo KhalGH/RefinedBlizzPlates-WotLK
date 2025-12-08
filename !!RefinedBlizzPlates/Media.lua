@@ -1,8 +1,10 @@
 
-local AddonFile, RBP = ... -- namespace
+local AddonFile, RBP = ...
 
-local LSM = LibStub("LibSharedMedia-3.0")
+RBP.LSM = LibStub("LibSharedMedia-3.0")
+local LSM = RBP.LSM
 local ASSETS = "Interface\\AddOns\\" .. AddonFile .. "\\Assets\\"
+
 ------------------------------------------ Status Bar Textures ------------------------------------------
 LSM:Register("statusbar", "Blizzard Nameplates", "Interface\\TargetingFrame\\UI-TargetingFrame-BarFill")
 LSM:Register("statusbar", "AceBarFrames", ASSETS .. "StatusBars\\AceBarFrames")
@@ -23,6 +25,9 @@ LSM:Register("statusbar", "Comet", ASSETS .. "StatusBars\\Comet")
 LSM:Register("statusbar", "Dabs", ASSETS .. "StatusBars\\Dabs")
 LSM:Register("statusbar", "DarkBottom", ASSETS .. "StatusBars\\DarkBottom")
 LSM:Register("statusbar", "Diagonal", ASSETS .. "StatusBars\\Diagonal")
+LSM:Register("statusbar", "Dragonflight 1", ASSETS .. "StatusBars\\Dragonflight1")
+LSM:Register("statusbar", "Dragonflight 2", ASSETS .. "StatusBars\\Dragonflight2")
+LSM:Register("statusbar", "Dragonflight 3", ASSETS .. "StatusBars\\Dragonflight3")
 LSM:Register("statusbar", "Falumn", ASSETS .. "StatusBars\\Falumn")
 LSM:Register("statusbar", "Ferous 1", ASSETS .. "StatusBars\\Ferous1")
 LSM:Register("statusbar", "Ferous 2", ASSETS .. "StatusBars\\Ferous2")
@@ -90,6 +95,7 @@ LSM:Register("statusbar", "Norm", ASSETS .. "StatusBars\\Norm")
 LSM:Register("statusbar", "Otravi", ASSETS .. "StatusBars\\Otravi")
 LSM:Register("statusbar", "Perl", ASSETS .. "StatusBars\\Perl")
 LSM:Register("statusbar", "Perl v2", ASSETS .. "StatusBars\\Perl2")
+LSM:Register("statusbar", "Plater", ASSETS .. "StatusBars\\Plater")
 LSM:Register("statusbar", "Raeli 1", ASSETS .. "StatusBars\\Raeli1.tga")
 LSM:Register("statusbar", "Raeli 2", ASSETS .. "StatusBars\\Raeli2.tga")
 LSM:Register("statusbar", "Raeli 3", ASSETS .. "StatusBars\\Raeli3.tga")
@@ -97,6 +103,7 @@ LSM:Register("statusbar", "Raeli 4", ASSETS .. "StatusBars\\Raeli4.tga")
 LSM:Register("statusbar", "Raeli 5", ASSETS .. "StatusBars\\Raeli5.tga")
 LSM:Register("statusbar", "Raeli 6", ASSETS .. "StatusBars\\Raeli6.tga")
 LSM:Register("statusbar", "Rain", ASSETS .. "StatusBars\\Rain")
+LSM:Register("statusbar", "Retail Bar", ASSETS .. "StatusBars\\RetailBar")
 LSM:Register("statusbar", "Rocks", ASSETS .. "StatusBars\\Rocks")
 LSM:Register("statusbar", "Ruben", ASSETS .. "StatusBars\\Ruben")
 LSM:Register("statusbar", "Runes", ASSETS .. "StatusBars\\Runes")
@@ -238,5 +245,3 @@ LSM:Register("font", "WenQuanYi Zen Hei", ASSETS .. "Fonts\\WenQuanYiZenHei.ttf"
 LSM:Register("font", "X360", ASSETS .. "Fonts\\X360.ttf", LSM.LOCALE_BIT_ruRU + LSM.LOCALE_BIT_western)
 LSM:Register("font", "Yanone Kaffeesatz Regular", ASSETS .. "Fonts\\YanoneKaffeesatzRegular.ttf")
 LSM:Register("font", "Yellowjacket", ASSETS .. "Fonts\\Yellowjacket.ttf")
-
-RBP.LSM = LSM -- namespace reference

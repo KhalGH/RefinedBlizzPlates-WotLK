@@ -117,8 +117,13 @@ RBP.dbp.castTimerText_color = {1, 1, 1} -- white
 -- Cast Glow (Shows when nameplate unit is targetting you, requires nontarget castbar patch)
 RBP.dbp.enableCastGlow = true
 -- Elite Icon
-RBP.dbp.eliteIcon_anchor = "Left"
+RBP.dbp.eliteIcon_style = "Default"
+RBP.dbp.eliteIcon_widthScale = 1
+RBP.dbp.eliteIcon_heightScale = 1
 RBP.dbp.eliteIcon_Tint = {1, 1, 1}
+RBP.dbp.eliteIcon_anchor = "Left"
+RBP.dbp.eliteIcon_offsetX = 0
+RBP.dbp.eliteIcon_offsetY = 0
 -- Boss Icon
 RBP.dbp.bossIcon_size = 18
 RBP.dbp.bossIcon_anchor = "Right"
@@ -321,6 +326,11 @@ RBP.MainOptionTable = {
 						RBP.dbp.bossIcon_size = 18
 						RBP.dbp.bossIcon_offsetX = 0
 						RBP.dbp.bossIcon_offsetY = 0
+						RBP.dbp.eliteIcon_style = "Default"
+						RBP.dbp.eliteIcon_widthScale = 1
+						RBP.dbp.eliteIcon_heightScale = 1
+						RBP.dbp.eliteIcon_offsetX = 0
+						RBP.dbp.eliteIcon_offsetY = 0
 						RBP.dbp.raidTargetIcon_offsetX = 0
 						RBP.dbp.raidTargetIcon_offsetY = 0
 						RBP.dbp.classIcon_offsetX = 0
@@ -1618,17 +1628,71 @@ RBP.MainOptionTable = {
 					name = L["Elite Icon"],
 				},
 				lineBreak2 = {order = 3, type = "description", name = ""},
-				eliteIcon_anchor = {
+				eliteIcon_style = {
 					order = 4,
+					type = "select", 
+					name = L["Style"],
+					values = {
+						["Default"] = L["Default"],
+						["Modern"] = L["Modern"],
+						["Minimalist"] = L["Minimalist"],
+					},
+					set = function(info, val)
+						RBP.dbp[info[#info]] = val
+						RBP:UpdateAllIcons()
+						RBP:UpdateAllShownPlates()
+					end,
+				},
+				eliteIcon_widthScale = {
+					order = 5,
+					type = "range",
+					name = L["Width Factor"],
+					min = 0.5,
+					max = 1.5,
+					step = 0.01,
+				},
+				eliteIcon_heightScale = {
+					order = 6,
+					type = "range",
+					name = L["Height Factor"],
+					min = 0.5,
+					max = 1.5,
+					step = 0.01,
+				},
+				eliteIcon_anchor = {
+					order = 7,
 					type = "select", 
 					name = L["Anchor"],
 					values = {
 						["Left"] = L["Left"],
 						["Right"] = L["Right"],
 					},
+					set = function(info, val)
+						RBP.dbp[info[#info]] = val
+						RBP.dbp.eliteIcon_offsetX = 0
+						RBP.dbp.eliteIcon_offsetY = 0
+						RBP:UpdateAllIcons()
+						RBP:UpdateAllShownPlates()
+					end,
+				},
+				eliteIcon_offsetX = {
+					order = 8,
+					type = "range",
+					name = L["Offset X"],
+					min = -50,
+					max = 50,
+					step = 0.1,
+				},
+				eliteIcon_offsetY = {
+					order = 9,
+					type = "range",
+					name = L["Offset Y"],
+					min = -50,
+					max = 50,
+					step = 0.1,
 				},
 				eliteIcon_Tint = {
-					order = 5,
+					order = 10,
 					type = "color",
 					name = L["Tint"],
 					desc = L["This is a tint overlay, not a regular color. 'White' keeps the original look."],
@@ -1641,17 +1705,17 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllIcons()
 						RBP:UpdateAllShownPlates()
 					end,
-				},
-				lineBreak3 = {order = 6, type = "description", name = ""},
-				lineBreak4 = {order = 7, type = "description", name = ""},
+				},				
+				lineBreak3 = {order = 11, type = "description", name = ""},
+				lineBreak4 = {order = 12, type = "description", name = ""},
 				bossIcon_header = {
-					order = 8,
+					order = 13,
 					type = "header",
 					name = L["Boss Icon"],
 				},
-				lineBreak5 = {order = 9, type = "description", name = ""},
+				lineBreak5 = {order = 14, type = "description", name = ""},
 				bossIcon_anchor = {
-					order = 10,
+					order = 15,
 					type = "select", 
 					name = L["Anchor"],
 					values = {
@@ -1668,7 +1732,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				bossIcon_offsetX = {
-					order = 11,
+					order = 16,
 					type = "range",
 					name = L["Offset X"],
 					min = -50,
@@ -1676,7 +1740,7 @@ RBP.MainOptionTable = {
 					step = 0.1,
 				},
 				bossIcon_offsetY = {
-					order = 12,
+					order = 17,
 					type = "range",
 					name = L["Offset Y"],
 					min = -50,
@@ -1684,23 +1748,23 @@ RBP.MainOptionTable = {
 					step = 0.1,
 				},
 				bossIcon_size = {
-					order = 13,
+					order = 18,
 					type = "range",
 					name = L["Icon Size"],
 					min = 15,
 					max = 35,
 					step = 0.1,
 				},
-				lineBreak6 = {order = 14, type = "description",	name = ""},
-				lineBreak7 = {order = 15, type = "description", name = ""},
+				lineBreak6 = {order = 19, type = "description",	name = ""},
+				lineBreak7 = {order = 20, type = "description", name = ""},
 				raidTargetIcon_header = {
-					order = 16,
+					order = 21,
 					type = "header",
 					name = L["Raid Target Icon"],
 				},
-				lineBreak8 = {order = 17, type = "description",	name = ""},
+				lineBreak8 = {order = 22, type = "description",	name = ""},
 				raidTargetIcon_anchor = {
-					order = 18,
+					order = 23,
 					type = "select", 
 					name = L["Anchor"],
 					values = {
@@ -1717,7 +1781,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				raidTargetIcon_offsetX = {
-					order = 19,
+					order = 24,
 					type = "range",
 					name = L["Offset X"],
 					min = -50,
@@ -1725,7 +1789,7 @@ RBP.MainOptionTable = {
 					step = 0.1,
 				},
 				raidTargetIcon_offsetY = {
-					order = 20,
+					order = 25,
 					type = "range",
 					name = L["Offset Y"],
 					min = -50,
@@ -1733,23 +1797,23 @@ RBP.MainOptionTable = {
 					step = 0.1,
 				},
 				raidTargetIcon_size = {
-					order = 21,
+					order = 26,
 					type = "range",
 					name = L["Icon Size"],
 					min = 20,
 					max = 50,
 					step = 0.1,
 				},
-				lineBreak9 = {order = 22, type = "description", name = ""},
-				lineBreak10 = {order = 23, type = "description", name = ""},
+				lineBreak9 = {order = 27, type = "description", name = ""},
+				lineBreak10 = {order = 28, type = "description", name = ""},
 				classIcon_header = {
 					order = 24,
 					type = "header",
 					name = L["Class Icon"],
 				},
-				lineBreak11 = {order = 25, type = "description", name = ""},
+				lineBreak11 = {order = 29, type = "description", name = ""},
 				classIcon_anchor = {
-					order = 26,
+					order = 30,
 					type = "select", 
 					name = L["Anchor"],
 					values = {
@@ -1766,7 +1830,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				classIcon_offsetX = {
-					order = 27,
+					order = 31,
 					type = "range",
 					name = L["Offset X"],
 					min = -50,
@@ -1774,7 +1838,7 @@ RBP.MainOptionTable = {
 					step = 0.1,
 				},
 				classIcon_offsetY = {
-					order = 28,
+					order = 32,
 					type = "range",
 					name = L["Offset Y"],
 					min = -50,
@@ -1782,7 +1846,7 @@ RBP.MainOptionTable = {
 					step = 0.1,
 				},
 				classIcon_size = {
-					order = 29,
+					order = 34,
 					type = "range",
 					name = L["Icon Size"],
 					min = 20,
@@ -1790,19 +1854,19 @@ RBP.MainOptionTable = {
 					step = 0.1,
 				},
 				showClassOnFriends = {
-					order = 30,
+					order = 35,
 					type = "toggle",
 					name = L["Show on Friends"],
 					desc = L["Class icons will only be shown inside PvE or PvP instances."],
 				},
 				showClassOnEnemies = {
-					order = 31,
+					order = 36,
 					type = "toggle",
 					name = L["Show on Enemies"],
 					desc = L["Class icons will only be shown inside PvE or PvP instances."],
 				},
-				lineBreak12 = {order = 32, type = "description", name = ""},
-				lineBreak13 = {order = 33, type = "description", name = ""},
+				lineBreak12 = {order = 37, type = "description", name = ""},
+				lineBreak13 = {order = 38, type = "description", name = ""},
 			},
 		},
 		BarlessPlate = {
