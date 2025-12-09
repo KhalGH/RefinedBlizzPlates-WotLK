@@ -1433,7 +1433,7 @@ local function UpdateRefinedPlate(Plate)
 				end
 				Virtual.healthBarTex:SetTexture(RBP.LSM:Fetch("statusbar", RBP.dbp.healthBar_playerTex))
 			else
-				if RBP.dbp.enableAggroColoring and (RBP.inPvEInstance or not RBP.dbp.disableAggroOpenworld) then
+				if RBP.dbp.enableAggroColoring and not RBP.inPvPInstance and (RBP.inPvEInstance or not RBP.dbp.disableAggroOpenworld) then
 					if not Virtual.aggroOverlay then
 						SetupAggroOverlay(Virtual)
 					end
@@ -1553,7 +1553,6 @@ local resetSpeedFactor = 1
 local raiseSpeedFactor = 1
 local lowerSpeedFactor = 0.8
 local function UpdateStacking()
-	if not RBP.dbp.stackingEnabled then return end
 	if RBP.dbp.stackingInInstance and not RBP.inInstance then return end
     local xspace = RBP.dbp.xspace * RBP.dbp.globalScale
     local yspace = RBP.dbp.yspace * RBP.dbp.globalScale

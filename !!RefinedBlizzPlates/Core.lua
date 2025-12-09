@@ -248,13 +248,15 @@ do
 	end)
 
 	function RBP:WorldFrameOnUpdate(elapsed)
-		UpdateStacking()
 		NextUpdate = NextUpdate - elapsed
 		if NextUpdate <= 0 then
 			NextUpdate = UpdateRate
 			PlatesUpdate()
 		end
-		if RBP.dbp.enableAggroColoring and (RBP.inPvEInstance or not RBP.dbp.disableAggroOpenworld) then
+		if RBP.dbp.stackingEnabled then
+			UpdateStacking()
+		end
+		if RBP.dbp.enableAggroColoring and not RBP.inPvPInstance and (RBP.inPvEInstance or not RBP.dbp.disableAggroOpenworld) then
 			NextSecUpdate = NextSecUpdate - elapsed
 			if NextSecUpdate <= 0 then
 				NextSecUpdate = SecUpdateRate
