@@ -89,10 +89,9 @@ RBP.dbp.healthText_color = {1, 1, 1} -- white
 -- Threat Overlay
 RBP.dbp.enableAggroColoring = false
 RBP.dbp.disableAggroOpenworld = true
-RBP.dbp.aggroColor = {0.2, 0.8, 0.6}
-RBP.dbp.gainingAggroColor = {0.2, 0.5, 0.5}
+RBP.dbp.aggroColor = {0.24, 0.64, 0.50}
+RBP.dbp.gainingAggroColor = {0.36, 1.00, 0.82}
 RBP.dbp.losingAggroColor = {0.7, 0.2, 0.4}
-RBP.dbp.noAggroColor = {1, 0, 0}
 -- CastBar
 RBP.dbp.castBar_Tex = "KhalBar"
 RBP.dbp.castBar_showSpark = true
@@ -1336,23 +1335,8 @@ RBP.MainOptionTable = {
 						return not RBP.dbp.enableAggroColoring
 					end,
 				},
-				noAggroColor = {
-					order = 36,
-					type = "color",
-					name = L["No Aggro"],
-					get = function(info)
-						local c = RBP.dbp[info[#info]]
-						return c[1], c[2], c[3]
-					end,
-					set = function(info, r, g, b)
-						RBP.dbp[info[#info]] = {r, g, b}
-					end,
-					disabled = function()
-						return not RBP.dbp.enableAggroColoring
-					end,
-				},
 				disableAggroOpenworld = {
-					order = 37,
+					order = 36,
 					type = "toggle",
 					name = L["Disable in Open World"],
 					set = function(info, val)
@@ -1364,8 +1348,8 @@ RBP.MainOptionTable = {
 						return not RBP.dbp.enableAggroColoring
 					end,
 				},
-				lineBreak15 = {order = 38, type = "description", name = ""},
-				lineBreak16 = {order = 39, type = "description", name = ""},
+				lineBreak15 = {order = 37, type = "description", name = ""},
+				lineBreak16 = {order = 38, type = "description", name = ""},
 			},
 		},
 		CastBar = {

@@ -251,7 +251,6 @@ L["Changes NPC health bar color based on aggro status."] = "Изменяет ц�
 L["Aggro"] = "Агро"
 L["Gaining Aggro"] = "Получение агро"
 L["Losing Aggro"] = "Потеря агро"
-L["No Aggro"] = "Нет агро"
 
 -- Cast Bar --
 L["Cast Bar"] = "Полоса заклинаний"

@@ -253,7 +253,6 @@ L["Changes NPC health bar color based on aggro status."] = "어그로 상태에 
 L["Aggro"] = "어그로"
 L["Gaining Aggro"] = "어그로 획득"
 L["Losing Aggro"] = "어그로 상실"
-L["No Aggro"] = "어그로 없음"
 
 -- Cast Bar --
 L["Cast Bar"] = "시전 바"

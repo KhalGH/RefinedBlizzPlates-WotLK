@@ -253,7 +253,6 @@ L["Changes NPC health bar color based on aggro status."] = "根據仇恨狀態�
 L["Aggro"] = "仇恨"  
 L["Gaining Aggro"] = "獲得仇恨"  
 L["Losing Aggro"] = "失去仇恨"  
-L["No Aggro"] = "無仇恨"  
 
 -- Cast Bar --
 L["Cast Bar"] = "施法條"

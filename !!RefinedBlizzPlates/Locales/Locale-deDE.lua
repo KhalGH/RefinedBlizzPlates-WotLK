@@ -251,7 +251,6 @@ L["Changes NPC health bar color based on aggro status."] = "Färbt die Gesundhei
 L["Aggro"] = "Aggro"
 L["Gaining Aggro"] = "Aggro gewinnen"
 L["Losing Aggro"] = "Aggro verlieren"
-L["No Aggro"] = "Keine Aggro"
 
 -- Cast Bar --
 L["Cast Bar"] = "Zauberleiste"

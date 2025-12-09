@@ -251,7 +251,6 @@ L["Changes NPC health bar color based on aggro status."] = true
 L["Aggro"] = true
 L["Gaining Aggro"] = true
 L["Losing Aggro"] = true
-L["No Aggro"] = true
 
 -- Cast Bar --
 L["Cast Bar"] = true

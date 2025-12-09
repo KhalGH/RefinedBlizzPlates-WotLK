@@ -34,7 +34,7 @@ local ResetRefinedPlate = RBP.ResetRefinedPlate
 local DelayedUpdateAllShownPlates = RBP.DelayedUpdateAllShownPlates
 local UpdateStacking = RBP.UpdateStacking
 local UpdateAggroOverlay = RBP.UpdateAggroOverlay
-local PlatesAggroUpdate = RBP.PlatesAggroUpdate
+local PlatesSecUpdate = RBP.PlatesSecUpdate
 
 -- Local definitions
 local EventHandler = CreateFrame("Frame", nil, WorldFrame) -- Main addon frame (event handler + access to native frame methods)
@@ -42,8 +42,8 @@ local PlateOverrides = {}	 -- Storage table: [MethodName] = override function fo
 local PlateLevels = 3 	     -- Frame level difference between plates so one plate's children don't overlap the next closest plate
 local NextUpdate = 0.05		 -- Time controller for PlatesUpdate
 local UpdateRate = 0.05	     -- Minimum time between PlatesUpdate.
-local NextSecUpdate = 0.2    -- Time controller for PlatesAggroUpdate
-local SecUpdateRate = 0.2	 -- Minimum time between PlatesAggroUpdate.
+local NextSecUpdate = 0.2    -- Time controller for PlatesSecUpdate
+local SecUpdateRate = 0.2	 -- Minimum time between PlatesSecUpdate.
 
 -- Backup of native frame methods
 local WorldFrame_GetChildren = WorldFrame.GetChildren
@@ -248,19 +248,19 @@ do
 	end)
 
 	function RBP:WorldFrameOnUpdate(elapsed)
+		if RBP.dbp.stackingEnabled then
+			UpdateStacking()
+		end
 		NextUpdate = NextUpdate - elapsed
 		if NextUpdate <= 0 then
 			NextUpdate = UpdateRate
 			PlatesUpdate()
 		end
-		if RBP.dbp.stackingEnabled then
-			UpdateStacking()
-		end
 		if RBP.dbp.enableAggroColoring and not RBP.inPvPInstance and (RBP.inPvEInstance or not RBP.dbp.disableAggroOpenworld) then
 			NextSecUpdate = NextSecUpdate - elapsed
 			if NextSecUpdate <= 0 then
 				NextSecUpdate = SecUpdateRate
-				PlatesAggroUpdate()
+				PlatesSecUpdate()
 			end
 		end
 	end

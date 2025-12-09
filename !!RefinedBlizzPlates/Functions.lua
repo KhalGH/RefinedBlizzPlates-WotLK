@@ -932,16 +932,14 @@ end
 
 local function UpdateAggroOverlay(Virtual)
 	local aggroOverlay = Virtual.aggroOverlay
-	if ReactionByPlateColor(Virtual.healthBar:GetStatusBarColor()) == "HOSTILE" then
-		local aggroStatus = GetAggroStatus(Virtual.threatGlow)
+	local aggroStatus = GetAggroStatus(Virtual.threatGlow)
+	if aggroStatus > 0 then
 		if aggroStatus == 3 then
 			aggroOverlay:SetVertexColor(unpack(RBP.dbp.aggroColor))
 		elseif aggroStatus == 2 then
 			aggroOverlay:SetVertexColor(unpack(RBP.dbp.losingAggroColor))
 		elseif aggroStatus == 1 then
 			aggroOverlay:SetVertexColor(unpack(RBP.dbp.gainingAggroColor))
-		elseif aggroStatus == 0 then
-			aggroOverlay:SetVertexColor(unpack(RBP.dbp.noAggroColor))
 		end
 		aggroOverlay:Show()
 		Virtual.healthBarTex:SetTexture(nil)
@@ -951,7 +949,7 @@ local function UpdateAggroOverlay(Virtual)
 	end
 end
 
-local function PlatesAggroUpdate()
+local function PlatesSecUpdate()
 	for Plate, Virtual in pairs(PlatesVisible) do
 		if Virtual.aggroColoring then
 			UpdateAggroOverlay(Virtual)
@@ -1882,4 +1880,4 @@ RBP.ResetRefinedPlate = ResetRefinedPlate
 RBP.DelayedUpdateAllShownPlates = DelayedUpdateAllShownPlates
 RBP.UpdateStacking = UpdateStacking
 RBP.UpdateAggroOverlay = UpdateAggroOverlay
-RBP.PlatesAggroUpdate = PlatesAggroUpdate
+RBP.PlatesSecUpdate = PlatesSecUpdate
