@@ -277,7 +277,14 @@ local function UpdateHealthTextValue(healthBar)
 	local min, max = healthBar:GetMinMaxValues()
 	local val = healthBar:GetValue()
 	if max > 0 then
-		local percent = math_floor((val / max) * 100)
+		local percent = val / max
+		if Virtual.healthBarIsShown then
+			Virtual.healthBarTex:SetTexCoord(0, percent, 0, 1)
+			if Virtual.aggroColoring then
+				Virtual.aggroOverlay:SetTexCoord(0, percent, 0, 1)
+			end
+		end
+		percent = math_floor(percent * 100)
 		if percent < 100 and percent > 0 then
 			Virtual.healthText:SetText(percent .. "%")
 			if Plate.BarlessHealthTextIsShown then
