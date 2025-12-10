@@ -441,11 +441,70 @@ local function SetupCastTimer(Virtual)
 	castTimerText:SetPoint(RBP.dbp.castTimerText_anchor, RBP.dbp.castTimerText_offsetX - 2, RBP.dbp.castTimerText_offsetY + 1)
 	castTimerText:Hide()
 	local castBarTex = Virtual.castBarTex
+
+	-- 记录施法条原始宽度用于拉伸显示
+	Virtual.castBarFullWidth = castBar:GetWidth()
+	-- 标记经典模式下的锚点是否已设置
+	Virtual.castBarTexClassicSetup = false
+
+	local function UpdateCastBarProgress(val, max)
+		if not max or max <= 0 then
+			if RBP.dbp.castBar_retailLike then
+				castBarTex:SetWidth(0)
+			end
+			if Virtual.castSpark then
+				Virtual.castSpark:Hide()
+			end
+			return
+		end
+
+		local progress = val / max
+
+		if RBP.dbp.castBar_retailLike then
+			-- 纹理拉伸模式
+			local fullWidth = Virtual.castBarFullWidth or castBar:GetWidth() or 0
+			local newWidth = fullWidth * progress
+
+			castBarTex:ClearAllPoints()
+			castBarTex:SetPoint("LEFT", castBar, "LEFT", 0, 0)
+			castBarTex:SetTexCoord(0, 1, 0, 1)
+			castBarTex:SetWidth(newWidth)
+			castBarTex:SetHeight(castBar:GetHeight())
+
+			if Virtual.castSpark then
+				if RBP.dbp.castBar_showSpark and newWidth > 0 then
+					Virtual.castSpark:Show()
+					Virtual.castSpark:ClearAllPoints()
+					Virtual.castSpark:SetPoint("CENTER", castBar, "LEFT", newWidth, 0)
+				else
+					Virtual.castSpark:Hide()
+				end
+			end
+		else
+			-- 经典裁剪模式：只在第一次设置锚点，之后只更新TexCoord
+			if not Virtual.castBarTexClassicSetup then
+				castBarTex:ClearAllPoints()
+				castBarTex:SetAllPoints(castBar)
+				Virtual.castBarTexClassicSetup = true
+			end
+			castBarTex:SetTexCoord(0, progress, 0, 1)
+			if Virtual.castSpark then
+				if RBP.dbp.castBar_showSpark and progress > 0 then
+					Virtual.castSpark:Show()
+					Virtual.castSpark:ClearAllPoints()
+					Virtual.castSpark:SetPoint("CENTER", castBarTex, "RIGHT")
+				else
+					Virtual.castSpark:Hide()
+				end
+			end
+		end
+	end
+
 	castBar:HookScript("OnValueChanged", function(self, val)
 		if Virtual.castBarIsShown then
 			local min, max = self:GetMinMaxValues()
 			if max > 0 then
-				castBarTex:SetTexCoord(0, val / max, 0, 1)
+				UpdateCastBarProgress(val, max)
 				if Virtual.castBarChanneling then
 					castTimerText:SetFormattedText("%.1f", val)
 				else
@@ -453,6 +512,11 @@ local function SetupCastTimer(Virtual)
 				end
 			end
 		end
+	end)
+
+	castBar:HookScript("OnShow", function(self)
+		local min, max = self:GetMinMaxValues()
+		UpdateCastBarProgress(self:GetValue(), max)
 	end)
 end
 
@@ -1726,6 +1790,8 @@ end
 function RBP:UpdateAllCastBars()
 	for _, Virtual in pairs(VirtualPlates) do
 		Virtual.castBarTex:SetTexture(RBP.LSM:Fetch("statusbar", RBP.dbp.castBar_Tex))
+		-- 重置经典模式标志，以便在切换模式时重新初始化
+		Virtual.castBarTexClassicSetup = false
 		local castText = Virtual.castText
 		local castTimerText = Virtual.castTimerText
 		if not RBP.dbp.castText_hide then
@@ -1760,6 +1826,32 @@ function RBP:UpdateAllCastBars()
 			Virtual.castSpark:Hide()
 		else
 			Virtual.castSpark:Show()
+		end
+		-- 如果施法条正在显示，立即更新一次以应用新模式
+		if Virtual.castBarIsShown and Virtual.castBar:IsShown() then
+			local min, max = Virtual.castBar:GetMinMaxValues()
+			if max > 0 then
+				local val = Virtual.castBar:GetValue()
+				local progress = val / max
+				local castBarTex = Virtual.castBarTex
+				
+				if RBP.dbp.castBar_retailLike then
+					-- 纹理拉伸模式
+					local fullWidth = Virtual.castBarFullWidth or Virtual.castBar:GetWidth() or 0
+					local newWidth = fullWidth * progress
+					castBarTex:ClearAllPoints()
+					castBarTex:SetPoint("LEFT", Virtual.castBar, "LEFT", 0, 0)
+					castBarTex:SetTexCoord(0, 1, 0, 1)
+					castBarTex:SetWidth(newWidth)
+					castBarTex:SetHeight(Virtual.castBar:GetHeight())
+				else
+					-- 经典裁剪模式：重置锚点
+					castBarTex:ClearAllPoints()
+					castBarTex:SetAllPoints(Virtual.castBar)
+					castBarTex:SetTexCoord(0, progress, 0, 1)
+					Virtual.castBarTexClassicSetup = true
+				end
+			end
 		end
 	end
 end

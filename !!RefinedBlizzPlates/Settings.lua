@@ -99,6 +99,7 @@ RBP.dbp.losingAggroColor = {0.7, 0.2, 0.4}
 -- CastBar
 RBP.dbp.castBar_Tex = "KhalBar"
 RBP.dbp.castBar_showSpark = true
+RBP.dbp.castBar_retailLike = true
 -- Cast Text
 RBP.dbp.castText_hide = false
 RBP.dbp.castText_font = RBP.RefinedFontKey
@@ -1418,6 +1419,11 @@ RBP.MainOptionTable = {
 					order = 5,
 					type = "toggle",
 					name = L["Show Spark"],
+				},
+				castBar_retailLike = {
+					order = 5.5,
+					type = "toggle",
+					name = L["Retail-like castingBar"],
 				},
 				lineBreak3 = {order = 6, type = "description", name = ""},
 				lineBreak4 = {order = 7, type = "description", name = ""},

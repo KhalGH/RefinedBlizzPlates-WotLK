@@ -260,6 +260,7 @@ L["Losing Aggro"] = true
 L["Cast Bar"] = true
 L["Bar Texture"] = true
 L["Show Spark"] = true
+L["Retail-like castingBar"] = true
 L["Cast Text"] = true
 L["Hide Cast Text"] = true
 L["Cast Timer Text"] = true
