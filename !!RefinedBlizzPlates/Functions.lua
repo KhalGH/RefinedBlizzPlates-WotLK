@@ -2,8 +2,8 @@
 local AddonFile, RBP = ... -- namespace
 
 ----------------------------- API -----------------------------
-local ipairs, unpack, tonumber, tostring, select, math_exp, math_floor, math_abs, string_format, string_char, string_sub, table_insert, SetCVar, wipe, WorldFrame, CreateFrame, UnitCastingInfo, UnitChannelInfo, UnitName, UnitClass, UnitIsUnit, UnitCanAttack, GetNumArenaOpponents, GetNumPartyMembers, GetNumRaidMembers, GetRaidRosterInfo, RAID_CLASS_COLORS, SecureHandlerWrapScript, ToggleFrame, UIPanelWindows, SetUIVisibility =
-      ipairs, unpack, tonumber, tostring, select, math.exp, math.floor, math.abs, string.format, string.char, string.sub, table.insert, SetCVar, wipe, WorldFrame, CreateFrame, UnitCastingInfo, UnitChannelInfo, UnitName, UnitClass, UnitIsUnit, UnitCanAttack, GetNumArenaOpponents, GetNumPartyMembers, GetNumRaidMembers, GetRaidRosterInfo, RAID_CLASS_COLORS, SecureHandlerWrapScript, ToggleFrame, UIPanelWindows, SetUIVisibility
+local ipairs, unpack, tonumber, tostring, select, math_exp, math_floor, math_abs, string_format, string_char, string_sub, table_insert, SetCVar, wipe, WorldFrame, CreateFrame, UnitCastingInfo, UnitChannelInfo, UnitName, UnitClass, UnitIsUnit, UnitCanAttack, UnitDebuff, GetNumArenaOpponents, GetNumPartyMembers, GetNumRaidMembers, GetRaidRosterInfo, RAID_CLASS_COLORS, SetMapToCurrentZone, GetCurrentMapAreaID, GetSubZoneText, SecureHandlerWrapScript, ToggleFrame, UIPanelWindows, SetUIVisibility =
+      ipairs, unpack, tonumber, tostring, select, math.exp, math.floor, math.abs, string.format, string.char, string.sub, table.insert, SetCVar, wipe, WorldFrame, CreateFrame, UnitCastingInfo, UnitChannelInfo, UnitName, UnitClass, UnitIsUnit, UnitCanAttack, UnitDebuff, GetNumArenaOpponents, GetNumPartyMembers, GetNumRaidMembers, GetRaidRosterInfo, RAID_CLASS_COLORS, SetMapToCurrentZone, GetCurrentMapAreaID, GetSubZoneText, SecureHandlerWrapScript, ToggleFrame, UIPanelWindows, SetUIVisibility
 
 ------------------------- Core Variables -------------------------
 local NP_WIDTH = 156.65118520899  -- Nameplate original width (don't modify)
@@ -15,37 +15,6 @@ local ClassByFriendName = {}      -- Storage table: maps friendly player names (
 local ArenaID = {}                -- Storage table: maps arena names to their ID number
 local PartyID = {}                -- Storage table: maps party names to their ID number
 local ASSETS = "Interface\\AddOns\\" .. AddonFile .. "\\Assets\\"
-
--- Hash table mapping custom color keys to class names
-local ClassByKey = {
-	[761122] = "DEATHKNIGHT",
-	[994803] = "DRUID",
-	[668244] = "HUNTER",
-	[407993] = "MAGE",
-	[955472] = "PALADIN",
-	[999999] = "PRIEST",
-	[999540] = "ROGUE",
-	[004386] = "SHAMAN",
-	[575078] = "WARLOCK",
-	[776042] = "WARRIOR",
-	[000099] = "FRIENDLY PLAYER",
-}
-
-local function ReactionByPlateColor(r, g, b)
-	if r < 0.01 and ((g > 0.99 and b < 0.01) or (g < 0.01 and b > 0.99)) then
-		return "FRIENDLY"
-	elseif r > .99 and g > .99 and b < .01 then
-		return "NEUTRAL"
-	else
-		return "HOSTILE"
-	end
-end
-
--- Converts normalized RGB from nameplates into a custom color key and returns the class name
-local function ClassByPlateColor(r, g, b)
-	local key = math_floor(r * 100) * 10000 + math_floor(g * 100) * 100 + math_floor(b * 100)
-	return ClassByKey[key]
-end
 
 ------------------------- Customization Functions -------------------------
 local function InitBarTextures(Virtual)
@@ -327,35 +296,59 @@ local function SetupHealthText(Virtual)
 	end
 end
 
+local function UpdateTargetGlow(Virtual)
+	if not Virtual.targetGlow then return end
+	local targetGlow = Virtual.targetGlow
+	targetGlow:SetVertexColor(unpack(RBP.dbp.targetGlow_Tint))
+	targetGlow:SetAlpha(RBP.dbp.targetGlow_Alpha)
+	if RBP.dbp.healthBar_border == "Blizzard" then
+		targetGlow:SetSize(RBP.NP_WIDTH * 1.165, RBP.NP_HEIGHT)
+		targetGlow:SetPoint("CENTER", 11.33, 0.5)
+		if RBP.dbp.showTargetGlowBorder then
+			targetGlow:SetTexture(ASSETS .. "PlateBorders\\HealthBar-TargetGlowBlizz")
+		else
+			targetGlow:SetTexture(ASSETS .. "PlateBorders\\HealthBar-MinimalistTargetGlowBlizz")
+		end
+	else
+		targetGlow:SetSize(RBP.NP_WIDTH, RBP.NP_HEIGHT)
+		targetGlow:SetPoint("CENTER", 0.7, 0.5)
+		if RBP.dbp.showTargetGlowBorder then
+			targetGlow:SetTexture(ASSETS .. "PlateBorders\\HealthBar-TargetGlow")
+		else
+			targetGlow:SetTexture(ASSETS .. "PlateBorders\\HealthBar-MinimalistTargetGlow")
+		end
+	end
+end
+
 local function SetupTargetGlow(Virtual)
 	if Virtual.targetGlow then return end
 	Virtual.targetGlow = Virtual.healthBar:CreateTexture(nil, "OVERLAY")
-	local targetGlow = Virtual.targetGlow
-	targetGlow:Hide()
-	if RBP.dbp.healthBar_border == "Blizzard" then
-		targetGlow:SetTexture(ASSETS .. "PlateBorders\\HealthBar-TargetGlowBlizz")
-		targetGlow:SetSize(RBP.NP_WIDTH * 1.165, RBP.NP_HEIGHT)
-		targetGlow:SetPoint("CENTER", 11.33, 0.5)
-	else
-		targetGlow:SetTexture(ASSETS .. "PlateBorders\\HealthBar-TargetGlow")
-		targetGlow:SetSize(RBP.NP_WIDTH, RBP.NP_HEIGHT)
-		targetGlow:SetPoint("CENTER", 0.7, 0.5)
-	end
-	targetGlow:SetVertexColor(unpack(RBP.dbp.targetGlow_Tint))
+	Virtual.targetGlow:Hide()
+	UpdateTargetGlow(Virtual)
 end
 
 local function UpdateMouseoverGlow(Virtual)
 	local healthBarHighlight = Virtual.healthBarHighlight
 	healthBarHighlight:SetVertexColor(unpack(RBP.dbp.mouseoverGlow_Tint))
+	healthBarHighlight:SetAlpha(RBP.dbp.mouseoverGlow_Alpha)
 	healthBarHighlight:ClearAllPoints()
 	if RBP.dbp.healthBar_border == "Blizzard" then
-		healthBarHighlight:SetTexture(ASSETS .. "PlateBorders\\HealthBar-MouseoverGlowBlizz")
 		healthBarHighlight:SetSize(RBP.NP_WIDTH * 1.165, RBP.NP_HEIGHT)
 		healthBarHighlight:SetPoint("CENTER", 11.83 + RBP.dbp.globalOffsetX, -8.7 + RBP.dbp.globalOffsetY)
+		if RBP.dbp.showMouseoverGlowBorder then
+			healthBarHighlight:SetTexture(ASSETS .. "PlateBorders\\HealthBar-MouseoverGlowBlizz")
+		else
+			healthBarHighlight:SetTexture(ASSETS .. "PlateBorders\\HealthBar-MinimalistMouseoverGlowBlizz")
+		end
 	else
 		healthBarHighlight:SetTexture(ASSETS .. "PlateBorders\\HealthBar-MouseoverGlow")
 		healthBarHighlight:SetSize(RBP.NP_WIDTH, RBP.NP_HEIGHT)
 		healthBarHighlight:SetPoint("CENTER", 1.2 + RBP.dbp.globalOffsetX, -8.7 + RBP.dbp.globalOffsetY)
+		if RBP.dbp.showMouseoverGlowBorder then
+			healthBarHighlight:SetTexture(ASSETS .. "PlateBorders\\HealthBar-MouseoverGlow")
+		else
+			healthBarHighlight:SetTexture(ASSETS .. "PlateBorders\\HealthBar-MinimalistMouseoverGlow")
+		end
 	end	
 end
 
@@ -476,12 +469,8 @@ local function SetupCastSpark(Virtual)
 	end
 end
 
-local function SetupCastGlow(Virtual)
-	if Virtual.castGlow then return end
-	Virtual.castGlow = Virtual:CreateTexture(nil, "OVERLAY")
+local function UpdateCastGlow(Virtual)
 	local castGlow = Virtual.castGlow
-	castGlow:SetTexture(ASSETS .. "PlateBorders\\CastBar-Glow")
-	castGlow:SetTexCoord(0, 0.55, 0, 1)
 	if RBP.dbp.healthBar_border == "Blizzard" then
 		castGlow:SetSize(173.5, 40)
 		castGlow:SetPoint("CENTER", 2.2, -27.5 + RBP.dbp.globalOffsetY)
@@ -489,8 +478,17 @@ local function SetupCastGlow(Virtual)
 		castGlow:SetSize(160, 40)
 		castGlow:SetPoint("CENTER", 2.75, -27.5 + RBP.dbp.globalOffsetY)
 	end
+end
+
+local function SetupCastGlow(Virtual)
+	if Virtual.castGlow then return end
+	Virtual.castGlow = Virtual:CreateTexture(nil, "OVERLAY")
+	local castGlow = Virtual.castGlow
+	castGlow:SetTexture(ASSETS .. "PlateBorders\\CastBar-Glow")
 	castGlow:SetVertexColor(0.25, 0.75, 0.25)
+	castGlow:SetTexCoord(0, 0.55, 0, 1)
 	castGlow:Hide()
+	UpdateCastGlow(Virtual)
 	if RBP.dbp.enableCastGlow then
 		local castBar = Virtual.castBar
 		local castBarBorder = Virtual.castBarBorder
@@ -949,14 +947,6 @@ local function UpdateAggroOverlay(Virtual)
 	end
 end
 
-local function PlatesSecUpdate()
-	for Plate, Virtual in pairs(PlatesVisible) do
-		if Virtual.aggroColoring then
-			UpdateAggroOverlay(Virtual)
-		end
-	end
-end
-
 local function SetupRefinedPlate(Virtual)
 	local Plate = Virtual.RealPlate
 	Plate.firstProcessing = true
@@ -1012,21 +1002,32 @@ local function ForceLevelHide()
 	ForceLevelHideHandler:Show()
 end
 
-local delayedSUIV = CreateFrame("Frame")
-delayedSUIV:Hide()
-delayedSUIV:SetScript("OnUpdate", function(self, elapsed)
-    self.timeLeft = self.timeLeft - elapsed
-    if self.timeLeft <= 0 then
-        self:Hide()
-		if RBP.dbp.LDWfix then
-			SetUIVisibility(true)
+function RBP:CheckLDWZone()
+	RBP.inICC = false
+	RBP.inLDWZone = false
+	SetMapToCurrentZone()
+	if GetCurrentMapAreaID() == 605 then
+		RBP.inICC = true
+		if GetSubZoneText() == RBP.LDWZoneText then
+			RBP.inLDWZone = true
 		end
-        RBP:UpdateAllShownPlates(false, true)
+	end
+	if RBP.DominateMind then
+		RBP.DominateMind = nil
+		SetUIVisibility(true)
+	end
+end
+
+local function CheckLDWZoneIndoors()
+	if GetSubZoneText() == RBP.LDWZoneText then
+		RBP.inLDWZone = true
+	else
+		RBP.inLDWZone = false
+	end
+    if RBP.DominateMind then
+        RBP.DominateMind = nil
+		SetUIVisibility(true)
     end
-end)
-local function DelayedSetUIVisibility()
-    delayedSUIV.timeLeft = 0.2
-    delayedSUIV:Show()
 end
 
 local function CheckDominateMind()
@@ -1037,9 +1038,7 @@ local function CheckDominateMind()
         if spellID == 71289 then
             if not RBP.DominateMind then
                 RBP.DominateMind = true
-				if RBP.dbp.LDWfix then
-                	SetUIVisibility(false)
-				end
+                SetUIVisibility(false)
             end
             return
         end
@@ -1047,7 +1046,7 @@ local function CheckDominateMind()
     end
     if RBP.DominateMind then
         RBP.DominateMind = nil
-		DelayedSetUIVisibility()
+		SetUIVisibility(true)
     end
 end
 
@@ -1092,16 +1091,16 @@ local function UpdateClassColorNames()
 		name = Plate.nameString
 		local classColor
 		if class then
-			if class == "FRIENDLY PLAYER" and ClassByFriendName[name] then
+			if class == "FRIENDLY_PLAYER" and ClassByFriendName[name] then
 				classColor = RAID_CLASS_COLORS[ClassByFriendName[name]]
 				Plate.classColor = classColor
-			elseif class ~= "FRIENDLY PLAYER" then
+			elseif class ~= "FRIENDLY_PLAYER" then
 				classColor = RAID_CLASS_COLORS[class]
 				Plate.classColor = classColor
 			end
 		end
 		Virtual.nameColorR, Virtual.nameColorG, Virtual.nameColorB = unpack(RBP.dbp.nameText_color)
-		if classColor and ((class == "FRIENDLY PLAYER" and RBP.dbp.nameText_classColorFriends) or (class ~= "FRIENDLY PLAYER" and RBP.dbp.nameText_classColorEnemies)) then
+		if classColor and ((class == "FRIENDLY_PLAYER" and RBP.dbp.nameText_classColorFriends) or (class ~= "FRIENDLY_PLAYER" and RBP.dbp.nameText_classColorEnemies)) then
 			Virtual.nameColorR, Virtual.nameColorG, Virtual.nameColorB = classColor.r, classColor.g, classColor.b
 		end
 		Virtual.newNameText:SetTextColor(Virtual.nameColorR, Virtual.nameColorG, Virtual.nameColorB)
@@ -1270,16 +1269,45 @@ local function UpdateClickboxOutOfCombat(Plate)
 	end
 end
 
+local function ReactionByPlateColor(r, g, b)
+	if r > .99 and g > .99 and b < .01 then
+		return 4 -- Neutral
+	elseif r < 0.01 and ((g > 0.99 and b < 0.01) or (g < 0.01 and b > 0.99)) then
+		return 5 -- Friendly
+	else
+		return 3 -- Hostile
+	end
+end
+
+local ClassByPlateColor = {
+	[78]  = "DEATHKNIGHT",
+	[104] = "DRUID",
+	[75]  = "HUNTER",
+	[49]  = "MAGE",
+	[101] = "PALADIN",
+	[110] = "PRIEST",
+	[109] = "ROGUE",
+	[5]   = "SHAMAN",
+	[63]  = "WARLOCK",
+	[84]  = "WARRIOR",
+	[0]   = "FRIENDLY_PLAYER",
+}
+
+local function UpdatePlateReactionFlags(Plate, r, g, b, reaction)
+	Plate.reaction = reaction
+	Plate.isFriendly = reaction == 5
+	Plate.classKey = ClassByPlateColor[math_floor(r * 100 + g * 10 + b)]
+	Plate.healthBarColor = {r, g, b}
+end
+
 local function UpdatePlateFlags(Plate)
 	local Virtual = Plate.VirtualPlate
+	local r, g, b = Virtual.healthBar:GetStatusBarColor()
+	local reaction = ReactionByPlateColor(r, g, b)
+	UpdatePlateReactionFlags(Plate, r, g, b, reaction)
 	Plate.hasRaidIcon = Virtual.raidTargetIcon:IsShown() and true
 	Plate.hasEliteIcon = Virtual.eliteIcon:IsShown() and true
 	Plate.hasBossIcon = Virtual.bossIcon:IsShown() and true
-	Virtual.healthBarColor = {Virtual.healthBar:GetStatusBarColor()}
-	local reaction = ReactionByPlateColor(unpack(Virtual.healthBarColor))
-	Plate.isFriendly = reaction == "FRIENDLY"
-	Plate.isHostile = reaction == "HOSTILE"
-	Plate.classKey = ClassByPlateColor(unpack(Virtual.healthBarColor))
 	Plate.levelNumber = tonumber(Virtual.levelText:GetText())
 	Plate.nameString = Virtual.ogNameText:GetText()
 	Virtual.newNameText:SetText(Plate.nameString)
@@ -1287,13 +1315,13 @@ end
 
 local function ResetPlateFlags(Plate)
 	local Virtual = Plate.VirtualPlate
+	Plate.reaction = nil
+	Plate.isFriendly = nil
+	Plate.classKey = nil
+	Plate.healthBarColor = nil
 	Plate.hasRaidIcon = nil
 	Plate.hasEliteIcon = nil
 	Plate.hasBossIcon = nil
-	Virtual.healthBarColor = nil
-	Plate.isFriendly = nil
-	Plate.isHostile = nil
-	Plate.classKey = nil
 	Plate.levelNumber = nil
 	Plate.nameString = nil
 end
@@ -1369,7 +1397,7 @@ local function UpdateRefinedPlate(Plate)
 			local class = Plate.classKey
 			local classColor	
 			if class then
-				if class == "FRIENDLY PLAYER" then
+				if class == "FRIENDLY_PLAYER" then
 					classColor = ClassByFriendName[name] and RAID_CLASS_COLORS[ClassByFriendName[name]]
 					Plate.classColor = classColor
 					Virtual.bossIcon:Hide()
@@ -1384,7 +1412,7 @@ local function UpdateRefinedPlate(Plate)
 				------------------------ Show Arena IDs ------------------------
 				if RBP.inArena then
 					local ArenaIDText = Virtual.ArenaIDText
-					if class == "FRIENDLY PLAYER" then
+					if class == "FRIENDLY_PLAYER" then
 						local partyID = PartyID[name]
 						if not partyID then
 							UpdateGroupInfo()
@@ -1428,10 +1456,10 @@ local function UpdateRefinedPlate(Plate)
 				end
 				--------------- Show class icons in instances --------------
 				if RBP.inInstance then
-					if class == "FRIENDLY PLAYER" and RBP.dbp.showClassOnFriends then
+					if class == "FRIENDLY_PLAYER" and RBP.dbp.showClassOnFriends then
 						Virtual.classIcon:SetTexture(ASSETS .. "Classes\\" .. (ClassByFriendName[name] or ""))
 						Virtual.classIcon:Show()
-					elseif class ~= "FRIENDLY PLAYER" and RBP.dbp.showClassOnEnemies then
+					elseif class ~= "FRIENDLY_PLAYER" and RBP.dbp.showClassOnEnemies then
 						Virtual.classIcon:SetTexture(ASSETS .. "Classes\\" .. class)
 						Virtual.classIcon:Show()
 					end
@@ -1449,7 +1477,7 @@ local function UpdateRefinedPlate(Plate)
 					Virtual.healthBarTex:SetTexture(RBP.LSM:Fetch("statusbar", RBP.dbp.healthBar_npcTex))
 				end
 			end
-			if classColor and ((class == "FRIENDLY PLAYER" and RBP.dbp.nameText_classColorFriends) or (class ~= "FRIENDLY PLAYER" and RBP.dbp.nameText_classColorEnemies)) then
+			if classColor and ((class == "FRIENDLY_PLAYER" and RBP.dbp.nameText_classColorFriends) or (class ~= "FRIENDLY_PLAYER" and RBP.dbp.nameText_classColorEnemies)) then
 				Virtual.nameColorR, Virtual.nameColorG, Virtual.nameColorB = classColor.r, classColor.g, classColor.b
 			else
 				Virtual.nameColorR, Virtual.nameColorG, Virtual.nameColorB = unpack(RBP.dbp.nameText_color)
@@ -1527,14 +1555,24 @@ local function ResetRefinedPlate(Plate)
 	end
 end
 
-local DelayedUpdateAllShownPlatesHandler = CreateFrame("Frame")
-DelayedUpdateAllShownPlatesHandler:Hide()
-DelayedUpdateAllShownPlatesHandler:SetScript("OnUpdate", function(self)
-	self:Hide()
-	RBP:UpdateAllShownPlates(false, true)
-end)
-local function DelayedUpdateAllShownPlates()
-	DelayedUpdateAllShownPlatesHandler:Show()
+local function PlatesSecUpdate()
+	local r, g, b, reaction
+	for Plate, Virtual in pairs(PlatesVisible) do
+		r, g, b = Virtual.healthBar:GetStatusBarColor()
+		reaction = ReactionByPlateColor(r, g, b)
+		if reaction ~= Plate.reaction then
+			UpdatePlateReactionFlags(Plate, r, g, b, reaction)
+			ResetRefinedPlate(Plate)
+			UpdateRefinedPlate(Plate)
+			UpdateTarget(Plate)
+			if not RBP.inCombat then
+				UpdateClickboxOutOfCombat(Plate)
+			end
+		end
+		if Virtual.aggroColoring then
+			UpdateAggroOverlay(Virtual)
+		end
+	end
 end
 
 -- Enlarging of WorldFrame, so that nameplates are displayed even if they have slightly left the screen or are very high up, as is the case with large bosses.
@@ -1745,25 +1783,9 @@ end
 
 function RBP:UpdateAllGlows()
 	for Plate, Virtual in pairs(VirtualPlates) do
-		local targetGlow = Virtual.targetGlow
-		local threatGlow = Virtual.threatGlow
-		local castGlow = Virtual.castGlow
-		targetGlow:SetVertexColor(unpack(RBP.dbp.targetGlow_Tint))
-		if RBP.dbp.healthBar_border == "Blizzard" then
-			targetGlow:SetTexture(ASSETS .. "PlateBorders\\HealthBar-TargetGlowBlizz")
-			targetGlow:SetSize(self.NP_WIDTH * 1.165, self.NP_HEIGHT)
-			targetGlow:SetPoint("CENTER", 11.33, 0.5)
-			threatGlow:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Flash")
-			castGlow:SetSize(173.5, 40)
-			castGlow:SetPoint("CENTER", 2.2, -27.5 + RBP.dbp.globalOffsetY)
-		else
-			targetGlow:SetTexture(ASSETS .. "PlateBorders\\HealthBar-TargetGlow")
-			targetGlow:SetSize(self.NP_WIDTH, self.NP_HEIGHT)
-			targetGlow:SetPoint("CENTER", 0.7, 0.5)
-			threatGlow:SetTexture(ASSETS .. "PlateBorders\\HealthBar-ThreatGlow")
-			castGlow:SetSize(160, 40)
-			castGlow:SetPoint("CENTER", 2.75, -27.5 + RBP.dbp.globalOffsetY)
-		end
+		UpdateTargetGlow(Virtual)
+		SetupThreatGlow(Virtual)
+		UpdateCastGlow(Virtual)
 		if Plate.totemPlate_targetGlow then
 			Plate.totemPlate_targetGlow:SetVertexColor(unpack(RBP.dbp.targetGlow_Tint))
 		end
@@ -1795,22 +1817,15 @@ function RBP:UpdateWorldFrameHeight(init)
 	end
 end
 
-function RBP:UpdateAllShownPlates(updateRaidIcon, updateReaction)
+function RBP:UpdateAllShownPlates(updateRaidIcon)
 	for Plate, Virtual in pairs(PlatesVisible) do
 		if updateRaidIcon then
 			Plate.hasRaidIcon = Virtual.raidTargetIcon:IsShown() and true
 		end
-		if updateReaction then
-			Virtual.healthBarColor = {Virtual.healthBar:GetStatusBarColor()}
-			local reaction = ReactionByPlateColor(unpack(Virtual.healthBarColor))
-			Plate.isFriendly = reaction == "FRIENDLY"
-			Plate.isHostile = reaction == "HOSTILE"
-			Plate.classKey = ClassByPlateColor(unpack(Virtual.healthBarColor))
-		end
 		ResetRefinedPlate(Plate)
 		UpdateRefinedPlate(Plate)
 		UpdateTarget(Plate)
-		if not self.inCombat then
+		if not RBP.inCombat then
 			UpdateClickboxOutOfCombat(Plate)
 		end
 	end
@@ -1864,6 +1879,7 @@ RBP.UpdateTarget = UpdateTarget
 RBP.UpdateCastText = UpdateCastText
 RBP.SetupRefinedPlate = SetupRefinedPlate
 RBP.ForceLevelHide = ForceLevelHide
+RBP.CheckLDWZoneIndoors = CheckLDWZoneIndoors
 RBP.CheckDominateMind = CheckDominateMind
 RBP.UpdateGroupInfo = UpdateGroupInfo
 RBP.UpdateArenaInfo = UpdateArenaInfo
@@ -1877,7 +1893,5 @@ RBP.UpdatePlateFlags = UpdatePlateFlags
 RBP.ResetPlateFlags = ResetPlateFlags
 RBP.UpdateRefinedPlate = UpdateRefinedPlate
 RBP.ResetRefinedPlate = ResetRefinedPlate
-RBP.DelayedUpdateAllShownPlates = DelayedUpdateAllShownPlates
 RBP.UpdateStacking = UpdateStacking
-RBP.UpdateAggroOverlay = UpdateAggroOverlay
 RBP.PlatesSecUpdate = PlatesSecUpdate

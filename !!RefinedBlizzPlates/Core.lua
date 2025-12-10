@@ -6,8 +6,8 @@
 local AddonFile, RBP = ...
 
 -- API
-local select, next, pairs, ipairs, unpack, string_format, GetAddOnMetadata, sort, wipe, CreateFrame, UnitName, UnitLevel, UnitDebuff, IsInInstance, SetMapToCurrentZone, GetCurrentMapAreaID, GetSubZoneText, SetUIVisibility, SetCVar =
-      select, next, pairs, ipairs, unpack, string.format, GetAddOnMetadata, sort, wipe, CreateFrame, UnitName, UnitLevel, UnitDebuff, IsInInstance, SetMapToCurrentZone, GetCurrentMapAreaID, GetSubZoneText, SetUIVisibility, SetCVar
+local select, next, pairs, ipairs, unpack, string_format, GetAddOnMetadata, sort, wipe, CreateFrame, UnitName, UnitLevel, UnitDebuff, IsInInstance, SetUIVisibility, SetCVar =
+      select, next, pairs, ipairs, unpack, string.format, GetAddOnMetadata, sort, wipe, CreateFrame, UnitName, UnitLevel, UnitDebuff, IsInInstance, SetUIVisibility, SetCVar
 
 -- Localized namespace definitions
 local NP_WIDTH = RBP.NP_WIDTH
@@ -18,6 +18,7 @@ local UpdateCastText = RBP.UpdateCastText
 local UpdateTarget = RBP.UpdateTarget
 local SetupRefinedPlate = RBP.SetupRefinedPlate
 local ForceLevelHide = RBP.ForceLevelHide
+local CheckLDWZoneIndoors = RBP.CheckLDWZoneIndoors
 local CheckDominateMind = RBP.CheckDominateMind
 local UpdateGroupInfo = RBP.UpdateGroupInfo
 local UpdateArenaInfo = RBP.UpdateArenaInfo
@@ -31,9 +32,7 @@ local UpdatePlateFlags = RBP.UpdatePlateFlags
 local ResetPlateFlags = RBP.ResetPlateFlags
 local UpdateRefinedPlate = RBP.UpdateRefinedPlate
 local ResetRefinedPlate = RBP.ResetRefinedPlate
-local DelayedUpdateAllShownPlates = RBP.DelayedUpdateAllShownPlates
 local UpdateStacking = RBP.UpdateStacking
-local UpdateAggroOverlay = RBP.UpdateAggroOverlay
 local PlatesSecUpdate = RBP.PlatesSecUpdate
 
 -- Local definitions
@@ -256,12 +255,10 @@ do
 			NextUpdate = UpdateRate
 			PlatesUpdate()
 		end
-		if RBP.dbp.enableAggroColoring and not RBP.inPvPInstance and (RBP.inPvEInstance or not RBP.dbp.disableAggroOpenworld) then
-			NextSecUpdate = NextSecUpdate - elapsed
-			if NextSecUpdate <= 0 then
-				NextSecUpdate = SecUpdateRate
-				PlatesSecUpdate()
-			end
+		NextSecUpdate = NextSecUpdate - elapsed
+		if NextSecUpdate <= 0 then
+			NextSecUpdate = SecUpdateRate
+			PlatesSecUpdate()
 		end
 	end
 end
@@ -438,34 +435,14 @@ function EventHandler:PLAYER_ENTERING_WORLD()
 	if instanceType == "arena" then
 		UpdateArenaInfo()
 	end
-	RBP.inICC = false
-	RBP.inLDWZone = false
-	if instanceType == "raid" then
-		SetMapToCurrentZone()
-		if GetCurrentMapAreaID() == 605 then
-			RBP.inICC = true
-			if GetSubZoneText() == RBP.LDWZoneText then
-				RBP.inLDWZone = true
-			end
-		end
+	if RBP.dbp.LDWfix and instanceType == "raid" then
+		RBP:CheckLDWZone()
 	end
-    if RBP.DominateMind then
-        RBP.DominateMind = nil
-		if RBP.dbp.LDWfix then
-			SetUIVisibility(true)
-		end
-    end
 end
 
 function EventHandler:PARTY_MEMBERS_CHANGED()
 	UpdateGroupInfo()
 	UpdateClassColorNames()
-end
-
-function EventHandler:UNIT_FACTION(event, unit)
-	if unit == "player" and not RBP.inInstance then
-		DelayedUpdateAllShownPlates()
-	end
 end
 
 function EventHandler:PLAYER_PVP_RANK_CHANGED()
@@ -488,21 +465,13 @@ function EventHandler:ARENA_OPPONENT_UPDATE(event, unitToken, updateReason)
 end
 
 function EventHandler:ZONE_CHANGED_INDOORS()
-	if RBP.inICC and GetSubZoneText() == RBP.LDWZoneText then
-		RBP.inLDWZone = true
-	else
-		RBP.inLDWZone = false
+	if RBP.inICC then
+		CheckLDWZoneIndoors()
 	end
-    if RBP.DominateMind then
-        RBP.DominateMind = nil
-		if RBP.dbp.LDWfix then
-			SetUIVisibility(true)
-		end
-    end
 end
 
 function EventHandler:UNIT_AURA(event, unit)
-	if unit == "player" and RBP.inLDWZone then
+	if RBP.inLDWZone and unit == "player" then
 		CheckDominateMind()
 	end
 end
@@ -533,7 +502,6 @@ EventHandler:RegisterEvent("PLAYER_REGEN_ENABLED")
 EventHandler:RegisterEvent("PLAYER_TARGET_CHANGED")
 EventHandler:RegisterEvent("PLAYER_ENTERING_WORLD")
 EventHandler:RegisterEvent("PARTY_MEMBERS_CHANGED")
-EventHandler:RegisterEvent("UNIT_FACTION")
 EventHandler:RegisterEvent("PLAYER_PVP_RANK_CHANGED")
 EventHandler:RegisterEvent("PLAYER_LEVEL_UP")
 EventHandler:RegisterEvent("ARENA_OPPONENT_UPDATE")

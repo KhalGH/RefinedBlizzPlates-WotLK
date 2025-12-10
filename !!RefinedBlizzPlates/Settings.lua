@@ -76,7 +76,11 @@ RBP.dbp.healthBar_borderTint = {1, 1, 1} -- This a tint overlay, not a regular c
 RBP.dbp.healthBar_playerTex = "KhalBar"
 RBP.dbp.healthBar_npcTex = "KhalBar"
 RBP.dbp.targetGlow_Tint = {1, 1, 1} -- This a tint overlay, not a regular color
+RBP.dbp.showTargetGlowBorder = true
+RBP.dbp.targetGlow_Alpha = 1
 RBP.dbp.mouseoverGlow_Tint = {1, 1, 1} -- This a tint overlay, not a regular color
+RBP.dbp.showMouseoverGlowBorder = true
+RBP.dbp.mouseoverGlow_Alpha = 1
 -- Health Text
 RBP.dbp.healthText_hide = false
 RBP.dbp.healthText_font = RBP.RefinedFontKey
@@ -149,7 +153,7 @@ RBP.dbp.barlessPlate_nameColorByHP = false
 RBP.dbp.barlessPlate_textFont = RBP.BlizzFontKey
 RBP.dbp.barlessPlate_textSize = 14
 RBP.dbp.barlessPlate_textOutline = "OUTLINE"
-RBP.dbp.barlessPlate_textColor = {0.2, 0.2, 0.9}
+RBP.dbp.barlessPlate_textColor = {0.6, 0.6, 0.6}
 RBP.dbp.barlessPlate_classColors = true
 RBP.dbp.barlessPlate_offset = 0
 RBP.dbp.barlessPlate_NPCnameColorByHP = false
@@ -547,26 +551,14 @@ RBP.MainOptionTable = {
 					set = function(info, val)
 						RBP.dbp[info[#info]] = val
 						if val then
-							RBP.EventHandler:RegisterEvent("ZONE_CHANGED_INDOORS")
-							RBP.EventHandler:RegisterEvent("UNIT_AURA")
-							RBP.inICC = false
-							RBP.inLDWZone = false
-							SetMapToCurrentZone()
-							if GetCurrentMapAreaID() == 605 then
-								RBP.inICC = true
-								if GetSubZoneText() == RBP.LDWZoneText then
-									RBP.inLDWZone = true
-								end
-							end
+							RBP:CheckLDWZone()
 						else
-							RBP.EventHandler:UnregisterEvent("ZONE_CHANGED_INDOORS")
-							RBP.EventHandler:UnregisterEvent("UNIT_AURA")
 							RBP.inICC = false
 							RBP.inLDWZone = false
 							if RBP.DominateMind then
 								RBP.DominateMind = nil
+								SetUIVisibility(true)
 							end
-							SetUIVisibility(true)					
 						end
 					end,
 				},
@@ -1132,8 +1124,31 @@ RBP.MainOptionTable = {
 					name = L["Glows"],
 				},
 				lineBreak6 = {order = 11, type = "description", name = ""},
-				targetGlow_Tint = {
+				showTargetGlowBorder = {
 					order = 12,
+					type = "toggle",
+					name = L["Target Glow Border"],
+					set = function(info, val)
+						RBP.dbp[info[#info]] = val
+						RBP:UpdateAllGlows()
+						RBP:UpdateAllShownPlates()
+					end,
+				},
+				targetGlow_Alpha = {
+					order = 13,
+					type = "range",
+					name = L["Target Glow Alpha"],
+					min = 0,
+					max = 1,
+					step = 0.01,
+					set = function(info, val)
+						RBP.dbp[info[#info]] = val
+						RBP:UpdateAllGlows()
+						RBP:UpdateAllShownPlates()
+					end,
+				},
+				targetGlow_Tint = {
+					order = 14,
 					type = "color",
 					name = L["Target Glow Tint"],
 					desc = L["This is a tint overlay, not a regular color. 'White' keeps the original look."],
@@ -1147,8 +1162,32 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllShownPlates()
 					end,
 				},
+				lineBreak7 = {order = 15, type = "description", name = ""},
+				showMouseoverGlowBorder = {
+					order = 16,
+					type = "toggle",
+					name = L["Mouseover Glow Border"],
+					set = function(info, val)
+						RBP.dbp[info[#info]] = val
+						RBP:UpdateAllGlows()
+						RBP:UpdateAllShownPlates()
+					end,
+				},
+				mouseoverGlow_Alpha = {
+					order = 17,
+					type = "range",
+					name = L["Mouseover Glow Alpha"],
+					min = 0,
+					max = 1,
+					step = 0.01,
+					set = function(info, val)
+						RBP.dbp[info[#info]] = val
+						RBP:UpdateAllGlows()
+						RBP:UpdateAllShownPlates()
+					end,
+				},
 				mouseoverGlow_Tint = {
-					order = 13,
+					order = 18,
 					type = "color",
 					name = L["Mouseover Glow Tint"],
 					desc = L["This is a tint overlay, not a regular color. 'White' keeps the original look."],
@@ -1162,16 +1201,16 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllShownPlates()
 					end,
 				},
-				lineBreak7 = {order = 14, type = "description", name = ""},
-				lineBreak8 = {order = 15, type = "description",	name = ""},
+				lineBreak8 = {order = 19, type = "description", name = ""},
+				lineBreak9 = {order = 20, type = "description",	name = ""},
 				healthText_header = {
-					order = 16,
+					order = 21,
 					type = "header",
 					name = L["Health Text"],
 				},
-				lineBreak9 = {order = 17, type = "description", name = ""},
+				lineBreak10 = {order = 22, type = "description", name = ""},
 				healthText_font = {
-					order = 18,
+					order = 23,
 					type = "select",
 					name = L["Text Font"],
 					values = RBP.LSM:HashTable("font"),
@@ -1181,7 +1220,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				healthText_size = {
-					order = 19,
+					order = 24,
 					type = "range",
 					name = L["Font Size"],
 					min = 6,
@@ -1192,7 +1231,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				healthText_outline = {
-					order = 20,
+					order = 25,
 					type = "select", 
 					name = L["Outline"],
 					values = {
@@ -1208,7 +1247,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				healthText_anchor = {
-					order = 21,
+					order = 26,
 					type = "select", 
 					name = L["Anchor"],
 					values = {
@@ -1227,7 +1266,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				healthText_offsetX = {
-					order = 22,
+					order = 27,
 					type = "range",
 					name = L["Offset X"],
 					min = -50,
@@ -1238,7 +1277,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				healthText_offsetY = {
-					order = 23,
+					order = 28,
 					type = "range",
 					name = L["Offset Y"],
 					min = -50,
@@ -1249,7 +1288,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				healthText_color = {
-					order = 24,
+					order = 29,
 					type = "color",
 					name = L["Text Color"],
 					get = function(info)
@@ -1265,20 +1304,20 @@ RBP.MainOptionTable = {
 					end,
 				},
 				healthText_hide = {
-					order = 25,
+					order = 30,
 					type = "toggle",
 					name = L["Hide Health Text"],
 				},
-				lineBreak10 = {order = 26, type = "description", name = ""},
-				lineBreak11 = {order = 27, type = "description", name = ""},
+				lineBreak11 = {order = 31, type = "description", name = ""},
+				lineBreak12 = {order = 32, type = "description", name = ""},
 				aggroOverlay_header = {
-					order = 28,
+					order = 33,
 					type = "header",
 					name = L["Aggro Coloring"],
 				},
-				lineBreak12 = {order = 29, type = "description", name = ""},
+				lineBreak13 = {order = 34, type = "description", name = ""},
 				enableAggroColoring = {
-					order = 30,
+					order = 35,
 					type = "toggle",
 					name = L["Enable"],
 					desc = L["Changes NPC health bar color based on aggro status."],
@@ -1288,10 +1327,10 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllShownPlates()
 					end,
 				},
-				lineBreak13 = {order = 31, type = "description", name = ""},
-				lineBreak14 = {order = 32, type = "description", name = ""},
+				lineBreak14 = {order = 36, type = "description", name = ""},
+				lineBreak15 = {order = 37, type = "description", name = ""},
 				aggroColor = {
-					order = 33,
+					order = 38,
 					type = "color",
 					name = L["Aggro"],
 					get = function(info)
@@ -1306,7 +1345,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				gainingAggroColor = {
-					order = 34,
+					order = 39,
 					type = "color",
 					name = L["Gaining Aggro"],
 					get = function(info)
@@ -1321,7 +1360,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				losingAggroColor = {
-					order = 35,
+					order = 40,
 					type = "color",
 					name = L["Losing Aggro"],
 					get = function(info)
@@ -1336,7 +1375,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				disableAggroOpenworld = {
-					order = 36,
+					order = 41,
 					type = "toggle",
 					name = L["Disable in Open World"],
 					set = function(info, val)
@@ -1348,8 +1387,8 @@ RBP.MainOptionTable = {
 						return not RBP.dbp.enableAggroColoring
 					end,
 				},
-				lineBreak15 = {order = 37, type = "description", name = ""},
-				lineBreak16 = {order = 38, type = "description", name = ""},
+				lineBreak16 = {order = 42, type = "description", name = ""},
+				lineBreak17 = {order = 43, type = "description", name = ""},
 			},
 		},
 		CastBar = {
