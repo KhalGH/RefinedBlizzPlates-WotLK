@@ -20,8 +20,10 @@ local ASSETS = "Interface\\AddOns\\" .. AddonFile .. "\\Assets\\"
 local function InitBarTextures(Virtual)
 	Virtual.healthBarTex:SetDrawLayer("BORDER")
 	Virtual.castBarBorder:SetTexture(ASSETS .. "PlateBorders\\CastBar-Border")
+	Virtual.shieldCastBarBorder:SetTexture(ASSETS .. "PlateBorders\\CastBar-ShieldBorder")
 	Virtual.castBarTex:SetTexture(RBP.LSM:Fetch("statusbar", RBP.dbp.castBar_Tex))
 	Virtual.castBarTex:SetDrawLayer("BORDER")
+	Virtual.spellIcon:SetDrawLayer("BORDER")
 	Virtual.ogHealthBarBorder:Hide()
 	Virtual.ogNameText:Hide()
 end
@@ -34,17 +36,22 @@ local function SetupThreatGlow(Virtual)
 	end
 end
 
-local function SetupHealthBorder(Virtual)
-	if Virtual.healthBarBorder then return end
-	Virtual.healthBarBorder = Virtual.healthBar:CreateTexture(nil, "ARTWORK")
+local function UpdateHealthBorder(Virtual)
+	if not Virtual.healthBarBorder then return end
 	if RBP.dbp.healthBar_border == "Blizzard" then
 		Virtual.healthBarBorder:SetTexture("Interface\\Tooltips\\Nameplate-Border")
 	else
 		Virtual.healthBarBorder:SetTexture(ASSETS .. "PlateBorders\\HealthBar-Border")		
 	end
 	Virtual.healthBarBorder:SetVertexColor(unpack(RBP.dbp.healthBar_borderTint))
+end
+
+local function SetupHealthBorder(Virtual)
+	if Virtual.healthBarBorder then return end
+	Virtual.healthBarBorder = Virtual.healthBar:CreateTexture(nil, "ARTWORK")
 	Virtual.healthBarBorder:SetSize(RBP.NP_WIDTH, RBP.NP_HEIGHT)
 	Virtual.healthBarBorder:SetPoint("CENTER", 10.5, 9)
+	UpdateHealthBorder(Virtual)
 end
 
 local function SetupHealthBarBackground(Virtual)
@@ -56,13 +63,21 @@ local function SetupHealthBarBackground(Virtual)
 	healthBarBackground:SetPoint("CENTER", 10.5, 9)
 end
 
+local function UpdateCastBarBackground(Virtual)
+	if RBP.dbp.healthBar_border == "Blizzard" then
+		Virtual.castBarBackground:SetSize(158, 36)
+	else
+		Virtual.castBarBackground:SetSize(145, 36)
+	end
+end
+
 local function SetupCastBarBackground(Virtual)
-	if Virtual.castBarBackground then return end 
+	if Virtual.castBarBackground then return end
 	Virtual.castBarBackground = Virtual.castBar:CreateTexture(nil, "BACKGROUND")
 	local castBarBackground = Virtual.castBarBackground
 	castBarBackground:SetTexture(ASSETS .. "PlateBorders\\NamePlate-Background")
-	castBarBackground:SetSize(RBP.NP_WIDTH, RBP.NP_HEIGHT)
 	castBarBackground:SetPoint("CENTER", 10.5, 9)
+	UpdateCastBarBackground(Virtual)
 end
 
 local function UpdateNameText(Virtual)
@@ -240,15 +255,19 @@ local function UpdateBarlessNameText(Plate, percent)
 	end
 end
 
-local function UpdateHealthTextValue(healthBar)
+local function UpdateHealthTextValue(healthBar, value)
 	local Plate = healthBar.RealPlate
 	local Virtual = Plate.VirtualPlate
 	local min, max = healthBar:GetMinMaxValues()
-	local val = healthBar:GetValue()
 	if max > 0 then
+		local val = value or healthBar:GetValue()
 		local percent = val / max
 		if Virtual.healthBarIsShown then
-			Virtual.healthBarTex:SetTexCoord(0, percent, 0, 1)
+			if Virtual.healthBarTexCrop then
+				Virtual.healthBarTex:SetTexCoord(0, percent, 0, 1)
+			else
+				Virtual.healthBarTex:SetTexCoord(0, 1, 0, 1)
+			end
 			if Virtual.aggroColoring then
 				Virtual.aggroOverlay:SetTexCoord(0, percent, 0, 1)
 			end
@@ -279,14 +298,21 @@ local function UpdateHealthTextValue(healthBar)
 	end
 end
 
+local function UpdateHealthText(Virtual)
+	if not Virtual.healthText then return end
+	local healthText = Virtual.healthText
+	healthText:SetFont(RBP.LSM:Fetch("font", RBP.dbp.healthText_font), RBP.dbp.healthText_size, RBP.dbp.healthText_outline)
+	healthText:ClearAllPoints()
+	healthText:SetPoint(RBP.dbp.healthText_anchor, RBP.dbp.healthText_offsetX, RBP.dbp.healthText_offsetY + 0.3)
+	healthText:SetTextColor(unpack(RBP.dbp.healthText_color))
+end
+
 local function SetupHealthText(Virtual)
 	if Virtual.healthText then return end
 	Virtual.healthText = Virtual.healthBar:CreateFontString(nil, "OVERLAY")
 	local healthText = Virtual.healthText
-	healthText:SetFont(RBP.LSM:Fetch("font", RBP.dbp.healthText_font), RBP.dbp.healthText_size, RBP.dbp.healthText_outline)
-	healthText:SetPoint(RBP.dbp.healthText_anchor, RBP.dbp.healthText_offsetX, RBP.dbp.healthText_offsetY + 0.3)
-	healthText:SetTextColor(unpack(RBP.dbp.healthText_color))
 	healthText:SetShadowOffset(0.5, -0.5)
+	UpdateHealthText(Virtual)
 	local healthBar = Virtual.healthBar
 	UpdateHealthTextValue(healthBar)
 	healthBar:HookScript("OnValueChanged", UpdateHealthTextValue)
@@ -352,7 +378,54 @@ local function UpdateMouseoverGlow(Virtual)
 	end	
 end
 
-local function UpdateCastText(Virtual, unit)
+local function UpdateCastText(Virtual)
+	if not Virtual.castText then return end
+	local castText = Virtual.castText
+	castText:SetFont(RBP.LSM:Fetch("font", RBP.dbp.castText_font), RBP.dbp.castText_size, RBP.dbp.castText_outline)
+	castText:SetTextColor(unpack(RBP.dbp.castText_color))
+	castText:SetJustifyH(RBP.dbp.castText_anchor)
+	castText:SetWidth(RBP.dbp.castText_width)
+	castText:ClearAllPoints()
+	if RBP.dbp.healthBar_border == "Blizzard" then
+		castText:SetPoint(RBP.dbp.castText_anchor, RBP.dbp.castText_offsetX - 8.5, RBP.dbp.castText_offsetY + 0.7)
+	else
+		castText:SetPoint(RBP.dbp.castText_anchor, RBP.dbp.castText_offsetX - 8.5, RBP.dbp.castText_offsetY + 1)
+	end
+end
+
+local function SetupCastText(Virtual)
+	if Virtual.castText then return end
+	Virtual.castText = Virtual.castBar:CreateFontString(nil, "OVERLAY")
+	local Plate = Virtual.RealPlate
+	local castText = Virtual.castText
+	castText:SetNonSpaceWrap(false)
+	castText:SetWordWrap(false)
+	castText:SetShadowOffset(0.5, -0.5)
+	UpdateCastText(Virtual)
+	castText:SetText("")
+	if RBP.dbp.castText_hide then
+		castText:Hide()
+	end
+end
+
+local function UpdateCastTimer(Virtual)
+	local castTimerText = Virtual.castTimerText
+	castTimerText:SetFont(RBP.LSM:Fetch("font", RBP.dbp.castTimerText_font), RBP.dbp.castTimerText_size, RBP.dbp.castTimerText_outline)
+	castTimerText:SetTextColor(unpack(RBP.dbp.castTimerText_color))
+	castTimerText:ClearAllPoints()
+	castTimerText:SetPoint(RBP.dbp.castTimerText_anchor, RBP.dbp.castTimerText_offsetX - 3, RBP.dbp.castTimerText_offsetY + 1)
+end
+
+local function SetupCastTimer(Virtual)
+	if Virtual.castTimerText then return end
+	Virtual.castTimerText = Virtual.castBar:CreateFontString(nil, "OVERLAY")
+	local castTimerText = Virtual.castTimerText
+	castTimerText:SetShadowOffset(0.5, -0.5)
+	castTimerText:Hide()
+	UpdateCastTimer(Virtual)
+end
+
+local function UpdateCastTextString(Virtual, unit)
 	if unit then
 		local spellCasting = UnitCastingInfo(unit)
 		local spellChanneling = UnitChannelInfo(unit)
@@ -382,78 +455,40 @@ local function UpdateCastText(Virtual, unit)
 	end
 end
 
-local function SetupCastText(Virtual)
-	if Virtual.castText then return end
+local function UpdateCastBarOnShow(Virtual)
 	local castBar = Virtual.castBar
-	Virtual.castText = castBar:CreateFontString(nil, "OVERLAY")
-	local castText = Virtual.castText
-	castText:SetFont(RBP.LSM:Fetch("font", RBP.dbp.castText_font), RBP.dbp.castText_size, RBP.dbp.castText_outline)
-	castText:SetWidth(RBP.dbp.castText_width)
-	castText:SetJustifyH(RBP.dbp.castText_anchor)
-	castText:SetTextColor(unpack(RBP.dbp.castText_color))
-	castText:SetNonSpaceWrap(false)
-	castText:SetWordWrap(false)
-	castText:SetShadowOffset(0.5, -0.5)
-	castText:SetText("")
-	if RBP.dbp.castText_hide then
-		castText:Hide()
-	end
-	if RBP.dbp.healthBar_border == "Blizzard" then
-		castText:SetPoint(RBP.dbp.castText_anchor, RBP.dbp.castText_offsetX - 9.3, RBP.dbp.castText_offsetY + 1.6)
-	else
-		castText:SetPoint(RBP.dbp.castText_anchor, RBP.dbp.castText_offsetX - 3.8, RBP.dbp.castText_offsetY + 1.6)
-	end
-	castBar.castTextDelay = castBar.castTextDelay or CreateFrame("Frame")
-	castBar.castTextDelay:SetScript("OnUpdate", function(self)
-		self:Hide()
-		local min, max = castBar:GetMinMaxValues()
-		local Plate = Virtual.RealPlate
-		if Virtual.healthBarIsShown and max > 0 then
-			Virtual.castBarIsShown = true
-			local unit = Plate.namePlateUnitToken or Plate.unitToken or (Plate.isTarget and "target")
-			UpdateCastText(Virtual, unit)
-		else
-			Virtual.castBarBorder:Hide()
-			Virtual.shieldCastBarBorder:Hide()
-			Virtual.spellIcon:Hide()
-			Virtual.castBar:Hide()
-			Virtual.castBarIsShown = nil
-			Virtual.castBarChanneling = nil
-		end
-	end)
-	castBar:HookScript("OnShow", function(self)
-		self.castTextDelay:Show()
-	end)
-	castBar:HookScript("OnHide", function(self)
-		Virtual.castBarIsShown = nil
-		Virtual.castBarChanneling = nil
-	end)
-end
-
-local function SetupCastTimer(Virtual)
-	if Virtual.castTimerText then return end
-	local castBar = Virtual.castBar
-	Virtual.castTimerText = castBar:CreateFontString(nil, "OVERLAY")
-	local castTimerText = Virtual.castTimerText
-	castTimerText:SetFont(RBP.LSM:Fetch("font", RBP.dbp.castTimerText_font), RBP.dbp.castTimerText_size, RBP.dbp.castTimerText_outline)
-	castTimerText:SetTextColor(unpack(RBP.dbp.castTimerText_color))
-	castTimerText:SetShadowOffset(0.5, -0.5)
-	castTimerText:SetPoint(RBP.dbp.castTimerText_anchor, RBP.dbp.castTimerText_offsetX - 2, RBP.dbp.castTimerText_offsetY + 1)
-	castTimerText:Hide()
 	local castBarTex = Virtual.castBarTex
-	castBar:HookScript("OnValueChanged", function(self, val)
-		if Virtual.castBarIsShown then
-			local min, max = self:GetMinMaxValues()
-			if max > 0 then
-				castBarTex:SetTexCoord(0, val / max, 0, 1)
-				if Virtual.castBarChanneling then
-					castTimerText:SetFormattedText("%.1f", val)
-				else
-					castTimerText:SetFormattedText("%.1f", max - val)					
-				end
-			end
+	local castBarBorder = Virtual.castBarBorder
+	local shieldCastBarBorder = Virtual.shieldCastBarBorder
+	local spellIcon = Virtual.spellIcon
+	if RBP.dbp.castBar_showSpark then
+		Virtual.castSpark:Hide()
+		Virtual.castBarInitSpark = true
+	end
+	castBarTex:SetVertexColor(unpack(RBP.dbp.castBar_color))
+	castBarBorder:SetVertexColor(unpack(RBP.dbp.castBar_borderTint))
+	shieldCastBarBorder:SetVertexColor(unpack(RBP.dbp.castBar_protectedBorderTint))
+	if castBarBorder:IsShown() then
+		if RBP.dbp.healthBar_border == "Blizzard" then
+			castBar:SetPoint("BOTTOMRIGHT", -4.1, 8.5)
+			spellIcon:SetPoint("CENTER", castBarBorder, "BOTTOMLEFT", 16.1, 10.5)
+			spellIcon:SetSize(16.8, 16.8)
+		else
+			castBar:SetPoint("BOTTOMRIGHT", -10, 8.5)
+			spellIcon:SetPoint("CENTER", castBarBorder, "BOTTOMLEFT", 14.6, 10.5)
+			spellIcon:SetSize(15.8, 15.8)
 		end
-	end)
+	else
+		if RBP.dbp.healthBar_border == "Blizzard" then
+			castBar:SetPoint("BOTTOMRIGHT", -4, 3.5)
+			spellIcon:SetPoint("CENTER", castBarBorder, "BOTTOMLEFT", 16, 5.5)
+			spellIcon:SetSize(16.8, 16.8)
+		else
+			castBar:SetPoint("BOTTOMRIGHT", -8.5, 3.5)
+			spellIcon:SetPoint("CENTER", castBarBorder, "BOTTOMLEFT", 13, 5.5)
+			spellIcon:SetSize(16.8, 16.8)
+		end
+	end
 end
 
 local function SetupCastSpark(Virtual)
@@ -464,19 +499,17 @@ local function SetupCastSpark(Virtual)
 	castSpark:SetBlendMode("ADD")
 	castSpark:SetPoint("CENTER", Virtual.castBarTex, "RIGHT")
 	castSpark:SetSize(10, 22)
-	if not RBP.dbp.castBar_showSpark then
-		castSpark:Hide()
-	end
+	castSpark:Hide()
 end
 
 local function UpdateCastGlow(Virtual)
 	local castGlow = Virtual.castGlow
 	if RBP.dbp.healthBar_border == "Blizzard" then
-		castGlow:SetSize(173.5, 40)
-		castGlow:SetPoint("CENTER", 2.2, -27.5 + RBP.dbp.globalOffsetY)
+		castGlow:SetSize(175.5, 40)
+		castGlow:SetPoint("CENTER", 1.9, RBP.dbp.globalOffsetY - 26.5)
 	else
 		castGlow:SetSize(160, 40)
-		castGlow:SetPoint("CENTER", 2.75, -27.5 + RBP.dbp.globalOffsetY)
+		castGlow:SetPoint("CENTER", 2.3, RBP.dbp.globalOffsetY - 26.5)
 	end
 end
 
@@ -508,14 +541,72 @@ local function SetupCastGlow(Virtual)
 		castBar:HookScript("OnValueChanged", function()
 			if Virtual.castGlowIsShown and Plate.isTarget then
 				castGlow:Hide()
-				Virtual.castGlowIsShown = false
+				Virtual.castGlowIsShown = nil
 			end
 		end)
 		castBar:HookScript("OnHide", function()
 			castGlow:Hide()
-			Virtual.castGlowIsShown = false
+			Virtual.castGlowIsShown = nil
 		end)
 	end
+end
+
+local function HookCastBarScripts(Virtual)
+	local Plate = Virtual.RealPlate
+	local castBar = Virtual.castBar
+	local castBarTex = Virtual.castBarTex
+	local castTimerText = Virtual.castTimerText
+	local delayedCastBarOnShow = CreateFrame("Frame")
+	delayedCastBarOnShow:SetScript("OnUpdate", function(self)
+		self:Hide()
+		local min, max = castBar:GetMinMaxValues()
+		if Virtual.healthBarIsShown and max > 0 then
+			Virtual.castBarIsShown = true
+			local unit = Plate.namePlateUnitToken or Plate.unitToken or (Plate.isTarget and "target")
+			UpdateCastTextString(Virtual, unit)
+			UpdateCastBarOnShow(Virtual)
+			if RBP.dbp.castBar_progressiveTexCrop then
+				Virtual.castBarTexCrop = true
+			end
+		else
+			castBar:Hide()
+			Virtual.castBarBorder:Hide()
+			Virtual.shieldCastBarBorder:Hide()
+			Virtual.spellIcon:Hide()
+			Virtual.castBarIsShown = nil
+			Virtual.castBarChanneling = nil
+		end
+	end)
+	castBar:HookScript("OnShow", function(self)
+		delayedCastBarOnShow:Show()
+	end)
+	castBar:HookScript("OnHide", function(self)
+		Virtual.castBarIsShown = nil
+		Virtual.castBarChanneling = nil
+		Virtual.castBarInitSpark = nil
+		Virtual.castBarTexCrop = nil
+	end)
+	castBar:HookScript("OnValueChanged", function(self, val)
+		if Virtual.castBarInitSpark then
+			Virtual.castBarInitSpark = nil
+			Virtual.castSpark:Show()
+		end
+		if Virtual.castBarIsShown then
+			local min, max = self:GetMinMaxValues()
+			if max > 0 then
+				if Virtual.castBarTexCrop then
+					castBarTex:SetTexCoord(0, val / max, 0, 1)
+				else
+					castBarTex:SetTexCoord(0, 1, 0, 1)
+				end
+				if Virtual.castBarChanneling then
+					castTimerText:SetFormattedText("%.1f", val)
+				else
+					castTimerText:SetFormattedText("%.1f", max - val)					
+				end
+			end
+		end
+	end)
 end
 
 local function SetupBossIcon(Virtual)
@@ -642,12 +733,16 @@ end
 
 local function SetupCastBorder(Virtual)
 	if RBP.dbp.healthBar_border == "Blizzard" then
-		Virtual.castBarBorder:SetPoint("CENTER", RBP.dbp.globalOffsetX + 10.3, RBP.dbp.globalOffsetY -19)
-		Virtual.castBarBorder:SetWidth(157)
-		Virtual.shieldCastBarBorder:SetWidth(157)
+		Virtual.castBar:SetSize(129, 11)
+		Virtual.castBarBorder:SetPoint("CENTER", RBP.dbp.globalOffsetX + 9.9, RBP.dbp.globalOffsetY -18)
+		Virtual.castBarBorder:SetWidth(159)
+		Virtual.shieldCastBarBorder:SetPoint("CENTER", Virtual.castBarBorder, 0.7, -14)
+		Virtual.shieldCastBarBorder:SetWidth(155)
 	else
-		Virtual.castBarBorder:SetPoint("CENTER", RBP.dbp.globalOffsetX, RBP.dbp.globalOffsetY -19)
+		Virtual.castBar:SetSize(119, 11)
+		Virtual.castBarBorder:SetPoint("CENTER", RBP.dbp.globalOffsetX - 0.5, RBP.dbp.globalOffsetY -18)
 		Virtual.castBarBorder:SetWidth(145)
+		Virtual.shieldCastBarBorder:SetPoint("CENTER", Virtual.castBarBorder, 0.7, -14)
 		Virtual.shieldCastBarBorder:SetWidth(145)
 	end
 end
@@ -867,7 +962,7 @@ local function SetupTargetHandler(Plate)
 				Plate.totemPlate_targetGlow:Show()
 			end
 			if Virtual.castBarIsShown and not Virtual.castText:GetText() then
-				UpdateCastText(Virtual, "target")
+				UpdateCastTextString(Virtual, "target")
 			end
 		else
 			Plate.isTarget = false
@@ -969,6 +1064,7 @@ local function SetupRefinedPlate(Virtual)
 	SetupCastTimer(Virtual)
 	SetupCastSpark(Virtual)
 	SetupCastGlow(Virtual)
+	HookCastBarScripts(Virtual)
 	SetupBossIcon(Virtual)
 	SetupRaidTargetIcon(Virtual)
 	SetupEliteIcon(Virtual)
@@ -1378,6 +1474,9 @@ local function UpdateRefinedPlate(Plate)
 			SetupCastBorder(Virtual)
 			UpdateMouseoverGlow(Virtual)
 			SetupThreatGlow(Virtual)
+			if RBP.dbp.healthBar_progressiveTexCrop then
+				Virtual.healthBarTexCrop = true				
+			end
 			local levelText = Virtual.levelText
 			if Virtual.bossIcon:IsShown() then
 				levelText:Hide()
@@ -1524,6 +1623,7 @@ local function ResetRefinedPlate(Plate)
 	Virtual.isShown = nil
 	Virtual.nameTextIsYellow = nil
 	Virtual.aggroColoring = nil
+	Virtual.healthBarTexCrop = nil
 	Plate.classColor = nil
 	Plate.unitToken = nil
 	Plate.totemPlateIsShown = nil
@@ -1695,14 +1795,8 @@ end
 
 function RBP:UpdateAllHealthBars()
 	for Plate, Virtual in pairs(VirtualPlates) do
-		local healthBarBorder = Virtual.healthBarBorder
-		local healthText = Virtual.healthText
-		if RBP.dbp.healthBar_border == "Blizzard" then
-			healthBarBorder:SetTexture("Interface\\Tooltips\\Nameplate-Border")
-		else
-			healthBarBorder:SetTexture(ASSETS .. "PlateBorders\\HealthBar-Border")
-		end
-		healthBarBorder:SetVertexColor(unpack(RBP.dbp.healthBar_borderTint))
+		UpdateHealthBorder(Virtual)
+		UpdateHealthText(Virtual)
 		if Plate.classKey then
 			Virtual.healthBarTex:SetTexture(RBP.LSM:Fetch("statusbar", RBP.dbp.healthBar_playerTex))
 		else
@@ -1712,54 +1806,56 @@ function RBP:UpdateAllHealthBars()
 			Virtual.aggroOverlay:SetTexture(RBP.LSM:Fetch("statusbar", RBP.dbp.healthBar_npcTex))
 		end
 		if RBP.dbp.healthText_hide then
-			healthText:Hide()
+			Virtual.healthText:Hide()
 		else
-			healthText:Show()
-			healthText:SetFont(RBP.LSM:Fetch("font", RBP.dbp.healthText_font), RBP.dbp.healthText_size, RBP.dbp.healthText_outline)
-			healthText:ClearAllPoints()
-			healthText:SetPoint(RBP.dbp.healthText_anchor, RBP.dbp.healthText_offsetX, RBP.dbp.healthText_offsetY + 0.3)
-			healthText:SetTextColor(unpack(RBP.dbp.healthText_color))
+			Virtual.healthText:Show()
+		end
+		if Virtual.healthBarIsShown and RBP.dbp.healthBar_progressiveTexCrop then
+			Virtual.healthBarTexCrop = true
+			local min, max = Virtual.healthBar:GetMinMaxValues()
+			if max > 0 then
+				local val = Virtual.healthBar:GetValue()
+				Virtual.healthBarTex:SetTexCoord(0, val / max, 0, 1)
+			else
+				Virtual.healthBarTex:SetTexCoord(0, 1, 0, 1)
+			end
+		else
+			Virtual.healthBarTexCrop = nil
+			Virtual.healthBarTex:SetTexCoord(0, 1, 0, 1)
 		end
 	end
 end
 
 function RBP:UpdateAllCastBars()
 	for _, Virtual in pairs(VirtualPlates) do
+		Virtual.castBarTex:SetVertexColor(unpack(RBP.dbp.castBar_color))
+		Virtual.castBarBorder:SetVertexColor(unpack(RBP.dbp.castBar_borderTint))
+		Virtual.shieldCastBarBorder:SetVertexColor(unpack(RBP.dbp.castBar_protectedBorderTint))
 		Virtual.castBarTex:SetTexture(RBP.LSM:Fetch("statusbar", RBP.dbp.castBar_Tex))
-		local castText = Virtual.castText
-		local castTimerText = Virtual.castTimerText
-		if not RBP.dbp.castText_hide then
-			castText:SetFont(RBP.LSM:Fetch("font", RBP.dbp.castText_font), RBP.dbp.castText_size, RBP.dbp.castText_outline)
-			castText:SetTextColor(unpack(RBP.dbp.castText_color))
-			castText:SetJustifyH(RBP.dbp.castText_anchor)
-			castText:SetWidth(RBP.dbp.castText_width)
-			castText:ClearAllPoints()
-			if RBP.dbp.healthBar_border == "Blizzard" then
-				castText:SetPoint(RBP.dbp.castText_anchor, RBP.dbp.castText_offsetX - 9.3, RBP.dbp.castText_offsetY + 1.6)
-			else
-				castText:SetPoint(RBP.dbp.castText_anchor, RBP.dbp.castText_offsetX - 3.8, RBP.dbp.castText_offsetY + 1.6)
-			end
-			castText:Show()
+		UpdateCastBarBackground(Virtual)
+		UpdateCastText(Virtual)
+		UpdateCastTimer(Virtual)
+		if RBP.dbp.castText_hide then
+			Virtual.castText:Hide()
 		else
-			castText:Hide()
+			Virtual.castText:Show()
 		end
-		if not RBP.dbp.castTimerText_hide then
-			castTimerText:SetFont(RBP.LSM:Fetch("font", RBP.dbp.castTimerText_font), RBP.dbp.castTimerText_size, RBP.dbp.castTimerText_outline)
-			castTimerText:SetTextColor(unpack(RBP.dbp.castTimerText_color))
-			castTimerText:ClearAllPoints()
-			castTimerText:SetPoint(RBP.dbp.castTimerText_anchor, RBP.dbp.castTimerText_offsetX - 2, RBP.dbp.castTimerText_offsetY + 1)
-			if castText:GetText() then
-				castTimerText:Show()
-			else
-				castTimerText:Hide()
-			end
+		if RBP.dbp.castTimerText_hide then
+			Virtual.castTimerText:Hide()
+		elseif Virtual.castText:GetText() then
+			Virtual.castTimerText:Show()
 		else
-			castTimerText:Hide()
+			Virtual.castTimerText:Hide()
 		end
-		if not RBP.dbp.castBar_showSpark then
-			Virtual.castSpark:Hide()
-		else
+		if RBP.dbp.castBar_showSpark then
 			Virtual.castSpark:Show()
+		else
+			Virtual.castSpark:Hide()
+		end
+		if Virtual.castBarIsShown and RBP.dbp.castBar_progressiveTexCrop then
+			Virtual.castBarTexCrop = true
+		else
+			Virtual.castBarTexCrop = nil
 		end
 	end
 end
@@ -1876,7 +1972,7 @@ RBP.NP_HEIGHT = NP_HEIGHT
 RBP.VirtualPlates = VirtualPlates
 RBP.PlatesVisible = PlatesVisible
 RBP.UpdateTarget = UpdateTarget
-RBP.UpdateCastText = UpdateCastText
+RBP.UpdateCastTextString = UpdateCastTextString
 RBP.SetupRefinedPlate = SetupRefinedPlate
 RBP.ForceLevelHide = ForceLevelHide
 RBP.CheckLDWZoneIndoors = CheckLDWZoneIndoors

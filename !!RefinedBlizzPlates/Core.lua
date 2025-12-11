@@ -14,7 +14,7 @@ local NP_WIDTH = RBP.NP_WIDTH
 local NP_HEIGHT = RBP.NP_HEIGHT
 local VirtualPlates = RBP.VirtualPlates
 local PlatesVisible = RBP.PlatesVisible
-local UpdateCastText = RBP.UpdateCastText
+local UpdateCastTextString = RBP.UpdateCastTextString
 local UpdateTarget = RBP.UpdateTarget
 local SetupRefinedPlate = RBP.SetupRefinedPlate
 local ForceLevelHide = RBP.ForceLevelHide
@@ -122,7 +122,7 @@ do
 							Virtual.newNameText:SetTextColor(1, 1, 0)
 							Virtual.nameTextIsYellow  = true
 							if Virtual.castBarIsShown and not Virtual.castText:GetText() then
-								UpdateCastText(Virtual, "mouseover")
+								UpdateCastTextString(Virtual, "mouseover")
 							end
 						end
 					elseif Virtual.nameTextIsYellow then

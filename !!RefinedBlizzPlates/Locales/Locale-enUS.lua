@@ -237,6 +237,7 @@ L["Health Bar"] = true
 L["Appearance"] = true
 L["Player Bar Texture"] = true
 L["NPC Bar Texture"] = true
+L["Progressive Texture Cropping"] = true
 L["Border Tint"] = true
 L["This is a tint overlay, not a regular color. 'White' keeps the original look."] = true
 L["Glows"] = true
@@ -259,7 +260,9 @@ L["Losing Aggro"] = true
 -- Cast Bar --
 L["Cast Bar"] = true
 L["Bar Texture"] = true
+L["Texture Color"] = true
 L["Show Spark"] = true
+L["Protected Border Tint"] = true
 L["Cast Text"] = true
 L["Hide Cast Text"] = true
 L["Cast Timer Text"] = true
