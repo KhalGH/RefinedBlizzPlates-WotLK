@@ -1,0 +1,19 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+  <Script file="Libs\LibStub\LibStub.lua"/>
+  <Include file="Libs\CallbackHandler-1.0\CallbackHandler-1.0.xml"/>
+  <Include file="Libs\AceDB-3.0\AceDB-3.0.xml"/>
+  <Include file="Libs\AceDBOptions-3.0\AceDBOptions-3.0.xml"/>
+  <Include file="Libs\AceGUI-3.0\AceGUI-3.0.xml"/>
+  <Include file="Libs\AceConfig-3.0\AceConfig-3.0.xml"/>
+  <Include file="Libs\LibSharedMedia-3.0\lib.xml"/>
+  <Include file="Libs\AceGUI-3.0-SharedMediaWidgets\widget.xml"/>
+  <Script file="Locales\Locale-enUS.lua"/>
+  <Script file="Locales\Locale-deDE.lua"/>
+  <Script file="Locales\Locale-esES.lua"/>
+  <Script file="Locales\Locale-esMX.lua"/>
+  <Script file="Locales\Locale-frFR.lua"/>
+  <Script file="Locales\Locale-ruRU.lua"/>
+  <Script file="Locales\Locale-koKR.lua"/>
+  <Script file="Locales\Locale-zhCN.lua"/>
+  <Script file="Locales\Locale-zhTW.lua"/>
+</Ui>
