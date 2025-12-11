@@ -19,8 +19,8 @@ local ASSETS = "Interface\\AddOns\\" .. AddonFile .. "\\Assets\\"
 ------------------------- Customization Functions -------------------------
 local function InitBarTextures(Virtual)
 	Virtual.healthBarTex:SetDrawLayer("BORDER")
-	Virtual.castBarBorder:SetTexture(ASSETS .. "PlateBorders\\CastBar-Border")
-	Virtual.shieldCastBarBorder:SetTexture(ASSETS .. "PlateBorders\\CastBar-ShieldBorder")
+	Virtual.castBarBorder:SetTexture(ASSETS .. "PlateRegions\\CastBar-Border")
+	Virtual.shieldCastBarBorder:SetTexture(ASSETS .. "PlateRegions\\CastBar-ShieldBorder")
 	Virtual.castBarTex:SetTexture(RBP.LSM:Fetch("statusbar", RBP.dbp.castBar_Tex))
 	Virtual.castBarTex:SetDrawLayer("BORDER")
 	Virtual.spellIcon:SetDrawLayer("BORDER")
@@ -32,7 +32,7 @@ local function SetupThreatGlow(Virtual)
 	if RBP.dbp.healthBar_border == "Blizzard" then
 		Virtual.threatGlow:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-Flash")
 	else
-		Virtual.threatGlow:SetTexture(ASSETS .. "PlateBorders\\HealthBar-ThreatGlow")
+		Virtual.threatGlow:SetTexture(ASSETS .. "PlateRegions\\HealthBar-ThreatGlow")
 	end
 end
 
@@ -41,7 +41,7 @@ local function UpdateHealthBorder(Virtual)
 	if RBP.dbp.healthBar_border == "Blizzard" then
 		Virtual.healthBarBorder:SetTexture("Interface\\Tooltips\\Nameplate-Border")
 	else
-		Virtual.healthBarBorder:SetTexture(ASSETS .. "PlateBorders\\HealthBar-Border")		
+		Virtual.healthBarBorder:SetTexture(ASSETS .. "PlateRegions\\HealthBar-Border")		
 	end
 	Virtual.healthBarBorder:SetVertexColor(unpack(RBP.dbp.healthBar_borderTint))
 end
@@ -58,7 +58,7 @@ local function SetupHealthBarBackground(Virtual)
 	if Virtual.healthBarBackground then return end 
 	Virtual.healthBarBackground = Virtual.healthBar:CreateTexture(nil, "BACKGROUND")
 	local healthBarBackground = Virtual.healthBarBackground
-	healthBarBackground:SetTexture(ASSETS .. "PlateBorders\\NamePlate-Background")
+	healthBarBackground:SetTexture(ASSETS .. "PlateRegions\\NamePlate-Background")
 	healthBarBackground:SetSize(RBP.NP_WIDTH, RBP.NP_HEIGHT)
 	healthBarBackground:SetPoint("CENTER", 10.5, 9)
 end
@@ -75,7 +75,7 @@ local function SetupCastBarBackground(Virtual)
 	if Virtual.castBarBackground then return end
 	Virtual.castBarBackground = Virtual.castBar:CreateTexture(nil, "BACKGROUND")
 	local castBarBackground = Virtual.castBarBackground
-	castBarBackground:SetTexture(ASSETS .. "PlateBorders\\NamePlate-Background")
+	castBarBackground:SetTexture(ASSETS .. "PlateRegions\\NamePlate-Background")
 	castBarBackground:SetPoint("CENTER", 10.5, 9)
 	UpdateCastBarBackground(Virtual)
 end
@@ -331,17 +331,17 @@ local function UpdateTargetGlow(Virtual)
 		targetGlow:SetSize(RBP.NP_WIDTH * 1.165, RBP.NP_HEIGHT)
 		targetGlow:SetPoint("CENTER", 11.33, 0.5)
 		if RBP.dbp.showTargetGlowBorder then
-			targetGlow:SetTexture(ASSETS .. "PlateBorders\\HealthBar-TargetGlowBlizz")
+			targetGlow:SetTexture(ASSETS .. "PlateRegions\\HealthBar-TargetGlowBlizz")
 		else
-			targetGlow:SetTexture(ASSETS .. "PlateBorders\\HealthBar-MinimalistTargetGlowBlizz")
+			targetGlow:SetTexture(ASSETS .. "PlateRegions\\HealthBar-MinimalistTargetGlowBlizz")
 		end
 	else
 		targetGlow:SetSize(RBP.NP_WIDTH, RBP.NP_HEIGHT)
 		targetGlow:SetPoint("CENTER", 0.7, 0.5)
 		if RBP.dbp.showTargetGlowBorder then
-			targetGlow:SetTexture(ASSETS .. "PlateBorders\\HealthBar-TargetGlow")
+			targetGlow:SetTexture(ASSETS .. "PlateRegions\\HealthBar-TargetGlow")
 		else
-			targetGlow:SetTexture(ASSETS .. "PlateBorders\\HealthBar-MinimalistTargetGlow")
+			targetGlow:SetTexture(ASSETS .. "PlateRegions\\HealthBar-MinimalistTargetGlow")
 		end
 	end
 end
@@ -362,18 +362,18 @@ local function UpdateMouseoverGlow(Virtual)
 		healthBarHighlight:SetSize(RBP.NP_WIDTH * 1.165, RBP.NP_HEIGHT)
 		healthBarHighlight:SetPoint("CENTER", 11.83 + RBP.dbp.globalOffsetX, -8.7 + RBP.dbp.globalOffsetY)
 		if RBP.dbp.showMouseoverGlowBorder then
-			healthBarHighlight:SetTexture(ASSETS .. "PlateBorders\\HealthBar-MouseoverGlowBlizz")
+			healthBarHighlight:SetTexture(ASSETS .. "PlateRegions\\HealthBar-MouseoverGlowBlizz")
 		else
-			healthBarHighlight:SetTexture(ASSETS .. "PlateBorders\\HealthBar-MinimalistMouseoverGlowBlizz")
+			healthBarHighlight:SetTexture(ASSETS .. "PlateRegions\\HealthBar-MinimalistMouseoverGlowBlizz")
 		end
 	else
-		healthBarHighlight:SetTexture(ASSETS .. "PlateBorders\\HealthBar-MouseoverGlow")
+		healthBarHighlight:SetTexture(ASSETS .. "PlateRegions\\HealthBar-MouseoverGlow")
 		healthBarHighlight:SetSize(RBP.NP_WIDTH, RBP.NP_HEIGHT)
 		healthBarHighlight:SetPoint("CENTER", 1.2 + RBP.dbp.globalOffsetX, -8.7 + RBP.dbp.globalOffsetY)
 		if RBP.dbp.showMouseoverGlowBorder then
-			healthBarHighlight:SetTexture(ASSETS .. "PlateBorders\\HealthBar-MouseoverGlow")
+			healthBarHighlight:SetTexture(ASSETS .. "PlateRegions\\HealthBar-MouseoverGlow")
 		else
-			healthBarHighlight:SetTexture(ASSETS .. "PlateBorders\\HealthBar-MinimalistMouseoverGlow")
+			healthBarHighlight:SetTexture(ASSETS .. "PlateRegions\\HealthBar-MinimalistMouseoverGlow")
 		end
 	end	
 end
@@ -517,7 +517,7 @@ local function SetupCastGlow(Virtual)
 	if Virtual.castGlow then return end
 	Virtual.castGlow = Virtual:CreateTexture(nil, "OVERLAY")
 	local castGlow = Virtual.castGlow
-	castGlow:SetTexture(ASSETS .. "PlateBorders\\CastBar-Glow")
+	castGlow:SetTexture(ASSETS .. "PlateRegions\\CastBar-Glow")
 	castGlow:SetVertexColor(0.25, 0.75, 0.25)
 	castGlow:SetTexCoord(0, 0.55, 0, 1)
 	castGlow:Hide()
@@ -660,7 +660,7 @@ local function SetupEliteIcon(Virtual)
 	eliteIcon:SetVertexColor(unpack(RBP.dbp.eliteIcon_Tint))
 	eliteIcon:ClearAllPoints()
 	if RBP.dbp.eliteIcon_style == "Modern" then
-		eliteIcon:SetTexture(ASSETS .. "PlateBorders\\ModernEliteIcon")
+		eliteIcon:SetTexture(ASSETS .. "PlateRegions\\ModernEliteIcon")
 		eliteIcon:SetSize(36 * RBP.dbp.eliteIcon_widthScale, 36 * RBP.dbp.eliteIcon_heightScale)
 		if RBP.dbp.eliteIcon_anchor == "Left" then
 			eliteIcon:SetTexCoord(0.9, 0.1, 0.9, 0.9, 0.1, 0.1, 0.1, 0.9)
@@ -674,7 +674,7 @@ local function SetupEliteIcon(Virtual)
 			end
 		end
 	elseif RBP.dbp.eliteIcon_style == "Minimalist" then
-		eliteIcon:SetTexture(ASSETS .. "PlateBorders\\MinimalistEliteIcon")
+		eliteIcon:SetTexture(ASSETS .. "PlateRegions\\MinimalistEliteIcon")
 		eliteIcon:SetSize(16 * RBP.dbp.eliteIcon_widthScale, 16 * RBP.dbp.eliteIcon_heightScale)
 		if RBP.dbp.eliteIcon_anchor == "Left" then
 			eliteIcon:SetTexCoord(1, 0, 1, 1, 0, 0, 0, 1)
@@ -763,13 +763,13 @@ local function SetupTotemPlate(Plate)
 	Plate.totemPlate_icon:SetAllPoints(totemPlate)
 	Plate.totemPlate_targetGlow = totemPlate:CreateTexture(nil, "OVERLAY")
 	local totemPlate_targetGlow = Plate.totemPlate_targetGlow
-	totemPlate_targetGlow:SetTexture(ASSETS .. "PlateBorders\\TotemPlate-TargetGlow")
+	totemPlate_targetGlow:SetTexture(ASSETS .. "PlateRegions\\TotemPlate-TargetGlow")
 	totemPlate_targetGlow:SetVertexColor(unpack(RBP.dbp.targetGlow_Tint))
 	totemPlate_targetGlow:SetPoint("CENTER")
 	totemPlate_targetGlow:Hide()
 	Plate.totemPlate_border = totemPlate:CreateTexture(nil, "ARTWORK")
 	local totemPlate_border = Plate.totemPlate_border
-	totemPlate_border:SetTexture(ASSETS .. "PlateBorders\\TotemPlate-Border")
+	totemPlate_border:SetTexture(ASSETS .. "PlateRegions\\TotemPlate-Border")
 	totemPlate_border:SetVertexColor(1, 0, 0)
 	totemPlate_border:SetAllPoints(totemPlate)
 	totemPlate_border:Hide()
@@ -864,7 +864,7 @@ local function BarlessPlateHandler(Plate)
 		barlessNameText:SetTextColor(unpack(Plate.barlessNameTextRGB))
 		barlessNameText:SetText(Plate.nameString)
 		local healthBarHighlight = Virtual.healthBarHighlight
-		healthBarHighlight:SetTexture(ASSETS .. "PlateBorders\\BarlessPlate-MouseoverGlow")
+		healthBarHighlight:SetTexture(ASSETS .. "PlateRegions\\BarlessPlate-MouseoverGlow")
 		healthBarHighlight:ClearAllPoints()
 		healthBarHighlight:SetPoint("CENTER", barlessNameText, 0, -1.3)
 		healthBarHighlight:SetSize(barlessNameText:GetWidth() + 30, barlessNameText:GetHeight() + 20)
@@ -1441,7 +1441,7 @@ local function UpdateRefinedPlate(Plate)
 				Plate.totemPlateIsShown = true
 				Plate.totemPlate_icon:SetTexture(iconTexture)
 				local healthBarHighlight = Virtual.healthBarHighlight
-				healthBarHighlight:SetTexture(ASSETS .. "PlateBorders\\TotemPlate-MouseoverGlow")
+				healthBarHighlight:SetTexture(ASSETS .. "PlateRegions\\TotemPlate-MouseoverGlow")
 				healthBarHighlight:ClearAllPoints()
 				healthBarHighlight:SetPoint("CENTER", Plate.totemPlate)
 				healthBarHighlight:SetSize(128*RBP.dbp.totemSize/88, 128*RBP.dbp.totemSize/88)
