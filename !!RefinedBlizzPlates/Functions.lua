@@ -470,21 +470,21 @@ local function UpdateCastBarOnShow(Virtual)
 	shieldCastBarBorder:SetVertexColor(unpack(RBP.dbp.castBar_protectedBorderTint))
 	if castBarBorder:IsShown() then
 		if RBP.dbp.healthBar_border == "Blizzard" then
-			castBar:SetPoint("BOTTOMRIGHT", -4.1, 8.5)
+			castBar:SetPoint("BOTTOMRIGHT", RBP.dbp.globalOffsetX -4.1, RBP.dbp.globalOffsetY - 12.5)
 			spellIcon:SetPoint("CENTER", castBarBorder, "BOTTOMLEFT", 16.1, 10.5)
 			spellIcon:SetSize(16.8, 16.8)
 		else
-			castBar:SetPoint("BOTTOMRIGHT", -10, 8.5)
+			castBar:SetPoint("BOTTOMRIGHT", RBP.dbp.globalOffsetX -10, RBP.dbp.globalOffsetY - 12.5)
 			spellIcon:SetPoint("CENTER", castBarBorder, "BOTTOMLEFT", 14.6, 10.5)
 			spellIcon:SetSize(15.8, 15.8)
 		end
 	else
 		if RBP.dbp.healthBar_border == "Blizzard" then
-			castBar:SetPoint("BOTTOMRIGHT", -4, 3.5)
+			castBar:SetPoint("BOTTOMRIGHT", RBP.dbp.globalOffsetX -4, RBP.dbp.globalOffsetY - 17.5)
 			spellIcon:SetPoint("CENTER", castBarBorder, "BOTTOMLEFT", 16, 5.5)
 			spellIcon:SetSize(16.8, 16.8)
 		else
-			castBar:SetPoint("BOTTOMRIGHT", -8.5, 3.5)
+			castBar:SetPoint("BOTTOMRIGHT", RBP.dbp.globalOffsetX -8.5, RBP.dbp.globalOffsetY - 17.5)
 			spellIcon:SetPoint("CENTER", castBarBorder, "BOTTOMLEFT", 13, 5.5)
 			spellIcon:SetSize(16.8, 16.8)
 		end
