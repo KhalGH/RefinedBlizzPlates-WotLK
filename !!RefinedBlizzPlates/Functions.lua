@@ -1375,24 +1375,24 @@ local function ReactionByPlateColor(r, g, b)
 	end
 end
 
-local ClassByPlateColor = {
-	[78]  = "DEATHKNIGHT",
-	[104] = "DRUID",
-	[75]  = "HUNTER",
-	[49]  = "MAGE",
-	[101] = "PALADIN",
+local ClassByPlateColorKey = {
+	[000] = "FRIENDLY_PLAYER",
+	[019] = "DEATHKNIGHT",
+	[058] = "DRUID",
+	[089] = "HUNTER",
+	[085] = "MAGE",
+	[065] = "PALADIN",
 	[110] = "PRIEST",
-	[109] = "ROGUE",
-	[5]   = "SHAMAN",
-	[63]  = "WARLOCK",
-	[84]  = "WARRIOR",
-	[0]   = "FRIENDLY_PLAYER",
+	[106] = "ROGUE",
+	[044] = "SHAMAN",
+	[057] = "WARLOCK",
+	[068] = "WARRIOR",
 }
 
 local function UpdatePlateReactionFlags(Plate, r, g, b, reaction)
 	Plate.reaction = reaction
 	Plate.isFriendly = reaction == 5
-	Plate.classKey = ClassByPlateColor[math_floor(r * 100 + g * 10 + b)]
+	Plate.classKey = ClassByPlateColorKey[math_floor(r * 10 + g * 100 + b)]
 	Plate.healthBarColor = {r, g, b}
 end
 
