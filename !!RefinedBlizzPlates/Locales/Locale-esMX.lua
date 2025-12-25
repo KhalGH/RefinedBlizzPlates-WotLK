@@ -260,13 +260,17 @@ L["Losing Aggro"] = "Perdiendo Aggro"
 -- Cast Bar --
 L["Cast Bar"] = "Barra de Lanzamiento"
 L["Bar Texture"] = "Textura de Barra"
-L["Texture Color"] = "Color de Textura"
+L["Casting Color"] = "Color de Lanzamiento"
+L["Channeling Color"] = "Color de Canalización"
 L["Show Spark"] = "Mostrar chispa"
 L["Protected Border Tint"] = "Tinte del Borde Protegido"
 L["Cast Text"] = "Texto del Hechizo"
 L["Hide Cast Text"] = "Ocultar Texto de Hechizo"
 L["Cast Timer Text"] = "Texto del tiempo de casteo"
 L["Hide Cast Timer Text"] = "Ocultar texto del tiempo de casteo"
+L["Non-target units fade"] = "Desvanecimiento en unidades no targeteadas"
+L["Improves the non-target castbar fade effect when using the corresponding patch. Leave this option disabled if the patch is not installed."] = "Mejora el efecto de desvanecimiento de la barra de lanzamiento en unidades no targeteadas cuando se usa el parche correspondiente. Manten esta opción desactivada si el parche no está instalado."
+L["Interrupted"] = "Interrumpido"
 
 -- Icons --
 L["Icons"] = "Íconos"

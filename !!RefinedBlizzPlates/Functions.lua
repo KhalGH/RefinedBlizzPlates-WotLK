@@ -1,5 +1,6 @@
 
 local AddonFile, RBP = ... -- namespace
+local L = RBP.L
 
 ----------------------------- API -----------------------------
 local ipairs, unpack, tonumber, tostring, select, math_exp, math_floor, math_abs, string_format, string_char, string_sub, table_insert, SetCVar, wipe, WorldFrame, CreateFrame, UnitCastingInfo, UnitChannelInfo, UnitName, UnitClass, UnitIsUnit, UnitCanAttack, UnitDebuff, GetNumArenaOpponents, GetNumPartyMembers, GetNumRaidMembers, GetRaidRosterInfo, RAID_CLASS_COLORS, SetMapToCurrentZone, GetCurrentMapAreaID, GetSubZoneText, SecureHandlerWrapScript, ToggleFrame, UIPanelWindows, SetUIVisibility =
@@ -15,6 +16,7 @@ local ClassByFriendName = {}      -- Storage table: maps friendly player names (
 local ArenaID = {}                -- Storage table: maps arena names to their ID number
 local PartyID = {}                -- Storage table: maps party names to their ID number
 local ASSETS = "Interface\\AddOns\\" .. AddonFile .. "\\Assets\\"
+local castBarPatchEnabled = nil
 
 ------------------------- Customization Functions -------------------------
 local function InitBarTextures(Virtual)
@@ -387,16 +389,15 @@ local function UpdateCastText(Virtual)
 	castText:SetWidth(RBP.dbp.castText_width)
 	castText:ClearAllPoints()
 	if RBP.dbp.healthBar_border == "Blizzard" then
-		castText:SetPoint(RBP.dbp.castText_anchor, RBP.dbp.castText_offsetX - 8.5, RBP.dbp.castText_offsetY + 0.7)
+		castText:SetPoint(RBP.dbp.castText_anchor, Virtual.castBar, RBP.dbp.castText_offsetX - 8.5, RBP.dbp.castText_offsetY + 0.7)
 	else
-		castText:SetPoint(RBP.dbp.castText_anchor, RBP.dbp.castText_offsetX - 8.5, RBP.dbp.castText_offsetY + 1)
+		castText:SetPoint(RBP.dbp.castText_anchor, Virtual.castBar, RBP.dbp.castText_offsetX - 8.5, RBP.dbp.castText_offsetY + 1)
 	end
 end
 
 local function SetupCastText(Virtual)
 	if Virtual.castText then return end
-	Virtual.castText = Virtual.castBar:CreateFontString(nil, "OVERLAY")
-	local Plate = Virtual.RealPlate
+	Virtual.castText = Virtual:CreateFontString(nil, "OVERLAY")
 	local castText = Virtual.castText
 	castText:SetNonSpaceWrap(false)
 	castText:SetWordWrap(false)
@@ -431,10 +432,10 @@ local function UpdateCastTextString(Virtual, unit)
 		local spellChanneling = UnitChannelInfo(unit)
 		local spellName
 		if spellChanneling then
-			Virtual.castBarChanneling = true
+			Virtual.channelingFlag = 1
 			spellName = spellChanneling
 		elseif spellCasting then
-			Virtual.castBarChanneling = nil
+			Virtual.channelingFlag = 0
 			spellName = spellCasting
 		end
 		if spellName then
@@ -449,45 +450,58 @@ local function UpdateCastTextString(Virtual, unit)
 			Virtual.castTimerText:Hide()
 		end
 	else
-		Virtual.castBarChanneling = nil
 		Virtual.castText:SetText("")
 		Virtual.castTimerText:Hide()
 	end
 end
 
-local function UpdateCastBarOnShow(Virtual)
+local function UpdateCastBarBorder(Virtual)
 	local castBar = Virtual.castBar
-	local castBarTex = Virtual.castBarTex
+	local castBarBorder = Virtual.castBarBorder
+	local spellIcon = Virtual.spellIcon
+	castBarBorder:SetVertexColor(unpack(RBP.dbp.castBar_borderTint))
+	if RBP.dbp.healthBar_border == "Blizzard" then
+		castBar:SetPoint("BOTTOMRIGHT", RBP.dbp.globalOffsetX + 6.7, RBP.dbp.globalOffsetY - 12.5)
+		spellIcon:SetPoint("CENTER", castBarBorder, "BOTTOMLEFT", 16.1, 10.5)
+		spellIcon:SetSize(16.8, 16.8)
+	else
+		castBar:SetPoint("BOTTOMRIGHT", RBP.dbp.globalOffsetX - 10.5, RBP.dbp.globalOffsetY - 12.5)
+		spellIcon:SetPoint("CENTER", castBarBorder, "BOTTOMLEFT", 14.6, 10.5)
+		spellIcon:SetSize(15.8, 15.8)
+	end
+end
+
+local function UpdateShieldCastBarBorder(Virtual)
+	local castBar = Virtual.castBar
 	local castBarBorder = Virtual.castBarBorder
 	local shieldCastBarBorder = Virtual.shieldCastBarBorder
 	local spellIcon = Virtual.spellIcon
+	shieldCastBarBorder:SetVertexColor(unpack(RBP.dbp.castBar_protectedBorderTint))
+	if RBP.dbp.healthBar_border == "Blizzard" then
+		castBar:SetPoint("BOTTOMRIGHT", RBP.dbp.globalOffsetX + 7.5, RBP.dbp.globalOffsetY - 17.5)
+		spellIcon:SetPoint("CENTER", castBarBorder, "BOTTOMLEFT", 14.4, 5.5)
+		spellIcon:SetSize(16.8, 16.8)
+	else
+		castBar:SetPoint("BOTTOMRIGHT", RBP.dbp.globalOffsetX - 9.5, RBP.dbp.globalOffsetY - 17.5)
+		spellIcon:SetPoint("CENTER", castBarBorder, "BOTTOMLEFT", 13, 5.5)
+		spellIcon:SetSize(16.8, 16.8)
+	end
+end
+
+local function UpdateCastBarOnShow(Virtual)
 	if RBP.dbp.castBar_showSpark then
 		Virtual.castSpark:Hide()
 		Virtual.castBarInitSpark = true
 	end
-	castBarTex:SetVertexColor(unpack(RBP.dbp.castBar_color))
-	castBarBorder:SetVertexColor(unpack(RBP.dbp.castBar_borderTint))
-	shieldCastBarBorder:SetVertexColor(unpack(RBP.dbp.castBar_protectedBorderTint))
-	if castBarBorder:IsShown() then
-		if RBP.dbp.healthBar_border == "Blizzard" then
-			castBar:SetPoint("BOTTOMRIGHT", RBP.dbp.globalOffsetX -4.1, RBP.dbp.globalOffsetY - 12.5)
-			spellIcon:SetPoint("CENTER", castBarBorder, "BOTTOMLEFT", 16.1, 10.5)
-			spellIcon:SetSize(16.8, 16.8)
-		else
-			castBar:SetPoint("BOTTOMRIGHT", RBP.dbp.globalOffsetX -10, RBP.dbp.globalOffsetY - 12.5)
-			spellIcon:SetPoint("CENTER", castBarBorder, "BOTTOMLEFT", 14.6, 10.5)
-			spellIcon:SetSize(15.8, 15.8)
-		end
+	if Virtual.channelingFlag == 1 then
+		Virtual.castBarTex:SetVertexColor(unpack(RBP.dbp.castBar_channelingColor))
 	else
-		if RBP.dbp.healthBar_border == "Blizzard" then
-			castBar:SetPoint("BOTTOMRIGHT", RBP.dbp.globalOffsetX -4, RBP.dbp.globalOffsetY - 17.5)
-			spellIcon:SetPoint("CENTER", castBarBorder, "BOTTOMLEFT", 16, 5.5)
-			spellIcon:SetSize(16.8, 16.8)
-		else
-			castBar:SetPoint("BOTTOMRIGHT", RBP.dbp.globalOffsetX -8.5, RBP.dbp.globalOffsetY - 17.5)
-			spellIcon:SetPoint("CENTER", castBarBorder, "BOTTOMLEFT", 13, 5.5)
-			spellIcon:SetSize(16.8, 16.8)
-		end
+		Virtual.castBarTex:SetVertexColor(unpack(RBP.dbp.castBar_color))
+	end
+	if Virtual.shieldCastBarBorderIsShown then
+		UpdateShieldCastBarBorder(Virtual)
+	else
+		UpdateCastBarBorder(Virtual)
 	end
 end
 
@@ -551,16 +565,39 @@ local function SetupCastGlow(Virtual)
 	end
 end
 
+local function SetupCastBarTexFull(Virtual)
+	if Virtual.castBarTexFull then return end
+	Virtual.castBarTexFull = Virtual:CreateTexture(nil, "BORDER")
+	local castBarTexFull = Virtual.castBarTexFull
+	castBarTexFull:SetTexture(RBP.LSM:Fetch("statusbar", RBP.dbp.castBar_Tex))
+	castBarTexFull:SetAllPoints(Virtual.castBar)
+	castBarTexFull:Hide()
+end
+
 local function HookCastBarScripts(Virtual)
 	local Plate = Virtual.RealPlate
 	local castBar = Virtual.castBar
+	local castBarBorder = Virtual.castBarBorder
+	local shieldCastBarBorder = Virtual.shieldCastBarBorder
+	local spellIcon = Virtual.spellIcon
 	local castBarTex = Virtual.castBarTex
+	local castBarTexFull = Virtual.castBarTexFull
+	local castText = Virtual.castText
 	local castTimerText = Virtual.castTimerText
+	local firstCastVal, currCastVal, maxCastVal, lastOVC, semitransparent
 	local delayedCastBarOnShow = CreateFrame("Frame")
 	delayedCastBarOnShow:SetScript("OnUpdate", function(self)
 		self:Hide()
-		local min, max = castBar:GetMinMaxValues()
-		if Virtual.healthBarIsShown and max > 0 then
+		local max = select(2, castBar:GetMinMaxValues())
+		maxCastVal = max and max > 0 and max or nil
+		if Virtual.healthBarIsShown and maxCastVal then
+			if not Virtual.channelingFlag then
+				if castBar:GetValue() < firstCastVal then
+					Virtual.channelingFlag = 1
+				else
+					Virtual.channelingFlag = 0
+				end
+			end
 			Virtual.castBarIsShown = true
 			local unit = Plate.namePlateUnitToken or Plate.unitToken or (Plate.isTarget and "target")
 			UpdateCastTextString(Virtual, unit)
@@ -569,24 +606,118 @@ local function HookCastBarScripts(Virtual)
 				Virtual.castBarTexCrop = true
 			end
 		else
-			castBar:Hide()
-			Virtual.castBarBorder:Hide()
-			Virtual.shieldCastBarBorder:Hide()
-			Virtual.spellIcon:Hide()
 			Virtual.castBarIsShown = nil
-			Virtual.castBarChanneling = nil
+			castBar:Hide()
+			castBarBorder:Hide()
+			shieldCastBarBorder:Hide()
+			spellIcon:Hide()
+		end
+	end)
+	local castBarRegionsFadeOut = CreateFrame("Frame")
+	castBarRegionsFadeOut.elapsed = 0
+	castBarRegionsFadeOut:Hide()
+	castBarRegionsFadeOut:SetScript("OnUpdate", function(self, elapsed)
+		self.elapsed = self.elapsed + elapsed
+		if maxCastVal and Virtual.isShown and self.elapsed < 0.5 then
+			local a = 0.75 - 1.5 * self.elapsed
+			if Virtual.shieldCastBarBorderIsShown then
+				shieldCastBarBorder:SetAlpha(a)
+			else
+				castBarBorder:SetAlpha(a)
+			end
+			spellIcon:SetAlpha(a)
+			if semitransparent then
+				castBarTexFull:SetAlpha(0.5*a)
+			else
+				castBarTexFull:SetAlpha(a)
+			end
+			castText:SetAlpha(a)
+		else
+			self:Hide()
+			self.elapsed = 0
+			maxCastVal = nil
+			semitransparent = nil
+			castBarBorder:Hide()
+			shieldCastBarBorder:Hide()
+			spellIcon:Hide()
+			castBarTexFull:Hide()
+			castBarTexFull:SetAlpha(1)
+			castText:SetAlpha(1)
+			castText:SetText("")
+		end
+	end)
+	local delayedCastBarOnHide = CreateFrame("Frame")
+	delayedCastBarOnHide:Hide()
+	delayedCastBarOnHide:SetScript("OnUpdate", function(self)
+		self:Hide()
+		if (RBP.dbp.castBar_nonTargetPatch or (RBP.hasTarget and Plate:GetAlpha() == 1)) and maxCastVal and not castBar:IsShown() then
+			if Virtual.shieldCastBarBorderIsShown then
+				shieldCastBarBorder:Show()
+				UpdateShieldCastBarBorder(Virtual)
+			else
+				castBarBorder:Show()
+				UpdateCastBarBorder(Virtual)
+			end
+			spellIcon:Show()
+			castBarTexFull:Show()
+			castBarRegionsFadeOut:Show()
+		else
+			castText:SetAlpha(1)
+			castText:SetText("")			
 		end
 	end)
 	castBar:HookScript("OnShow", function(self)
+		castText:SetAlpha(1)
+		castText:SetText("")
+		if castBarRegionsFadeOut:IsShown() then
+			castBarRegionsFadeOut:Hide()
+			castBarRegionsFadeOut.elapsed = 0
+			maxCastVal = nil
+			semitransparent = nil
+			castBarTexFull:Hide()
+			castBarTexFull:SetAlpha(1)
+		end
+		Virtual.shieldCastBarBorderIsShown = shieldCastBarBorder:IsShown()
+		if not currCastVal then
+			Virtual.channelingFlag = 0
+		end
 		delayedCastBarOnShow:Show()
 	end)
 	castBar:HookScript("OnHide", function(self)
 		Virtual.castBarIsShown = nil
-		Virtual.castBarChanneling = nil
 		Virtual.castBarInitSpark = nil
 		Virtual.castBarTexCrop = nil
+		Virtual.channelingFlag = nil
+		firstCastVal = nil
+		currCastVal = nil
+		lastOVC = nil
+		delayedCastBarOnHide:Show()
 	end)
 	castBar:HookScript("OnValueChanged", function(self, val)
+		if val < 0.002 and currCastVal and maxCastVal and not lastOVC then
+			lastOVC = true
+			semitransparent = nil
+			if Virtual.channelingFlag == 1 then
+				if currCastVal < 0.05 then
+					castBarTexFull:SetVertexColor(0, 0, 0, 0.375)
+					semitransparent = true
+				else
+					castBarTexFull:SetVertexColor(unpack(RBP.dbp.castBar_channelingColor))
+				end
+			else
+				if maxCastVal - currCastVal < 0.05 then
+					castBarTexFull:SetVertexColor(0, 1, 0)
+				else
+					castBarTexFull:SetVertexColor(1, 0, 0)
+					if castText:GetText() then
+						castText:SetText(L["Interrupted"])
+					end
+				end
+			end
+		else
+			firstCastVal = firstCastVal or val
+		end
+		currCastVal = val
 		if Virtual.castBarInitSpark then
 			Virtual.castBarInitSpark = nil
 			Virtual.castSpark:Show()
@@ -599,7 +730,7 @@ local function HookCastBarScripts(Virtual)
 				else
 					castBarTex:SetTexCoord(0, 1, 0, 1)
 				end
-				if Virtual.castBarChanneling then
+				if Virtual.channelingFlag == 1 then
 					castTimerText:SetFormattedText("%.1f", val)
 				else
 					castTimerText:SetFormattedText("%.1f", max - val)					
@@ -737,9 +868,9 @@ local function SetupCastBorder(Virtual)
 		Virtual.castBarBorder:SetPoint("CENTER", RBP.dbp.globalOffsetX + 9.9, RBP.dbp.globalOffsetY -18)
 		Virtual.castBarBorder:SetWidth(159)
 		Virtual.shieldCastBarBorder:SetPoint("CENTER", Virtual.castBarBorder, 0.7, -14)
-		Virtual.shieldCastBarBorder:SetWidth(155)
+		Virtual.shieldCastBarBorder:SetWidth(159)
 	else
-		Virtual.castBar:SetSize(119, 11)
+		Virtual.castBar:SetSize(117.5, 11)
 		Virtual.castBarBorder:SetPoint("CENTER", RBP.dbp.globalOffsetX - 0.5, RBP.dbp.globalOffsetY -18)
 		Virtual.castBarBorder:SetWidth(145)
 		Virtual.shieldCastBarBorder:SetPoint("CENTER", Virtual.castBarBorder, 0.7, -14)
@@ -950,7 +1081,7 @@ local function SetupTargetHandler(Plate)
 	Plate.targetHandler = CreateFrame("Frame")
 	Plate.targetHandler:SetScript("OnUpdate", function(self)
 		self:Hide()
-		if Plate.nameString == UnitName("target") and Virtual:GetAlpha() == 1 then
+		if RBP.hasTarget and Plate:GetAlpha() == 1 then
 			Plate.isTarget = true
 			Virtual.targetGlow:Show()		
 			if Plate.isFriendly then
@@ -1064,6 +1195,7 @@ local function SetupRefinedPlate(Virtual)
 	SetupCastTimer(Virtual)
 	SetupCastSpark(Virtual)
 	SetupCastGlow(Virtual)
+	SetupCastBarTexFull(Virtual)
 	HookCastBarScripts(Virtual)
 	SetupBossIcon(Virtual)
 	SetupRaidTargetIcon(Virtual)
@@ -1411,6 +1543,7 @@ end
 
 local function ResetPlateFlags(Plate)
 	local Virtual = Plate.VirtualPlate
+	Plate.isTarget = nil
 	Plate.reaction = nil
 	Plate.isFriendly = nil
 	Plate.classKey = nil
@@ -1828,10 +1961,15 @@ end
 
 function RBP:UpdateAllCastBars()
 	for _, Virtual in pairs(VirtualPlates) do
-		Virtual.castBarTex:SetVertexColor(unpack(RBP.dbp.castBar_color))
+		if Virtual.channelingFlag == 1 then
+			Virtual.castBarTex:SetVertexColor(unpack(RBP.dbp.castBar_channelingColor))
+		else
+			Virtual.castBarTex:SetVertexColor(unpack(RBP.dbp.castBar_color))
+		end
 		Virtual.castBarBorder:SetVertexColor(unpack(RBP.dbp.castBar_borderTint))
 		Virtual.shieldCastBarBorder:SetVertexColor(unpack(RBP.dbp.castBar_protectedBorderTint))
 		Virtual.castBarTex:SetTexture(RBP.LSM:Fetch("statusbar", RBP.dbp.castBar_Tex))
+		Virtual.castBarTexFull:SetTexture(RBP.LSM:Fetch("statusbar", RBP.dbp.castBar_Tex))
 		UpdateCastBarBackground(Virtual)
 		UpdateCastText(Virtual)
 		UpdateCastTimer(Virtual)

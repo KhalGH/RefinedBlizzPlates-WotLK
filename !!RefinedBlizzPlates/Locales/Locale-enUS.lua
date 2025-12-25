@@ -260,13 +260,17 @@ L["Losing Aggro"] = true
 -- Cast Bar --
 L["Cast Bar"] = true
 L["Bar Texture"] = true
-L["Texture Color"] = true
+L["Casting Color"] = true
+L["Channeling Color"] = true
 L["Show Spark"] = true
 L["Protected Border Tint"] = true
 L["Cast Text"] = true
 L["Hide Cast Text"] = true
 L["Cast Timer Text"] = true
 L["Hide Cast Timer Text"] = true
+L["Non-target units fade"] = true
+L["Improves the non-target castbar fade effect when using the corresponding patch. Leave this option disabled if the patch is not installed."] = true
+L["Interrupted"] = true
 
 -- Icons --
 L["Icons"] = true

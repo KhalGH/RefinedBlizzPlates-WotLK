@@ -260,13 +260,17 @@ L["Losing Aggro"] = "Perd l'Aggro"
 -- Cast Bar --
 L["Cast Bar"] = "Barre d'Incantation"
 L["Bar Texture"] = "Texture de Barre"
-L["Texture Color"] = "Couleur de la texture"
+L["Casting Color"] = "Couleur d'incantation"
+L["Channeling Color"] = "Couleur de canalisation"
 L["Show Spark"] = "Afficher l’étincelle"
 L["Protected Border Tint"] = "Teinte de la bordure protégée"
 L["Cast Text"] = "Texte du Sort"
 L["Hide Cast Text"] = "Cacher le Texte du Sort"
 L["Cast Timer Text"] = "Texte du Temps d'Incantation"
 L["Hide Cast Timer Text"] = "Cacher le Texte du Temps d'Incantation"
+L["Non-target units fade"] = "Fondu des unités non ciblées"
+L["Improves the non-target castbar fade effect when using the corresponding patch. Leave this option disabled if the patch is not installed."] = "Améliore l'effet de fondu de la barre d'incantation des unités non ciblées lors de l'utilisation du correctif correspondant. Laissez cette option désactivée si le correctif n'est pas installé."
+L["Interrupted"] = "Interrompu"
 
 -- Icons --
 L["Icons"] = "Icônes"

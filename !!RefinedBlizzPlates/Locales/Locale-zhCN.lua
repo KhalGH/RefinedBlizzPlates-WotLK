@@ -262,13 +262,17 @@ L["Losing Aggro"] = "失去仇恨"
 -- Cast Bar --
 L["Cast Bar"] = "施法条"
 L["Bar Texture"] = "施法条纹理"
-L["Texture Color"] = "纹理颜色"
+L["Casting Color"] = "施法颜色"
+L["Channeling Color"] = "引导颜色"
 L["Show Spark"] = "显示闪光"
 L["Protected Border Tint"] = "受保护边框色调"
 L["Cast Text"] = "施法文字"
 L["Hide Cast Text"] = "隐藏施法文字"
 L["Cast Timer Text"] = "施法计时文字"
 L["Hide Cast Timer Text"] = "隐藏施法计时文字"
+L["Non-target units fade"] = "非目标单位淡出"
+L["Improves the non-target castbar fade effect when using the corresponding patch. Leave this option disabled if the patch is not installed."] = "在使用对应补丁时，改善非目标单位的施法条淡出效果。如果未安装补丁，请保持此选项关闭。"
+L["Interrupted"] = "被打断"
 
 -- Icons --
 L["Icons"] = "图标"

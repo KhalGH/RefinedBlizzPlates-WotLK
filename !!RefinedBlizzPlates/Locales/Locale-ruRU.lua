@@ -260,13 +260,17 @@ L["Losing Aggro"] = "Потеря агро"
 -- Cast Bar --
 L["Cast Bar"] = "Полоса заклинаний"
 L["Bar Texture"] = "Текстура полосы"
-L["Texture Color"] = "Цвет текстуры"
+L["Casting Color"] = "Цвет применения заклинания"
+L["Channeling Color"] = "Цвет поддерживаемого заклинания"
 L["Show Spark"] = "Показывать искру"
 L["Protected Border Tint"] = "Оттенок защищённой рамки"
 L["Cast Text"] = "Текст заклинания"
 L["Hide Cast Text"] = "Скрыть текст заклинания"
 L["Cast Timer Text"] = "Текст таймера заклинания"
 L["Hide Cast Timer Text"] = "Скрыть текст таймера заклинания"
+L["Non-target units fade"] = "Затухание нецелевых юнитов"
+L["Improves the non-target castbar fade effect when using the corresponding patch. Leave this option disabled if the patch is not installed."] = "Улучшает эффект затухания полосы заклинаний нецелевых юнитов при использовании соответствующего патча. Оставьте эту опцию отключённой, если патч не установлен."
+L["Interrupted"] = "Прервано"
 
 -- Icons --
 L["Icons"] = "Иконки"

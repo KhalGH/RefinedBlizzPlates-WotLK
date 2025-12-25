@@ -51,6 +51,7 @@ local GetParent = EventHandler.GetParent
 
 -- Status Flags
 local ExistsVisiblePlates = false
+RBP.hasTarget = false
 RBP.inCombat = false
 RBP.inInstance = false
 RBP.inPvEInstance = false
@@ -419,6 +420,7 @@ function EventHandler:PLAYER_REGEN_DISABLED()
 end
 
 function EventHandler:PLAYER_TARGET_CHANGED()
+	RBP.hasTarget = UnitExists("target") == 1
 	for Plate in pairs(PlatesVisible) do
 		UpdateTarget(Plate)
 	end

@@ -101,9 +101,11 @@ RBP.dbp.losingAggroColor = {0.7, 0.2, 0.4}
 RBP.dbp.castBar_Tex = "KhalBar"
 RBP.dbp.castBar_progressiveTexCrop = true
 RBP.dbp.castBar_color = {1, 0.7, 0}
+RBP.dbp.castBar_channelingColor = {1, 0.7, 0}
 RBP.dbp.castBar_showSpark = true
 RBP.dbp.castBar_borderTint = {1, 1, 1} -- This a tint overlay, not a regular color
 RBP.dbp.castBar_protectedBorderTint = {1, 1, 1} -- This a tint overlay, not a regular color
+RBP.dbp.castBar_nonTargetPatch = false
 -- Cast Text
 RBP.dbp.castText_hide = false
 RBP.dbp.castText_font = RBP.RefinedFontKey
@@ -1426,7 +1428,20 @@ RBP.MainOptionTable = {
 				castBar_color = {
 					order = 5,
 					type = "color",
-					name = L["Texture Color"],
+					name = L["Casting Color"],
+					get = function(info)
+						local c = RBP.dbp[info[#info]]
+						return c[1], c[2], c[3]
+					end,
+					set = function(info, r, g, b)
+						RBP.dbp[info[#info]] = {r, g, b}
+						RBP:UpdateAllCastBars()
+					end,
+				},
+				castBar_channelingColor = {
+					order = 6,
+					type = "color",
+					name = L["Channeling Color"],
 					get = function(info)
 						local c = RBP.dbp[info[#info]]
 						return c[1], c[2], c[3]
@@ -1437,17 +1452,23 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castBar_progressiveTexCrop = {
-					order = 6,
+					order = 7,
 					type = "toggle",
 					name = L["Progressive Texture Cropping"],
 				},
 				castBar_showSpark = {
-					order = 7,
+					order = 8,
 					type = "toggle",
 					name = L["Show Spark"],
 				},
+				castBar_nonTargetPatch = {
+					order = 9,
+					type = "toggle",
+					name = L["Non-target units fade"],
+					desc = L["Improves the non-target castbar fade effect when using the corresponding patch. Leave this option disabled if the patch is not installed."],
+				},
 				castBar_borderTint = {
-					order = 8,
+					order = 10,
 					type = "color",
 					name = L["Border Tint"],
 					desc = L["This is a tint overlay, not a regular color. 'White' keeps the original look."],
@@ -1461,7 +1482,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castBar_protectedBorderTint = {
-					order = 9,
+					order = 11,
 					type = "color",
 					name = L["Protected Border Tint"],
 					desc = L["This is a tint overlay, not a regular color. 'White' keeps the original look."],
@@ -1474,16 +1495,16 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllCastBars()
 					end,
 				},
-				lineBreak3 = {order = 10, type = "description", name = ""},
-				lineBreak4 = {order = 11, type = "description", name = ""},
+				lineBreak3 = {order = 12, type = "description", name = ""},
+				lineBreak4 = {order = 13, type = "description", name = ""},
 				castText_header = {
-					order = 12,
+					order = 14,
 					type = "header",
 					name = L["Cast Text"],
 				},
-				lineBreak5 = {order = 13, type = "description", name = ""},
+				lineBreak5 = {order = 15, type = "description", name = ""},
 				castText_font = {
-					order = 14,
+					order = 16,
 					type = "select",
 					name = L["Text Font"],
 					values = RBP.LSM:HashTable("font"),
@@ -1493,7 +1514,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castText_size = {
-					order = 15,
+					order = 17,
 					type = "range",
 					name = L["Font Size"],
 					min = 6,
@@ -1504,7 +1525,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castText_outline = {
-					order = 16,
+					order = 18,
 					type = "select", 
 					name = L["Outline"],
 					values = {
@@ -1520,7 +1541,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castText_anchor = {
-					order = 17,
+					order = 19,
 					type = "select", 
 					name = L["Anchor"],
 					values = {
@@ -1539,7 +1560,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castText_offsetX = {
-					order = 18,
+					order = 20,
 					type = "range",
 					name = L["Offset X"],
 					min = -50,
@@ -1550,7 +1571,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castText_offsetY = {
-					order = 19,
+					order = 21,
 					type = "range",
 					name = L["Offset Y"],
 					min = -50,
@@ -1561,7 +1582,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castText_width = {
-					order = 20,
+					order = 22,
 					type = "range",
 					name = L["Width"],
 					min = 50,
@@ -1572,7 +1593,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castText_color = {
-					order = 21,
+					order = 23,
 					type = "color",
 					name = L["Text Color"],
 					get = function(info)
@@ -1588,20 +1609,20 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castText_hide = {
-					order = 22,
+					order = 24,
 					type = "toggle",
 					name = L["Hide Cast Text"],
 				},
-				lineBreak6 = {order = 23, type = "description", name = ""},
-				lineBreak7 = {order = 24, type = "description",	name = ""},
+				lineBreak6 = {order = 25, type = "description", name = ""},
+				lineBreak7 = {order = 26, type = "description",	name = ""},
 				castTimerText_header = {
-					order = 25,
+					order = 27,
 					type = "header",
 					name = L["Cast Timer Text"],
 				},
-				lineBreak8 = {order = 26, type = "description", name = ""},
+				lineBreak8 = {order = 28, type = "description", name = ""},
 				castTimerText_font = {
-					order = 27,
+					order = 29,
 					type = "select",
 					name = L["Text Font"],
 					values = RBP.LSM:HashTable("font"),
@@ -1611,7 +1632,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castTimerText_size = {
-					order = 28,
+					order = 30,
 					type = "range",
 					name = L["Font Size"],
 					min = 6,
@@ -1622,7 +1643,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castTimerText_outline = {
-					order = 29,
+					order = 31,
 					type = "select", 
 					name = L["Outline"],
 					values = {
@@ -1638,7 +1659,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castTimerText_anchor = {
-					order = 30,
+					order = 32,
 					type = "select", 
 					name = L["Anchor"],
 					values = {
@@ -1657,7 +1678,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castTimerText_offsetX = {
-					order = 31,
+					order = 33,
 					type = "range",
 					name = L["Offset X"],
 					min = -50,
@@ -1668,7 +1689,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castTimerText_offsetY = {
-					order = 32,
+					order = 34,
 					type = "range",
 					name = L["Offset Y"],
 					min = -50,
@@ -1679,7 +1700,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castTimerText_color = {
-					order = 33,
+					order = 35,
 					type = "color",
 					name = L["Text Color"],
 					get = function(info)
@@ -1695,12 +1716,12 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castTimerText_hide = {
-					order = 34,
+					order = 36,
 					type = "toggle",
 					name = L["Hide Cast Timer Text"],
 				},
-				lineBreak9 = {order = 35, type = "description", name = ""},
-				lineBreak10 = {order = 36, type = "description", name = ""},
+				lineBreak9 = {order = 37, type = "description", name = ""},
+				lineBreak10 = {order = 38, type = "description", name = ""},
 			},
 		},
 		Icons = {
