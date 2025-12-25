@@ -650,7 +650,7 @@ local function HookCastBarScripts(Virtual)
 	delayedCastBarOnHide:Hide()
 	delayedCastBarOnHide:SetScript("OnUpdate", function(self)
 		self:Hide()
-		if (RBP.dbp.castBar_nonTargetPatch or (RBP.hasTarget and Plate:GetAlpha() == 1)) and maxCastVal and not castBar:IsShown() then
+		if (RBP.dbp.castBar_nonTargetPatch or (RBP.hasTarget and Plate:GetAlpha() == 1)) and maxCastVal and not castBar:IsShown() and Virtual.healthBarIsShown then
 			if Virtual.shieldCastBarBorderIsShown then
 				shieldCastBarBorder:Show()
 				UpdateShieldCastBarBorder(Virtual)
