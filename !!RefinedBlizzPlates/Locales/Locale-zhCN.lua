@@ -272,7 +272,7 @@ L["Cast Timer Text"] = "施法计时文字"
 L["Hide Cast Timer Text"] = "隐藏施法计时文字"
 L["Non-target units fade"] = "非目标单位淡出"
 L["Improves the non-target castbar fade effect when using the corresponding patch. Leave this option disabled if the patch is not installed."] = "在使用对应补丁时，改善非目标单位的施法条淡出效果。如果未安装补丁，请保持此选项关闭。"
-L["Interrupted"] = "被打断"
+L["Failed"] = "失败"
 
 -- Icons --
 L["Icons"] = "图标"

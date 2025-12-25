@@ -272,7 +272,7 @@ L["Cast Timer Text"] = "시전 시간 텍스트"
 L["Hide Cast Timer Text"] = "시전 시간 텍스트 숨기기"
 L["Non-target units fade"] = "비대상 유닛 페이드"
 L["Improves the non-target castbar fade effect when using the corresponding patch. Leave this option disabled if the patch is not installed."] = "해당 패치를 사용할 경우 비대상 유닛의 시전 바 페이드 효과를 향상시킵니다. 패치가 설치되어 있지 않다면 이 옵션을 비활성화하세요."
-L["Interrupted"] = "방해로 취소됨"
+L["Failed"] = "실패"
 
 -- Icons --
 L["Icons"] = "아이콘"

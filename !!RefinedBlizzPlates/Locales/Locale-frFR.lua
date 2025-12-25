@@ -270,7 +270,7 @@ L["Cast Timer Text"] = "Texte du Temps d'Incantation"
 L["Hide Cast Timer Text"] = "Cacher le Texte du Temps d'Incantation"
 L["Non-target units fade"] = "Fondu des unités non ciblées"
 L["Improves the non-target castbar fade effect when using the corresponding patch. Leave this option disabled if the patch is not installed."] = "Améliore l'effet de fondu de la barre d'incantation des unités non ciblées lors de l'utilisation du correctif correspondant. Laissez cette option désactivée si le correctif n'est pas installé."
-L["Interrupted"] = "Interrompu"
+L["Failed"] = "Échec"
 
 -- Icons --
 L["Icons"] = "Icônes"

@@ -270,7 +270,7 @@ L["Cast Timer Text"] = true
 L["Hide Cast Timer Text"] = true
 L["Non-target units fade"] = true
 L["Improves the non-target castbar fade effect when using the corresponding patch. Leave this option disabled if the patch is not installed."] = true
-L["Interrupted"] = true
+L["Failed"] = true
 
 -- Icons --
 L["Icons"] = true

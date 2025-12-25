@@ -581,7 +581,7 @@ local function HookCastBarScripts(Virtual)
 	local castBarTexFull = Virtual.castBarTexFull
 	local castText = Virtual.castText
 	local castTimerText = Virtual.castTimerText
-	local firstCastVal, currCastVal, maxCastVal, lastOVC, semitransparent
+	local firstCastVal, currCastVal, maxCastVal, lastOVC, channelingCompleted, castingFailed, alpha
 	local delayedCastBarOnShow = CreateFrame("Frame")
 	delayedCastBarOnShow:SetScript("OnUpdate", function(self)
 		self:Hide()
@@ -589,7 +589,7 @@ local function HookCastBarScripts(Virtual)
 		maxCastVal = max and max > 0 and max or nil
 		if Virtual.healthBarIsShown and maxCastVal then
 			if not Virtual.channelingFlag then
-				if castBar:GetValue() < firstCastVal then
+				if firstCastVal and castBar:GetValue() < firstCastVal then
 					Virtual.channelingFlag = 1
 				else
 					Virtual.channelingFlag = 0
@@ -615,25 +615,34 @@ local function HookCastBarScripts(Virtual)
 	castBarRegionsFadeOut:Hide()
 	castBarRegionsFadeOut:SetScript("OnUpdate", function(self, elapsed)
 		self.elapsed = self.elapsed + elapsed
-		if maxCastVal and Virtual.isShown and self.elapsed < 0.5 then
-			local a = 0.75 - 1.5 * self.elapsed
+		if maxCastVal and Virtual.isShown and self.elapsed < (castingFailed and 1.5 or 0.75) then
+			if castingFailed then
+				if self.elapsed < 0.75 then
+					alpha = 1
+				else
+					alpha = 2 - (self.elapsed / 0.75)
+				end
+			else
+				alpha = 1 - (self.elapsed / 0.75)
+			end
 			if Virtual.shieldCastBarBorderIsShown then
-				shieldCastBarBorder:SetAlpha(a)
+				shieldCastBarBorder:SetAlpha(alpha)
 			else
-				castBarBorder:SetAlpha(a)
+				castBarBorder:SetAlpha(alpha)
 			end
-			spellIcon:SetAlpha(a)
-			if semitransparent then
-				castBarTexFull:SetAlpha(0.5*a)
+			if channelingCompleted then
+				castBarTexFull:SetAlpha(0.5 * alpha)
 			else
-				castBarTexFull:SetAlpha(a)
+				castBarTexFull:SetAlpha(alpha)
 			end
-			castText:SetAlpha(a)
+			spellIcon:SetAlpha(alpha)
+			castText:SetAlpha(alpha)
 		else
 			self:Hide()
 			self.elapsed = 0
 			maxCastVal = nil
-			semitransparent = nil
+			channelingCompleted = nil
+			castingFailed = nil
 			castBarBorder:Hide()
 			shieldCastBarBorder:Hide()
 			spellIcon:Hide()
@@ -670,7 +679,8 @@ local function HookCastBarScripts(Virtual)
 			castBarRegionsFadeOut:Hide()
 			castBarRegionsFadeOut.elapsed = 0
 			maxCastVal = nil
-			semitransparent = nil
+			channelingCompleted = nil
+			castingFailed = nil
 			castBarTexFull:Hide()
 			castBarTexFull:SetAlpha(1)
 		end
@@ -693,11 +703,12 @@ local function HookCastBarScripts(Virtual)
 	castBar:HookScript("OnValueChanged", function(self, val)
 		if val < 0.002 and currCastVal and maxCastVal and not lastOVC then
 			lastOVC = true
-			semitransparent = nil
+			channelingCompleted = nil
+			castingFailed = nil
 			if Virtual.channelingFlag == 1 then
 				if currCastVal < 0.05 then
-					castBarTexFull:SetVertexColor(0, 0, 0, 0.375)
-					semitransparent = true
+					castBarTexFull:SetVertexColor(0, 0, 0, 0.5)
+					channelingCompleted = true
 				else
 					castBarTexFull:SetVertexColor(unpack(RBP.dbp.castBar_channelingColor))
 				end
@@ -706,8 +717,9 @@ local function HookCastBarScripts(Virtual)
 					castBarTexFull:SetVertexColor(0, 1, 0)
 				else
 					castBarTexFull:SetVertexColor(1, 0, 0)
+					castingFailed = true
 					if castText:GetText() then
-						castText:SetText(L["Interrupted"])
+						castText:SetText(L["Failed"])
 					end
 				end
 			end
@@ -1778,6 +1790,7 @@ local function ResetRefinedPlate(Plate)
 	StackablePlates[Plate] = nil
 	Plate:SetClampedToScreen(false)
 	Plate:SetClampRectInsets(0, 0, 0, 0)
+	Virtual.castText:SetText("")
 	if Virtual.BGHframe then
 		Virtual.BGHframe:ModifyIcon()
 	else

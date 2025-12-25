@@ -270,7 +270,7 @@ L["Cast Timer Text"] = "Текст таймера заклинания"
 L["Hide Cast Timer Text"] = "Скрыть текст таймера заклинания"
 L["Non-target units fade"] = "Затухание нецелевых юнитов"
 L["Improves the non-target castbar fade effect when using the corresponding patch. Leave this option disabled if the patch is not installed."] = "Улучшает эффект затухания полосы заклинаний нецелевых юнитов при использовании соответствующего патча. Оставьте эту опцию отключённой, если патч не установлен."
-L["Interrupted"] = "Прервано"
+L["Failed"] = "Неудача"
 
 -- Icons --
 L["Icons"] = "Иконки"

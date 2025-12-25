@@ -270,7 +270,7 @@ L["Cast Timer Text"] = "Zauberzeit-Text"
 L["Hide Cast Timer Text"] = "Zauberzeit-Text ausblenden"
 L["Non-target units fade"] = "Ausblenden von Nicht-Ziel-Einheiten"
 L["Improves the non-target castbar fade effect when using the corresponding patch. Leave this option disabled if the patch is not installed."] = "Verbessert den Ausblendeffekt der Zauberleiste von Nicht-Ziel-Einheiten bei Verwendung des entsprechenden Patches. Lass diese Option deaktiviert, wenn der Patch nicht installiert ist."
-L["Interrupted"] = "Unterbrochen"
+L["Failed"] = "Fehlgeschlagen"
 
 -- Icons --
 L["Icons"] = "Symbole"
