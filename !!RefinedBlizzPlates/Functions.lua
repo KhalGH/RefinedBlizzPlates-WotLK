@@ -7,8 +7,6 @@ local ipairs, unpack, tonumber, tostring, select, math_exp, math_floor, math_abs
       ipairs, unpack, tonumber, tostring, select, math.exp, math.floor, math.abs, string.format, string.char, string.sub, table.insert, SetCVar, wipe, WorldFrame, CreateFrame, UnitCastingInfo, UnitChannelInfo, UnitName, UnitClass, UnitIsUnit, UnitCanAttack, UnitDebuff, GetNumArenaOpponents, GetNumPartyMembers, GetNumRaidMembers, GetRaidRosterInfo, RAID_CLASS_COLORS, SetMapToCurrentZone, GetCurrentMapAreaID, GetSubZoneText, SecureHandlerWrapScript, ToggleFrame, UIPanelWindows, SetUIVisibility
 
 ------------------------- Core Variables -------------------------
-local NP_WIDTH = 156.65118520899  -- Nameplate original width (don't modify)
-local NP_HEIGHT = 39.162796302247 -- Nameplate original height (don't modify)
 local VirtualPlates = {}          -- Storage table: Virtual nameplate frames
 local PlatesVisible = {}          -- Storage table: currently active nameplates
 local StackablePlates = {}        -- Storage table: Plates filtered for improved stacking
@@ -16,7 +14,6 @@ local ClassByFriendName = {}      -- Storage table: maps friendly player names (
 local ArenaID = {}                -- Storage table: maps arena names to their ID number
 local PartyID = {}                -- Storage table: maps party names to their ID number
 local ASSETS = "Interface\\AddOns\\" .. AddonFile .. "\\Assets\\"
-local castBarPatchEnabled = nil
 
 ------------------------- Customization Functions -------------------------
 local function InitBarTextures(Virtual)
@@ -1458,10 +1455,10 @@ for name, frame in pairs(TriggerFrames) do
 end
 
 local function ClickboxAttributeUpdater()
-	RBP.ResizeClickbox:SetAttribute("normalWidth", NP_WIDTH * RBP.dbp.globalScale * RBP.dbp.clickboxWidthFactor)
-	RBP.ResizeClickbox:SetAttribute("normalHeight", NP_HEIGHT * RBP.dbp.globalScale * RBP.dbp.clickboxHeightFactor)
-	RBP.ResizeClickbox:SetAttribute("friendlyWidth", NP_WIDTH * RBP.dbp.globalScale * RBP.dbp.friendlyScale * RBP.dbp.clickboxWidthFactor)
-	RBP.ResizeClickbox:SetAttribute("friendlyHeight", NP_HEIGHT * RBP.dbp.globalScale * RBP.dbp.friendlyScale * RBP.dbp.clickboxHeightFactor)
+	RBP.ResizeClickbox:SetAttribute("normalWidth", RBP.NP_WIDTH * RBP.dbp.globalScale * RBP.dbp.clickboxWidthFactor)
+	RBP.ResizeClickbox:SetAttribute("normalHeight", RBP.NP_HEIGHT * RBP.dbp.globalScale * RBP.dbp.clickboxHeightFactor)
+	RBP.ResizeClickbox:SetAttribute("friendlyWidth", RBP.NP_WIDTH * RBP.dbp.globalScale * RBP.dbp.friendlyScale * RBP.dbp.clickboxWidthFactor)
+	RBP.ResizeClickbox:SetAttribute("friendlyHeight", RBP.NP_HEIGHT * RBP.dbp.globalScale * RBP.dbp.friendlyScale * RBP.dbp.clickboxHeightFactor)
 	RBP.ResizeClickbox:SetAttribute("totemWidth", RBP.dbp.totemSize * 1.2)
 	RBP.ResizeClickbox:SetAttribute("totemHeight", RBP.dbp.totemSize * 1.2)
 	RBP.ResizeClickbox:SetAttribute("barlessWidth", RBP.dbp.barlessPlate_textSize * 2 + 50)
@@ -1491,9 +1488,9 @@ local function UpdateClickboxOutOfCombat(Plate)
 	elseif Plate.isBarlessPlate then
 		Plate:SetSize(2*RBP.dbp.barlessPlate_textSize + 50, RBP.dbp.barlessPlate_textSize + 5)
 	elseif Plate.VirtualPlate.isShown and Plate.isFriendly then
-		Plate:SetSize(NP_WIDTH * RBP.dbp.globalScale * RBP.dbp.friendlyScale * RBP.dbp.clickboxWidthFactor, NP_HEIGHT * RBP.dbp.globalScale * RBP.dbp.friendlyScale * RBP.dbp.clickboxHeightFactor)
+		Plate:SetSize(RBP.NP_WIDTH * RBP.dbp.globalScale * RBP.dbp.friendlyScale * RBP.dbp.clickboxWidthFactor, RBP.NP_HEIGHT * RBP.dbp.globalScale * RBP.dbp.friendlyScale * RBP.dbp.clickboxHeightFactor)
 	else
-		Plate:SetSize(NP_WIDTH * RBP.dbp.globalScale * RBP.dbp.clickboxWidthFactor, NP_HEIGHT * RBP.dbp.globalScale * RBP.dbp.clickboxHeightFactor)
+		Plate:SetSize(RBP.NP_WIDTH * RBP.dbp.globalScale * RBP.dbp.clickboxWidthFactor, RBP.NP_HEIGHT * RBP.dbp.globalScale * RBP.dbp.clickboxHeightFactor)
 	end
 end
 
@@ -2105,8 +2102,6 @@ function RBP:UpdateProfile()
 end
 
 ----------- Reference for Core.lua -----------
-RBP.NP_WIDTH = NP_WIDTH
-RBP.NP_HEIGHT = NP_HEIGHT
 RBP.VirtualPlates = VirtualPlates
 RBP.PlatesVisible = PlatesVisible
 RBP.UpdateTarget = UpdateTarget

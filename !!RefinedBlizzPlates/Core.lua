@@ -10,8 +10,6 @@ local select, next, pairs, ipairs, unpack, string_format, GetAddOnMetadata, sort
       select, next, pairs, ipairs, unpack, string.format, GetAddOnMetadata, sort, wipe, CreateFrame, UnitName, UnitLevel, UnitDebuff, IsInInstance, SetUIVisibility, SetCVar
 
 -- Localized namespace definitions
-local NP_WIDTH = RBP.NP_WIDTH
-local NP_HEIGHT = RBP.NP_HEIGHT
 local VirtualPlates = RBP.VirtualPlates
 local PlatesVisible = RBP.PlatesVisible
 local UpdateCastTextString = RBP.UpdateCastTextString
@@ -51,6 +49,7 @@ local GetParent = EventHandler.GetParent
 
 -- Status Flags
 local ExistsVisiblePlates = false
+local nameplateSizeCheck = true
 RBP.hasTarget = false
 RBP.inCombat = false
 RBP.inInstance = false
@@ -61,6 +60,8 @@ RBP.inArena = false
 RBP.inICC = false
 RBP.inLDWZone = false
 RBP.playerLevel = UnitLevel("player")
+RBP.NP_WIDTH = 156.65118520899
+RBP.NP_HEIGHT = 39.162796302247
 
 -- Plate handling and updating	
 do
@@ -198,10 +199,15 @@ do
 		Plate.VirtualPlate = Virtual
 		Virtual.RealPlate = Plate
 		VirtualPlates[Plate] = Virtual
-	
+		
+		if nameplateSizeCheck then
+			nameplateSizeCheck = false
+			RBP.NP_WIDTH, RBP.NP_HEIGHT = Plate:GetSize()
+		end
+
 		Virtual:Hide() -- Gets explicitly shown on plate show
 		Virtual:SetPoint("TOP")
-		Virtual:SetSize(NP_WIDTH, NP_HEIGHT)
+		Virtual:SetSize(RBP.NP_WIDTH, RBP.NP_HEIGHT)
 
 		ReparentChildren(Plate, Plate:GetChildren())
 		ReparentRegions(Plate, Plate:GetRegions())
