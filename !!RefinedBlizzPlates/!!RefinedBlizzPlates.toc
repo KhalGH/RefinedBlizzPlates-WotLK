@@ -5,7 +5,7 @@
 ## Author: Khal
 ## SavedVariables: KhalPlatesDB
 ## X-Repository: https://github.com/KhalGH/RefinedBlizzPlates-WotLK
-## X-Date: 2025-12-25
+## X-Date: 2025-12-26
 
 Embeds.xml
 Media.lua

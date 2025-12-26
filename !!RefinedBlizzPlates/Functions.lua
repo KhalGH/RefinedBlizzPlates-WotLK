@@ -20,11 +20,10 @@ local function InitBarTextures(Virtual)
 	Virtual.healthBarTex:SetDrawLayer("BORDER")
 	Virtual.castBarBorder:SetTexture(ASSETS .. "PlateRegions\\CastBar-Border")
 	Virtual.shieldCastBarBorder:SetTexture(ASSETS .. "PlateRegions\\CastBar-ShieldBorder")
-	Virtual.castBarTex:SetTexture(RBP.LSM:Fetch("statusbar", RBP.dbp.castBar_Tex))
-	Virtual.castBarTex:SetDrawLayer("BORDER")
 	Virtual.spellIcon:SetDrawLayer("BORDER")
 	Virtual.ogHealthBarBorder:Hide()
 	Virtual.ogNameText:Hide()
+	Virtual.ogCastBarTex:SetTexture(nil)
 end
 
 local function SetupThreatGlow(Virtual)
@@ -392,6 +391,15 @@ local function UpdateCastText(Virtual)
 	end
 end
 
+local function SetupCastBarTex(Virtual)
+	if Virtual.castBarTex then return end
+	Virtual.castBarTex = Virtual.castBar:CreateTexture(nil, "BORDER")
+	local castBarTex = Virtual.castBarTex
+	castBarTex:SetAllPoints(Virtual.ogCastBarTex)
+	castBarTex:SetTexture(RBP.LSM:Fetch("statusbar", RBP.dbp.castBar_Tex))
+	castBarTex:SetVertexColor(unpack(RBP.dbp.castBar_color))
+end
+
 local function SetupCastText(Virtual)
 	if Virtual.castText then return end
 	Virtual.castText = Virtual:CreateFontString(nil, "OVERLAY")
@@ -508,7 +516,7 @@ local function SetupCastSpark(Virtual)
 	local castSpark = Virtual.castSpark
 	castSpark:SetTexture("Interface\\CastingBar\\UI-CastingBar-Spark")
 	castSpark:SetBlendMode("ADD")
-	castSpark:SetPoint("CENTER", Virtual.castBarTex, "RIGHT")
+	castSpark:SetPoint("CENTER", Virtual.ogCastBarTex, "RIGHT")
 	castSpark:SetSize(10, 22)
 	castSpark:Hide()
 end
@@ -685,7 +693,7 @@ local function HookCastBarScripts(Virtual)
 			castBarTexFull:SetAlpha(1)
 		end
 		Virtual.shieldCastBarBorderIsShown = shieldCastBarBorder:IsShown()
-		if not currCastVal then
+		if not currCastVal and castBar:GetValue() < 0.002 then
 			Virtual.channelingFlag = 0
 		end
 		delayedCastBarOnShow:Show()
@@ -701,25 +709,27 @@ local function HookCastBarScripts(Virtual)
 		delayedCastBarOnHide:Show()
 	end)
 	castBar:HookScript("OnValueChanged", function(self, val)
-		if val < 0.002 and currCastVal and maxCastVal and not lastOVC then
-			lastOVC = true
-			channelingCompleted = nil
-			castingFailed = nil
-			if Virtual.channelingFlag == 1 then
-				if currCastVal < 0.05 then
-					castBarTexFull:SetVertexColor(0, 0, 0, 0.5)
-					channelingCompleted = true
+		if val < 0.002 then
+			if currCastVal and maxCastVal and not lastOVC then
+				lastOVC = true
+				channelingCompleted = nil
+				castingFailed = nil
+				if Virtual.channelingFlag == 1 then
+					if currCastVal < 0.05 then
+						castBarTexFull:SetVertexColor(0, 0, 0, 0.5)
+						channelingCompleted = true
+					else
+						castBarTexFull:SetVertexColor(unpack(RBP.dbp.castBar_channelingColor))
+					end
 				else
-					castBarTexFull:SetVertexColor(unpack(RBP.dbp.castBar_channelingColor))
-				end
-			else
-				if maxCastVal - currCastVal < 0.05 then
-					castBarTexFull:SetVertexColor(0, 1, 0)
-				else
-					castBarTexFull:SetVertexColor(1, 0, 0)
-					castingFailed = true
-					if castText:GetText() then
-						castText:SetText(L["Failed"])
+					if maxCastVal - currCastVal < 0.05 then
+						castBarTexFull:SetVertexColor(0, 1, 0)
+					else
+						castBarTexFull:SetVertexColor(1, 0, 0)
+						castingFailed = true
+						if castText:GetText() then
+							castText:SetText(L["Failed"])
+						end
 					end
 				end
 			end
@@ -1188,7 +1198,7 @@ local function SetupRefinedPlate(Virtual)
 	Virtual.threatGlow, Virtual.ogHealthBarBorder, Virtual.castBarBorder, Virtual.shieldCastBarBorder, Virtual.spellIcon, Virtual.healthBarHighlight, Virtual.ogNameText, Virtual.levelText, Virtual.bossIcon, Virtual.raidTargetIcon, Virtual.eliteIcon = Virtual:GetRegions()
 	Virtual.healthBar, Virtual.castBar = Virtual:GetChildren()
 	Virtual.healthBarTex = Virtual.healthBar:GetRegions()
-	Virtual.castBarTex = Virtual.castBar:GetRegions()
+	Virtual.ogCastBarTex = Virtual.castBar:GetRegions()
 	Virtual.healthBar.RealPlate = Plate
 	InitBarTextures(Virtual)
 	SetupThreatGlow(Virtual)
@@ -1200,6 +1210,7 @@ local function SetupRefinedPlate(Virtual)
 	SetupHealthText(Virtual)
 	SetupHealthBarBackground(Virtual)
 	SetupCastBarBackground(Virtual)
+	SetupCastBarTex(Virtual)
 	SetupCastText(Virtual)
 	SetupCastTimer(Virtual)
 	SetupCastSpark(Virtual)
