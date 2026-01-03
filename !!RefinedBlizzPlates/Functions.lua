@@ -165,16 +165,20 @@ local function SetupArenaIDText(Virtual)
 end
 
 local function UpdateBarlessHealthText(healthText, percent)
-    local r, g, b = 1, 1, 0
-    if percent <= 15 then
-        g = 0
-    elseif percent < 60 then
-        g = (percent - 15) / 45
-    else
-        r = 1 - (percent - 60) / 40
-    end
-    healthText:SetText("<" .. percent .. "%>")
-    healthText:SetTextColor(r, g, b)
+	if percent < 100 and percent > 0 then
+		local r, g, b = 1, 1, 0
+		if percent <= 15 then
+			g = 0
+		elseif percent < 60 then
+			g = (percent - 15) / 45
+		else
+			r = 1 - (percent - 60) / 40
+		end
+		healthText:SetText("<" .. percent .. "%>")
+		healthText:SetTextColor(r, g, b)
+	else
+		healthText:SetText("")
+	end
 end
 
 local function utf8chars(str)
@@ -260,6 +264,28 @@ local function UpdateHealthTextValue(healthBar, value)
 	if max > 0 then
 		local val = value or healthBar:GetValue()
 		local percent = val / max
+		local text = ""
+		if val > 1 and not (RBP.dbp.healthText_hideMax and val == max) then
+			local format = RBP.dbp.healthText_format
+			if format == 1 then
+				text = math_floor(percent * 100) .. "%"
+			elseif format == 2 then
+				if val == max then
+					text = "100%"
+				else
+					text = string_format("%.1f%%", math_floor(percent * 1000) / 10)
+				end
+			elseif format == 3 then
+				text = val
+			elseif format == 4 then
+				text = val .. " / " .. max
+			elseif format == 5 then
+				text = val .. " (" ..  math_floor(percent * 100) .. "%)"
+			elseif format == 6 and val < max then
+				text = "- " .. (max - val)
+			end
+		end
+		Virtual.healthText:SetText(text)
 		if Virtual.healthBarIsShown then
 			if Virtual.healthBarTexCrop then
 				Virtual.healthBarTex:SetTexCoord(0, percent, 0, 1)
@@ -271,16 +297,8 @@ local function UpdateHealthTextValue(healthBar, value)
 			end
 		end
 		percent = math_floor(percent * 100)
-		if percent < 100 and percent > 0 then
-			Virtual.healthText:SetText(percent .. "%")
-			if Plate.BarlessHealthTextIsShown then
-				UpdateBarlessHealthText(Plate.barlessPlate_healthText, percent)
-			end
-		else
-			Virtual.healthText:SetText("")
-			if Plate.BarlessHealthTextIsShown then 
-				Plate.barlessPlate_healthText:SetText("")
-			end
+		if Plate.BarlessHealthTextIsShown then
+			UpdateBarlessHealthText(Plate.barlessPlate_healthText, percent)
 		end
 		if Plate.barlessNameTextGrayOut and Plate.barlessPlateIsShown then
 			UpdateBarlessNameText(Plate, percent)
@@ -1966,17 +1984,10 @@ function RBP:UpdateAllHealthBars()
 		end
 		if Virtual.healthBarIsShown and RBP.dbp.healthBar_progressiveTexCrop then
 			Virtual.healthBarTexCrop = true
-			local min, max = Virtual.healthBar:GetMinMaxValues()
-			if max > 0 then
-				local val = Virtual.healthBar:GetValue()
-				Virtual.healthBarTex:SetTexCoord(0, val / max, 0, 1)
-			else
-				Virtual.healthBarTex:SetTexCoord(0, 1, 0, 1)
-			end
 		else
 			Virtual.healthBarTexCrop = nil
-			Virtual.healthBarTex:SetTexCoord(0, 1, 0, 1)
 		end
+		UpdateHealthTextValue(Virtual.healthBar)
 	end
 end
 
