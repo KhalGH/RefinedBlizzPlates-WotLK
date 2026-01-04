@@ -20,7 +20,8 @@ local CheckLDWZoneIndoors = RBP.CheckLDWZoneIndoors
 local CheckDominateMind = RBP.CheckDominateMind
 local UpdateGroupInfo = RBP.UpdateGroupInfo
 local UpdateArenaInfo = RBP.UpdateArenaInfo
-local UpdateClassColorNames = RBP.UpdateClassColorNames
+local UpdateClassColor = RBP.UpdateClassColor
+local UpdateHealthBarColor = RBP.UpdateHealthBarColor
 local ExecuteClickboxSecureScript = RBP.ExecuteClickboxSecureScript
 local InitPlatesClickboxes = RBP.InitPlatesClickboxes
 local ClickboxAttributeUpdater = RBP.ClickboxAttributeUpdater
@@ -450,7 +451,10 @@ end
 
 function EventHandler:PARTY_MEMBERS_CHANGED()
 	UpdateGroupInfo()
-	UpdateClassColorNames()
+	for Plate in pairs(PlatesVisible) do
+		UpdateClassColor(Plate)
+		UpdateHealthBarColor(Plate)
+	end
 end
 
 function EventHandler:PLAYER_PVP_RANK_CHANGED()

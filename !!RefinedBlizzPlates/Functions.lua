@@ -7,20 +7,20 @@ local ipairs, unpack, tonumber, tostring, select, math_exp, math_floor, math_abs
       ipairs, unpack, tonumber, tostring, select, math.exp, math.floor, math.abs, string.format, string.char, string.sub, table.insert, SetCVar, wipe, WorldFrame, CreateFrame, UnitCastingInfo, UnitChannelInfo, UnitName, UnitClass, UnitIsUnit, UnitCanAttack, UnitDebuff, GetNumArenaOpponents, GetNumPartyMembers, GetNumRaidMembers, GetRaidRosterInfo, RAID_CLASS_COLORS, SetMapToCurrentZone, GetCurrentMapAreaID, GetSubZoneText, SecureHandlerWrapScript, ToggleFrame, UIPanelWindows, SetUIVisibility
 
 ------------------------- Core Variables -------------------------
-local VirtualPlates = {}          -- Storage table: Virtual nameplate frames
-local PlatesVisible = {}          -- Storage table: currently active nameplates
-local StackablePlates = {}        -- Storage table: Plates filtered for improved stacking
-local ClassByFriendName = {}      -- Storage table: maps friendly player names (party/raid) to their class
-local ArenaID = {}                -- Storage table: maps arena names to their ID number
-local PartyID = {}                -- Storage table: maps party names to their ID number
+local VirtualPlates = {}      -- Storage table: Virtual nameplate frames
+local PlatesVisible = {}      -- Storage table: currently active nameplates
+local StackablePlates = {}    -- Storage table: Plates filtered for improved stacking
+local ClassByFriendName = {}  -- Storage table: maps friendly player names (party/raid) to their class
+local ArenaID = {}            -- Storage table: maps arena names to their ID number
+local PartyID = {}            -- Storage table: maps party names to their ID number
 local ASSETS = "Interface\\AddOns\\" .. AddonFile .. "\\Assets\\"
 
 ------------------------- Customization Functions -------------------------
 local function InitBarTextures(Virtual)
-	Virtual.healthBarTex:SetDrawLayer("BORDER")
 	Virtual.castBarBorder:SetTexture(ASSETS .. "PlateRegions\\CastBar-Border")
 	Virtual.shieldCastBarBorder:SetTexture(ASSETS .. "PlateRegions\\CastBar-ShieldBorder")
 	Virtual.spellIcon:SetDrawLayer("BORDER")
+	Virtual.ogHealthBarTex:SetTexture(nil)
 	Virtual.ogHealthBarBorder:Hide()
 	Virtual.ogNameText:Hide()
 	Virtual.ogCastBarTex:SetTexture(nil)
@@ -291,9 +291,6 @@ local function UpdateHealthTextValue(healthBar, value)
 				Virtual.healthBarTex:SetTexCoord(0, percent, 0, 1)
 			else
 				Virtual.healthBarTex:SetTexCoord(0, 1, 0, 1)
-			end
-			if Virtual.aggroColoring then
-				Virtual.aggroOverlay:SetTexCoord(0, percent, 0, 1)
 			end
 		end
 		percent = math_floor(percent * 100)
@@ -1173,39 +1170,19 @@ local function SetupClickboxTexture(Plate)
 	end
 end
 
-local function SetupAggroOverlay(Virtual)
-	if Virtual.aggroOverlay then return end
-	Virtual.aggroOverlay = Virtual.healthBar:CreateTexture(nil, "BORDER")
-	local aggroOverlay = Virtual.aggroOverlay
-	aggroOverlay:SetAllPoints(Virtual.healthBarTex)
-	aggroOverlay:SetTexture(RBP.LSM:Fetch("statusbar", RBP.dbp.healthBar_npcTex))
-    aggroOverlay:Hide()
+local function SetupHealthBarTex(Virtual)
+	if Virtual.healthBarTex then return end
+	Virtual.healthBarTex = Virtual.healthBar:CreateTexture(nil, "BORDER")
+	Virtual.healthBarTex:SetAllPoints(Virtual.ogHealthBarTex)
 end
 
-local function GetAggroStatus(threatGlow)
-	if not threatGlow:IsVisible() then return 0 end
-	local r, g, b = threatGlow:GetVertexColor()
-	if b > 0.5 then return 0 end
-	if g < 0.5 then return 3 end
-	if g < 0.9 then return 2 end
-	return 1
-end
-
-local function UpdateAggroOverlay(Virtual)
-	local aggroOverlay = Virtual.aggroOverlay
-	local aggroStatus = GetAggroStatus(Virtual.threatGlow)
-	if aggroStatus > 0 then
-		if aggroStatus == 3 then
-			aggroOverlay:SetVertexColor(unpack(RBP.dbp.aggroColor))
-		elseif aggroStatus == 2 then
-			aggroOverlay:SetVertexColor(unpack(RBP.dbp.losingAggroColor))
-		elseif aggroStatus == 1 then
-			aggroOverlay:SetVertexColor(unpack(RBP.dbp.gainingAggroColor))
-		end
-		aggroOverlay:Show()
-		Virtual.healthBarTex:SetTexture(nil)
+local function UpdateHealthBarTex(Plate)
+	local Virtual = Plate.VirtualPlate
+	if Plate.classKey == "FRIENDLY_PLAYER" then
+		Virtual.healthBarTex:SetTexture(RBP.LSM:Fetch("statusbar", RBP.dbp.healthBar_friendlyPlayerTex))
+	elseif Plate.classKey then
+		Virtual.healthBarTex:SetTexture(RBP.LSM:Fetch("statusbar", RBP.dbp.healthBar_hostilePlayerTex))
 	else
-		aggroOverlay:Hide()
 		Virtual.healthBarTex:SetTexture(RBP.LSM:Fetch("statusbar", RBP.dbp.healthBar_npcTex))
 	end
 end
@@ -1215,7 +1192,7 @@ local function SetupRefinedPlate(Virtual)
 	Plate.firstProcessing = true
 	Virtual.threatGlow, Virtual.ogHealthBarBorder, Virtual.castBarBorder, Virtual.shieldCastBarBorder, Virtual.spellIcon, Virtual.healthBarHighlight, Virtual.ogNameText, Virtual.levelText, Virtual.bossIcon, Virtual.raidTargetIcon, Virtual.eliteIcon = Virtual:GetRegions()
 	Virtual.healthBar, Virtual.castBar = Virtual:GetChildren()
-	Virtual.healthBarTex = Virtual.healthBar:GetRegions()
+	Virtual.ogHealthBarTex = Virtual.healthBar:GetRegions()
 	Virtual.ogCastBarTex = Virtual.castBar:GetRegions()
 	Virtual.healthBar.RealPlate = Plate
 	InitBarTextures(Virtual)
@@ -1227,6 +1204,7 @@ local function SetupRefinedPlate(Virtual)
 	SetupTargetGlow(Virtual)
 	SetupHealthText(Virtual)
 	SetupHealthBarBackground(Virtual)
+	SetupHealthBarTex(Virtual)
 	SetupCastBarBackground(Virtual)
 	SetupCastBarTex(Virtual)
 	SetupCastText(Virtual)
@@ -1350,27 +1328,76 @@ local function UpdateArenaInfo()
 	end
 end
 
-local function UpdateClassColorNames()
-	local class, name
-	for Plate, Virtual in pairs(PlatesVisible) do
-		class = Plate.classKey
-		name = Plate.nameString
-		local classColor
-		if class then
-			if class == "FRIENDLY_PLAYER" and ClassByFriendName[name] then
-				classColor = RAID_CLASS_COLORS[ClassByFriendName[name]]
-				Plate.classColor = classColor
-			elseif class ~= "FRIENDLY_PLAYER" then
-				classColor = RAID_CLASS_COLORS[class]
-				Plate.classColor = classColor
+local NAMEPLATE_CLASS_COLORS = {
+    ["DEATHKNIGHT"] = {0.768625762313600, 0.117646798491480, 0.227450475096700},
+    ["DRUID"]       = {0.999997803010050, 0.486273437738420, 0.039215601980686},
+    ["HUNTER"]      = {0.666665202006700, 0.827449142932890, 0.447057843208310},
+    ["MAGE"]        = {0.407842241227630, 0.799998223781590, 0.937252819538120},
+    ["PALADIN"]     = {0.956860642880200, 0.549018383026120, 0.729410171508790},
+    ["PRIEST"]      = {0.999997803010050, 0.999997794628140, 0.999997794628140},
+    ["ROGUE"]       = {0.999997803010050, 0.956860661506650, 0.407842248678210},
+    ["SHAMAN"]      = {0.000000000000000, 0.439214706420900, 0.866664767265320},
+    ["WARLOCK"]     = {0.576469321735200, 0.509802818298340, 0.788233578205110},
+    ["WARRIOR"]     = {0.776468882337210, 0.607841789722440, 0.427450031042100},
+}
+
+local function UpdateClassColor(Plate)
+	local Virtual = Plate.VirtualPlate
+	local class = Plate.classKey
+	Plate.friendClassColor = nil
+	if class then
+		if class == "FRIENDLY_PLAYER" then
+			local friendClass = ClassByFriendName[Plate.nameString]
+			if friendClass then
+				Plate.classColor = RAID_CLASS_COLORS[friendClass]
+				if RBP.dbp.healthBar_friendClassColor then
+					Plate.friendClassColor = NAMEPLATE_CLASS_COLORS[friendClass]
+				end
 			end
+		else
+			Plate.classColor = RAID_CLASS_COLORS[class]
 		end
+	end
+	local classColor = Plate.classColor
+	if classColor and ((class == "FRIENDLY_PLAYER" and RBP.dbp.nameText_classColorFriends) or (class ~= "FRIENDLY_PLAYER" and RBP.dbp.nameText_classColorEnemies)) then
+		Virtual.nameColorR, Virtual.nameColorG, Virtual.nameColorB = classColor.r, classColor.g, classColor.b
+	else
 		Virtual.nameColorR, Virtual.nameColorG, Virtual.nameColorB = unpack(RBP.dbp.nameText_color)
-		if classColor and ((class == "FRIENDLY_PLAYER" and RBP.dbp.nameText_classColorFriends) or (class ~= "FRIENDLY_PLAYER" and RBP.dbp.nameText_classColorEnemies)) then
-			Virtual.nameColorR, Virtual.nameColorG, Virtual.nameColorB = classColor.r, classColor.g, classColor.b
+	end
+	Virtual.newNameText:SetTextColor(Virtual.nameColorR, Virtual.nameColorG, Virtual.nameColorB)
+	Virtual.nameTextIsYellow = false
+end
+
+local function GetAggroStatus(threatGlow)
+	if not threatGlow:IsVisible() then return 0 end
+	local r, g, b = threatGlow:GetVertexColor()
+	if b > 0.5 then return 0 end
+	if g < 0.5 then return 3 end
+	if g < 0.9 then return 2 end
+	return 1
+end
+
+local function UpdateHealthBarColor(Plate)
+	local Virtual = Plate.VirtualPlate
+	if Plate.aggroColoring then
+		local aggroStatus = GetAggroStatus(Virtual.threatGlow)
+		if aggroStatus > 0 then
+			if aggroStatus == 3 then
+				Virtual.healthBarTex:SetVertexColor(unpack(RBP.dbp.aggroColor))
+			elseif aggroStatus == 2 then
+				Virtual.healthBarTex:SetVertexColor(unpack(RBP.dbp.losingAggroColor))
+			elseif aggroStatus == 1 then
+				Virtual.healthBarTex:SetVertexColor(unpack(RBP.dbp.gainingAggroColor))
+			end
+		else
+			Virtual.healthBarTex:SetVertexColor(unpack(Plate.healthBarColor))		
 		end
-		Virtual.newNameText:SetTextColor(Virtual.nameColorR, Virtual.nameColorG, Virtual.nameColorB)
-		Virtual.nameTextIsYellow = false
+	else
+		if Plate.classKey == "FRIENDLY_PLAYER" and Plate.friendClassColor then
+			Virtual.healthBarTex:SetVertexColor(unpack(Plate.friendClassColor))
+		else
+			Virtual.healthBarTex:SetVertexColor(unpack(Plate.healthBarColor))
+		end
 	end
 end
 
@@ -1645,6 +1672,7 @@ local function UpdateRefinedPlate(Plate)
 			SetupCastBorder(Virtual)
 			UpdateMouseoverGlow(Virtual)
 			SetupThreatGlow(Virtual)
+			UpdateHealthBarTex(Plate)
 			if RBP.dbp.healthBar_progressiveTexCrop then
 				Virtual.healthBarTexCrop = true				
 			end
@@ -1665,19 +1693,12 @@ local function UpdateRefinedPlate(Plate)
 				nameText:Show()	
 			end
 			local class = Plate.classKey
-			local classColor	
 			if class then
 				if class == "FRIENDLY_PLAYER" then
-					classColor = ClassByFriendName[name] and RAID_CLASS_COLORS[ClassByFriendName[name]]
-					Plate.classColor = classColor
 					Virtual.bossIcon:Hide()
-				else
-					classColor = RAID_CLASS_COLORS[class]
-					Plate.classColor = classColor
-					if not Virtual.bossIcon:IsShown() and level and level - RBP.playerLevel >= 10 then
-						Virtual.bossIcon:Show()
-						levelText:Hide()
-					end
+				elseif not Virtual.bossIcon:IsShown() and level and level - RBP.playerLevel >= 10 then
+					Virtual.bossIcon:Show()
+					levelText:Hide()
 				end
 				------------------------ Show Arena IDs ------------------------
 				if RBP.inArena then
@@ -1734,29 +1755,18 @@ local function UpdateRefinedPlate(Plate)
 						Virtual.classIcon:Show()
 					end
 				end
-				Virtual.healthBarTex:SetTexture(RBP.LSM:Fetch("statusbar", RBP.dbp.healthBar_playerTex))
 			else
 				if RBP.dbp.enableAggroColoring and not RBP.inPvPInstance and (RBP.inPvEInstance or not RBP.dbp.disableAggroOpenworld) then
-					if not Virtual.aggroOverlay then
-						SetupAggroOverlay(Virtual)
-					end
-					UpdateAggroOverlay(Virtual)
 					Virtual.threatGlow:SetTexture(nil)
-					Virtual.aggroColoring = true
-				else
-					Virtual.healthBarTex:SetTexture(RBP.LSM:Fetch("statusbar", RBP.dbp.healthBar_npcTex))
+					Plate.aggroColoring = true
 				end
 			end
-			if classColor and ((class == "FRIENDLY_PLAYER" and RBP.dbp.nameText_classColorFriends) or (class ~= "FRIENDLY_PLAYER" and RBP.dbp.nameText_classColorEnemies)) then
-				Virtual.nameColorR, Virtual.nameColorG, Virtual.nameColorB = classColor.r, classColor.g, classColor.b
-			else
-				Virtual.nameColorR, Virtual.nameColorG, Virtual.nameColorB = unpack(RBP.dbp.nameText_color)
-			end
-			nameText:SetTextColor(Virtual.nameColorR, Virtual.nameColorG, Virtual.nameColorB)
-			Virtual.nameTextIsYellow = false
+			UpdateClassColor(Plate)
+			UpdateHealthBarColor(Plate)
 			----------------- BarlessPlate Check -----------------
 			if CheckBarlessPlate(Plate) then
 				if class then
+					local classColor = Plate.classColor
 					if classColor and RBP.dbp.barlessPlate_classColors then
 						Plate.barlessNameTextRGB = {classColor.r, classColor.g, classColor.b}
 					else
@@ -1780,7 +1790,7 @@ local function UpdateRefinedPlate(Plate)
 					Plate:SetClampedToScreen(true)
 					Plate:SetClampRectInsets(80*RBP.dbp.globalScale, -80*RBP.dbp.globalScale, RBP.dbp.upperborder, 0)
 				end
-			end
+			end	
 		end	
 	end
 end
@@ -1793,8 +1803,8 @@ local function ResetRefinedPlate(Plate)
 	Virtual.ArenaIDText:Hide()
 	Virtual.isShown = nil
 	Virtual.nameTextIsYellow = nil
-	Virtual.aggroColoring = nil
 	Virtual.healthBarTexCrop = nil
+	Plate.aggroColoring = nil
 	Plate.classColor = nil
 	Plate.unitToken = nil
 	Plate.totemPlateIsShown = nil
@@ -1813,9 +1823,6 @@ local function ResetRefinedPlate(Plate)
 	Plate.BarlessHealthTextIsShown = nil
 	Plate.barlessNameTextRGB = nil
 	Plate.barlessNameTextGrayOut = nil
-	if Virtual.aggroOverlay then
-		Virtual.aggroOverlay:Hide()
-	end
 	StackablePlates[Plate] = nil
 	Plate:SetClampedToScreen(false)
 	Plate:SetClampRectInsets(0, 0, 0, 0)
@@ -1841,8 +1848,8 @@ local function PlatesSecUpdate()
 				UpdateClickboxOutOfCombat(Plate)
 			end
 		end
-		if Virtual.aggroColoring then
-			UpdateAggroOverlay(Virtual)
+		if Plate.aggroColoring then
+			UpdateHealthBarColor(Plate)
 		end
 	end
 end
@@ -1969,14 +1976,6 @@ function RBP:UpdateAllHealthBars()
 	for Plate, Virtual in pairs(VirtualPlates) do
 		UpdateHealthBorder(Virtual)
 		UpdateHealthText(Virtual)
-		if Plate.classKey then
-			Virtual.healthBarTex:SetTexture(RBP.LSM:Fetch("statusbar", RBP.dbp.healthBar_playerTex))
-		else
-			Virtual.healthBarTex:SetTexture(RBP.LSM:Fetch("statusbar", RBP.dbp.healthBar_npcTex))
-		end
-		if Virtual.aggroOverlay then
-			Virtual.aggroOverlay:SetTexture(RBP.LSM:Fetch("statusbar", RBP.dbp.healthBar_npcTex))
-		end
 		if RBP.dbp.healthText_hide then
 			Virtual.healthText:Hide()
 		else
@@ -2139,15 +2138,16 @@ end
 ----------- Reference for Core.lua -----------
 RBP.VirtualPlates = VirtualPlates
 RBP.PlatesVisible = PlatesVisible
-RBP.UpdateTarget = UpdateTarget
 RBP.UpdateCastTextString = UpdateCastTextString
+RBP.UpdateTarget = UpdateTarget
 RBP.SetupRefinedPlate = SetupRefinedPlate
 RBP.ForceLevelHide = ForceLevelHide
 RBP.CheckLDWZoneIndoors = CheckLDWZoneIndoors
 RBP.CheckDominateMind = CheckDominateMind
 RBP.UpdateGroupInfo = UpdateGroupInfo
 RBP.UpdateArenaInfo = UpdateArenaInfo
-RBP.UpdateClassColorNames = UpdateClassColorNames
+RBP.UpdateClassColor = UpdateClassColor
+RBP.UpdateHealthBarColor = UpdateHealthBarColor
 RBP.ExecuteClickboxSecureScript = ExecuteClickboxSecureScript
 RBP.InitPlatesClickboxes = InitPlatesClickboxes
 RBP.ClickboxAttributeUpdater = ClickboxAttributeUpdater
