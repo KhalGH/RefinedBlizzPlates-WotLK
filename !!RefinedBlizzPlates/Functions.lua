@@ -257,6 +257,16 @@ local function UpdateBarlessNameText(Plate, percent)
 	end
 end
 
+local function SmartValue(v)
+	if v >= 1e6 then
+		return string_format("%.1fm", v / 1e6)
+	elseif v >= 1e3 then
+		return string_format("%.1fk", v / 1e3)
+	else
+		return v
+	end
+end
+
 local function UpdateHealthTextValue(healthBar, value)
 	local Plate = healthBar.RealPlate
 	local Virtual = Plate.VirtualPlate
@@ -276,13 +286,13 @@ local function UpdateHealthTextValue(healthBar, value)
 					text = string_format("%.1f%%", math_floor(percent * 1000) / 10)
 				end
 			elseif format == 3 then
-				text = val
+				text = SmartValue(val)
 			elseif format == 4 then
-				text = val .. " / " .. max
+				text = SmartValue(val) .. " / " .. SmartValue(max)
 			elseif format == 5 then
-				text = val .. " (" ..  math_floor(percent * 100) .. "%)"
+				text = SmartValue(val) .. " (" .. math_floor(percent * 100) .. "%)"
 			elseif format == 6 and val < max then
-				text = "- " .. (max - val)
+				text = "- " .. SmartValue(max - val)
 			end
 		end
 		Virtual.healthText:SetText(text)
