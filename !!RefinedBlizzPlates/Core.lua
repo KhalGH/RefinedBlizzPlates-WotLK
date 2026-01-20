@@ -212,7 +212,7 @@ do
 
 		ReparentChildren(Plate, Plate:GetChildren())
 		ReparentRegions(Plate, Plate:GetRegions())
-		Virtual:SetScale(RBP.dbp.globalScale)
+		Virtual:SetScale(RBP.dbp.globalScale or 1)
 		Virtual:EnableDrawLayer("HIGHLIGHT") -- Allows the highlight to show without enabling mouse events
 
 		Plate:SetScript("OnShow", PlateOnShow)

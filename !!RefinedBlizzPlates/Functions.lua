@@ -1145,7 +1145,7 @@ local function SetupTargetHandler(Plate)
 			if Plate.isFriendly then
 				Virtual:SetScale(RBP.dbp.globalScale * RBP.dbp.friendlyScale)
 			else
-				Virtual:SetScale(RBP.dbp.globalScale)
+				Virtual:SetScale(RBP.dbp.globalScale or 1)
 			end
 			if Plate.totemPlate_targetGlow then Plate.totemPlate_targetGlow:Hide() end
 		end
@@ -1808,7 +1808,7 @@ end
 local function ResetRefinedPlate(Plate)
 	local Virtual = Plate.VirtualPlate
 	Virtual:Hide()
-	Virtual:SetScale(RBP.dbp.globalScale)
+	Virtual:SetScale(RBP.dbp.globalScale or 1)
 	Virtual.classIcon:Hide()
 	Virtual.ArenaIDText:Hide()
 	Virtual.isShown = nil
@@ -1952,7 +1952,7 @@ function RBP:UpdateAllVirtualsScale()
 			if Plate.isFriendly then
 				Virtual:SetScale(RBP.dbp.globalScale * RBP.dbp.friendlyScale)
 			else
-				Virtual:SetScale(RBP.dbp.globalScale)
+				Virtual:SetScale(RBP.dbp.globalScale or 1)
 			end
 		end
 		if not self.inCombat then

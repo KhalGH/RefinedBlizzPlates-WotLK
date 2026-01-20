@@ -508,7 +508,7 @@ RBP.MainOptionTable = {
 					order = 29,
 					type = "toggle",
 					name = L["Clamp Target"],
-					desc = L["Prevents targeted enemy nameplate from going above the top of the screen."],
+					desc = L["Prevents targeted enemy nameplate from going above the top of the screen.\nNote: As a drawback, this option affects floating combat text visibility."],
 					set = function(info, val)
 						RBP.dbp[info[#info]] = val
 						RBP:UpdateWorldFrameHeight()
@@ -519,7 +519,7 @@ RBP.MainOptionTable = {
 					order = 30,
 					type = "toggle",
 					name = L["Clamp Bosses"],
-					desc = L["Prevents boss nameplates inside instances from going above the top of the screen."],
+					desc = L["Prevents boss nameplates inside instances from going above the top of the screen.\nNote: As a drawback, this option affects floating combat text visibility."],
 					set = function(info, val)
 						RBP.dbp[info[#info]] = val
 						RBP:UpdateWorldFrameHeight()
