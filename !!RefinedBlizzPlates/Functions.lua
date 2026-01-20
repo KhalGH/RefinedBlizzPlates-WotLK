@@ -614,20 +614,13 @@ local function HookCastBarScripts(Virtual)
 	local castBarTexFull = Virtual.castBarTexFull
 	local castText = Virtual.castText
 	local castTimerText = Virtual.castTimerText
-	local firstCastVal, currCastVal, maxCastVal, lastOVC, channelingCompleted, castingFailed, alpha
+	local firstCastVal, secondCastVal, currCastVal, maxCastVal, lastOVC, channelingCompleted, castingFailed, alpha
 	local delayedCastBarOnShow = CreateFrame("Frame")
 	delayedCastBarOnShow:SetScript("OnUpdate", function(self)
 		self:Hide()
 		local max = select(2, castBar:GetMinMaxValues())
 		maxCastVal = max and max > 0 and max or nil
 		if Virtual.healthBarIsShown and maxCastVal then
-			if not Virtual.channelingFlag then
-				if firstCastVal and castBar:GetValue() < firstCastVal then
-					Virtual.channelingFlag = 1
-				else
-					Virtual.channelingFlag = 0
-				end
-			end
 			Virtual.castBarIsShown = true
 			local unit = Plate.namePlateUnitToken or Plate.unitToken or (Plate.isTarget and "target")
 			UpdateCastTextString(Virtual, unit)
@@ -718,9 +711,6 @@ local function HookCastBarScripts(Virtual)
 			castBarTexFull:SetAlpha(1)
 		end
 		Virtual.shieldCastBarBorderIsShown = shieldCastBarBorder:IsShown()
-		if not currCastVal and castBar:GetValue() < 0.002 then
-			Virtual.channelingFlag = 0
-		end
 		delayedCastBarOnShow:Show()
 	end)
 	castBar:HookScript("OnHide", function(self)
@@ -729,6 +719,7 @@ local function HookCastBarScripts(Virtual)
 		Virtual.castBarTexCrop = nil
 		Virtual.channelingFlag = nil
 		firstCastVal = nil
+		secondCastVal = nil
 		currCastVal = nil
 		lastOVC = nil
 		delayedCastBarOnHide:Show()
@@ -759,7 +750,20 @@ local function HookCastBarScripts(Virtual)
 				end
 			end
 		else
-			firstCastVal = firstCastVal or val
+			if not firstCastVal then
+				firstCastVal = val
+			elseif not secondCastVal then
+				secondCastVal = val
+				if not Virtual.channelingFlag then
+					if secondCastVal < firstCastVal then
+						Virtual.channelingFlag = 1
+						Virtual.castBarTex:SetVertexColor(unpack(RBP.dbp.castBar_channelingColor))
+					else
+						Virtual.channelingFlag = 0
+						Virtual.castBarTex:SetVertexColor(unpack(RBP.dbp.castBar_color))
+					end
+				end
+			end
 		end
 		currCastVal = val
 		if Virtual.castBarInitSpark then
