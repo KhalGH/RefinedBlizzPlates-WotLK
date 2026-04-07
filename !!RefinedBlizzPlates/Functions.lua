@@ -1868,15 +1868,17 @@ local function PlatesSecUpdate()
 	end
 end
 
--- Enlarging of WorldFrame, so that nameplates are displayed even if they have slightly left the screen or are very high up, as is the case with large bosses.
-RBP.ScreenWidth = GetScreenWidth() * UIParent:GetEffectiveScale()
-RBP.ScreenHeight = 768
+-- Enlarging of WorldFrame, so that nameplates are displayed even if they are very high up, as is the case with large bosses.
+RBP.WorldFrameWidth = WorldFrame:GetWidth()
 local function ExtendWorldFrameHeight(shouldExtend)
-	local heightScale = shouldExtend and 50 or 1
 	WorldFrame:ClearAllPoints()
 	WorldFrame:SetPoint("BOTTOM")
-	WorldFrame:SetWidth(RBP.ScreenWidth)
-	WorldFrame:SetHeight(RBP.ScreenHeight*heightScale)
+	WorldFrame:SetWidth(RBP.WorldFrameWidth)
+	WorldFrame:SetHeight(768 * (shouldExtend and 50 or 1))
+	-- Override WorldFrame:GetHeight() so Blizzard_CombatText gets the original value
+	WorldFrame.GetHeight = function(self)
+		return 768
+	end
 end
 
 -- Retail-like Nameplate Stacking
@@ -1904,7 +1906,7 @@ local function UpdateStacking()
             Plate1_StackData.position = newposition
             Plate1_StackData.xpos = x
             Plate1:SetClampedToScreen(true)
-            Plate1:SetClampRectInsets(-2*RBP.ScreenWidth, RBP.ScreenWidth - x - width/2, RBP.ScreenHeight - y - height/2, -2*RBP.ScreenHeight)
+            Plate1:SetClampRectInsets(-2*RBP.WorldFrameWidth, RBP.WorldFrameWidth - x - width/2, 768 - y - height/2, -2*768)
         else
             local min = 1000
             local reset = true
@@ -2088,7 +2090,7 @@ function RBP:UpdateAllClickboxTextures()
 end
 
 function RBP:UpdateWorldFrameHeight(init)
-	self.ScreenWidth = GetScreenWidth() * UIParent:GetEffectiveScale()
+	self.WorldFrameWidth = WorldFrame:GetWidth()
 	if RBP.dbp.clampTarget or RBP.dbp.clampBoss then
 		ExtendWorldFrameHeight(true)
 	elseif not init then
