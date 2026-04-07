@@ -1021,6 +1021,12 @@ local function SetupBarlessPlate(Plate)
 	Plate.barlessPlate_raidTargetIcon:Hide()
 	Plate.barlessPlate_classIcon = barlessPlate:CreateTexture(nil, "ARTWORK")
 	Plate.barlessPlate_classIcon:Hide()
+	Plate.barlessPlate_targetGlow = barlessPlate:CreateTexture(nil, "BACKGROUND")
+	Plate.barlessPlate_targetGlow:SetTexture(ASSETS .. "PlateRegions\\BarlessPlate-MouseoverGlow")
+	Plate.barlessPlate_targetGlow:SetVertexColor(1, 0.75, 0)
+	Plate.barlessPlate_targetGlow:SetPoint("CENTER", Plate.barlessPlate_nameText, 0, -1.3)
+	Plate.barlessPlate_targetGlow:SetSize(1, 1)
+	Plate.barlessPlate_targetGlow:Hide()
 	UpdateBarlessPlate(Plate)
 end
 
@@ -1038,6 +1044,7 @@ local function BarlessPlateHandler(Plate)
 	local Virtual = Plate.VirtualPlate
 	Virtual.threatGlow:SetTexture(nil)
 	local barlessPlate = Plate.barlessPlate
+	Plate.barlessPlate_targetGlow:Hide()
 	if Plate.isTarget and RBP.dbp.barlessPlate_excludeTarget then
 		Virtual.healthBar:Show()
 		Virtual.healthBarIsShown = true
@@ -1067,6 +1074,11 @@ local function BarlessPlateHandler(Plate)
 		local barlessNameText = Plate.barlessPlate_nameText
 		barlessNameText:SetTextColor(unpack(Plate.barlessNameTextRGB))
 		barlessNameText:SetText(Plate.nameString)
+		local barlessPlate_targetGlow = Plate.barlessPlate_targetGlow
+		barlessPlate_targetGlow:SetSize(barlessNameText:GetWidth() + 30, barlessNameText:GetHeight() + 20)
+		if Plate.isTarget then
+			barlessPlate_targetGlow:Show()
+		end
 		local healthBarHighlight = Virtual.healthBarHighlight
 		healthBarHighlight:SetTexture(ASSETS .. "PlateRegions\\BarlessPlate-MouseoverGlow")
 		healthBarHighlight:ClearAllPoints()
