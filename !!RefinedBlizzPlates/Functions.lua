@@ -1038,7 +1038,32 @@ local function BarlessPlateHandler(Plate)
 	local Virtual = Plate.VirtualPlate
 	Virtual.threatGlow:SetTexture(nil)
 	local barlessPlate = Plate.barlessPlate
-	if not Plate.isTarget then
+	if Plate.isTarget and RBP.dbp.barlessPlate_excludeTarget then
+		Virtual.healthBar:Show()
+		Virtual.healthBarIsShown = true
+		UpdateMouseoverGlow(Virtual)
+		if Plate.hasBossIcon then
+			Virtual.bossIcon:Show()
+		elseif not RBP.dbp.levelText_hide and not (RBP.inArena and RBP.dbp.PartyIDText_show and RBP.dbp.PartyIDText_HideLevel) then
+			SetupLevelText(Virtual)
+			Virtual.levelText:Show()
+		end
+		if Plate.hasRaidIcon then
+			Virtual.raidTargetIcon:Show()
+		end
+		if Plate.hasEliteIcon then
+			Virtual.eliteIcon:Show()
+		end
+		barlessPlate:Hide()
+		Plate.barlessPlate_healthText:Hide()
+		Plate.barlessPlate_raidTargetIcon:Hide()
+		Plate.barlessPlate_classIcon:Hide()
+		Plate.barlessPlateIsShown = nil
+		Plate.BarlessHealthTextIsShown = nil
+		if Virtual.BGHframe then
+			Virtual.BGHframe:ModifyIcon()
+		end
+	else
 		local barlessNameText = Plate.barlessPlate_nameText
 		barlessNameText:SetTextColor(unpack(Plate.barlessNameTextRGB))
 		barlessNameText:SetText(Plate.nameString)
@@ -1094,31 +1119,6 @@ local function BarlessPlateHandler(Plate)
 			else
 				Virtual.shouldModifyBGH = {true, barlessPlate, RBP.dbp.barlessPlate_BGHiconSize, "BOTTOM", barlessNameText, "TOP", RBP.dbp.barlessPlate_BGHiconOffsetX, RBP.dbp.barlessPlate_BGHiconOffsetY}
 			end
-		end
-	else
-		Virtual.healthBar:Show()
-		Virtual.healthBarIsShown = true
-		UpdateMouseoverGlow(Virtual)
-		if Plate.hasBossIcon then
-			Virtual.bossIcon:Show()
-		elseif not RBP.dbp.levelText_hide and not (RBP.inArena and RBP.dbp.PartyIDText_show and RBP.dbp.PartyIDText_HideLevel) then
-			SetupLevelText(Virtual)
-			Virtual.levelText:Show()
-		end
-		if Plate.hasRaidIcon then
-			Virtual.raidTargetIcon:Show()
-		end
-		if Plate.hasEliteIcon then
-			Virtual.eliteIcon:Show()
-		end
-		barlessPlate:Hide()
-		Plate.barlessPlate_healthText:Hide()
-		Plate.barlessPlate_raidTargetIcon:Hide()
-		Plate.barlessPlate_classIcon:Hide()
-		Plate.barlessPlateIsShown = nil
-		Plate.BarlessHealthTextIsShown = nil
-		if Virtual.BGHframe then
-			Virtual.BGHframe:ModifyIcon()
 		end
 	end
 end

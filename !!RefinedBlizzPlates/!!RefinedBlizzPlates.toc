@@ -1,11 +1,11 @@
 ## Interface: 30300
 ## Title: RefinedBlizzPlates
 ## Notes: Enhanced Blizzlike nameplates
-## Version: 1.9.5
+## Version: 1.9.6
 ## Author: Khal
 ## SavedVariables: KhalPlatesDB
 ## X-Repository: https://github.com/KhalGH/RefinedBlizzPlates-WotLK
-## X-Date: 2026-01-20
+## X-Date: 2026-04-06
 
 Embeds.xml
 Media.lua
