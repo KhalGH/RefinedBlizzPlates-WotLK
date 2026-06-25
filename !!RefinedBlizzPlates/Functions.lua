@@ -329,15 +329,23 @@ end
 local function UpdateTargetGlow(Virtual)
 	if not Virtual.targetGlow then return end
 	local targetGlow = Virtual.targetGlow
-	targetGlow:SetVertexColor(unpack(RBP.dbp.targetGlow_Tint))
+	targetGlow:SetVertexColor(unpack(RBP.dbp.targetGlow_Color))
 	targetGlow:SetAlpha(RBP.dbp.targetGlow_Alpha)
 	targetGlow:SetSize(RBP.NP_WIDTH * 2, RBP.NP_HEIGHT * 2)
 	targetGlow:SetPoint("CENTER", RBP.DELTA_X, RBP.DELTA_Y)
 	if RBP.dbp.showTargetGlowBorder then
 		if RBP.dbp.healthBar_border == "Blizzard" then
-			targetGlow:SetTexture(ASSETS .. "PlateRegions\\HealthBar-TargetGlowBlizz-Fire")
+			if RBP.dbp.targetGlow_Gradient then
+				targetGlow:SetTexture(ASSETS .. "PlateRegions\\HealthBar-TargetGlowBlizz-Gradient")
+			else
+				targetGlow:SetTexture(ASSETS .. "PlateRegions\\HealthBar-TargetGlowBlizz")
+			end
 		else
-			targetGlow:SetTexture(ASSETS .. "PlateRegions\\HealthBar-TargetGlow-Fire")
+			if RBP.dbp.targetGlow_Gradient then
+				targetGlow:SetTexture(ASSETS .. "PlateRegions\\HealthBar-TargetGlow-Gradient")
+			else
+				targetGlow:SetTexture(ASSETS .. "PlateRegions\\HealthBar-TargetGlow")
+			end
 		end
 	else
 		targetGlow:SetTexture(ASSETS .. "PlateRegions\\HealthBar-TargetGlowMinimalist")
@@ -353,7 +361,7 @@ end
 
 local function UpdateMouseoverGlow(Virtual)
 	local healthBarHighlight = Virtual.healthBarHighlight
-	healthBarHighlight:SetVertexColor(unpack(RBP.dbp.mouseoverGlow_Tint))
+	healthBarHighlight:SetVertexColor(unpack(RBP.dbp.mouseoverGlow_Color))
 	healthBarHighlight:SetAlpha(RBP.dbp.mouseoverGlow_Alpha)
 	healthBarHighlight:ClearAllPoints()
 	healthBarHighlight:SetSize(RBP.NP_WIDTH * 2, RBP.NP_HEIGHT * 2)
@@ -905,7 +913,7 @@ local function SetupTotemPlate(Plate)
 	Plate.totemPlate_targetGlow = totemPlate:CreateTexture(nil, "OVERLAY")
 	local totemPlate_targetGlow = Plate.totemPlate_targetGlow
 	totemPlate_targetGlow:SetTexture(ASSETS .. "PlateRegions\\TotemPlate-TargetGlow")
-	totemPlate_targetGlow:SetVertexColor(unpack(RBP.dbp.targetGlow_Tint))
+	totemPlate_targetGlow:SetVertexColor(unpack(RBP.dbp.targetGlow_Color))
 	totemPlate_targetGlow:SetPoint("CENTER")
 	totemPlate_targetGlow:Hide()
 	Plate.totemPlate_border = totemPlate:CreateTexture(nil, "ARTWORK")
@@ -2038,9 +2046,10 @@ end
 function RBP:UpdateAllGlows()
 	for Plate, Virtual in pairs(VirtualPlates) do
 		UpdateTargetGlow(Virtual)
+		UpdateMouseoverGlow(Virtual)
 		SetupThreatGlow(Virtual)
 		if Plate.totemPlate_targetGlow then
-			Plate.totemPlate_targetGlow:SetVertexColor(unpack(RBP.dbp.targetGlow_Tint))
+			Plate.totemPlate_targetGlow:SetVertexColor(unpack(RBP.dbp.targetGlow_Color))
 		end
 	end
 end

@@ -245,10 +245,11 @@ L["This is a tint overlay, not a regular color. 'White' keeps the original look.
 L["Glows"] = true
 L["Target Glow Border"] = true
 L["Target Glow Alpha"] = true
-L["Target Glow Tint"] = true
+L["Target Glow Color"] = true
+L["Target Glow Gradient"] = true
 L["Mouseover Glow Border"] = true
 L["Mouseover Glow Alpha"] = true
-L["Mouseover Glow Tint"] = true
+L["Mouseover Glow Color"] = true
 L["Health Text"] = true
 L["Format"] = true
 L["Percent 0 dec."] = true
