@@ -985,7 +985,8 @@ local function SetupBarlessPlate(Plate)
 	barlessPlate:SetPoint("TOP", Plate)
 	barlessPlate:Hide()
 	Plate.barlessPlate_nameText = barlessPlate:CreateFontString(nil, "OVERLAY")
-	Plate.barlessPlate_nameText:SetShadowOffset(0.5, -0.5)
+	local barlessPlate_nameText = Plate.barlessPlate_nameText
+	barlessPlate_nameText:SetShadowOffset(0.5, -0.5)
 	Plate.barlessPlate_healthText = barlessPlate:CreateFontString(nil, "OVERLAY")
 	Plate.barlessPlate_healthText:SetShadowOffset(0.5, -0.5)
 	Plate.barlessPlate_healthText:Hide()
@@ -995,10 +996,18 @@ local function SetupBarlessPlate(Plate)
 	Plate.barlessPlate_classIcon = barlessPlate:CreateTexture(nil, "ARTWORK")
 	Plate.barlessPlate_classIcon:Hide()
 	Plate.barlessPlate_targetGlow = barlessPlate:CreateTexture(nil, "BACKGROUND")
-	Plate.barlessPlate_targetGlow:SetTexture(ASSETS .. "PlateRegions\\BarlessPlate-MouseoverGlow")
-	Plate.barlessPlate_targetGlow:SetPoint("CENTER", Plate.barlessPlate_nameText, 0, -1.3)
-	Plate.barlessPlate_targetGlow:SetSize(1, 1)
-	Plate.barlessPlate_targetGlow:Hide()
+	local barlessPlate_targetGlow = Plate.barlessPlate_targetGlow
+	barlessPlate_targetGlow:SetTexture(ASSETS .. "PlateRegions\\BarlessPlate-MouseoverGlow")
+	barlessPlate_targetGlow:SetPoint("CENTER", barlessPlate_nameText, 0, -1.3)
+	barlessPlate_targetGlow:SetSize(1, 1)
+	barlessPlate_targetGlow:Hide()
+	Plate.barlessPlate_targetGlowHandler = CreateFrame("Frame")
+	Plate.barlessPlate_targetGlowHandler:Hide()
+	Plate.barlessPlate_targetGlowHandler:SetScript("OnUpdate", function(self)
+		self:Hide()
+		barlessPlate_targetGlow:SetSize(barlessPlate_nameText:GetWidth() + 30, barlessPlate_nameText:GetHeight() + 20)
+		barlessPlate_targetGlow:Show()
+	end)
 	UpdateBarlessPlate(Plate)
 end
 
@@ -1043,19 +1052,17 @@ local function BarlessPlateHandler(Plate)
 			Virtual.BGHframe:ModifyIcon()
 		end
 	else
-		local barlessNameText = Plate.barlessPlate_nameText
-		barlessNameText:SetTextColor(unpack(Plate.barlessNameTextRGB))
-		barlessNameText:SetText(Plate.nameString)
-		local barlessPlate_targetGlow = Plate.barlessPlate_targetGlow
-		barlessPlate_targetGlow:SetSize(barlessNameText:GetWidth() + 30, barlessNameText:GetHeight() + 20)
+		local barlessPlate_nameText = Plate.barlessPlate_nameText
+		barlessPlate_nameText:SetTextColor(unpack(Plate.barlessNameTextRGB))
+		barlessPlate_nameText:SetText(Plate.nameString)
 		if Plate.isTarget then
-			barlessPlate_targetGlow:Show()
+			Plate.barlessPlate_targetGlowHandler:Show()
 		end
 		local healthBarHighlight = Virtual.healthBarHighlight
 		healthBarHighlight:SetTexture(ASSETS .. "PlateRegions\\BarlessPlate-MouseoverGlow")
 		healthBarHighlight:ClearAllPoints()
-		healthBarHighlight:SetPoint("CENTER", barlessNameText, 0, -1.3)
-		healthBarHighlight:SetSize(barlessNameText:GetWidth() + 30, barlessNameText:GetHeight() + 20)
+		healthBarHighlight:SetPoint("CENTER", barlessPlate_nameText, 0, -1.3)
+		healthBarHighlight:SetSize(barlessPlate_nameText:GetWidth() + 30, barlessPlate_nameText:GetHeight() + 20)
 		if (Plate.classKey and RBP.dbp.barlessPlate_showHealthText) or (not Plate.classKey and RBP.dbp.barlessPlate_showNPCHealthText) then
 			Plate.barlessPlate_healthText:Show()
 			Plate.BarlessHealthTextIsShown = true	
@@ -1085,23 +1092,23 @@ local function BarlessPlateHandler(Plate)
 		Virtual.eliteIcon:Hide()
 		if Virtual.BGHframe then
 			if RBP.dbp.barlessPlate_BGHiconAnchor == "Left" then
-				Virtual.BGHframe:ModifyIcon(true, barlessPlate, RBP.dbp.barlessPlate_BGHiconSize, "RIGHT", barlessNameText, "LEFT", RBP.dbp.barlessPlate_BGHiconOffsetX, RBP.dbp.barlessPlate_BGHiconOffsetY)
+				Virtual.BGHframe:ModifyIcon(true, barlessPlate, RBP.dbp.barlessPlate_BGHiconSize, "RIGHT", barlessPlate_nameText, "LEFT", RBP.dbp.barlessPlate_BGHiconOffsetX, RBP.dbp.barlessPlate_BGHiconOffsetY)
 			elseif RBP.dbp.barlessPlate_BGHiconAnchor == "Right" then
-				Virtual.BGHframe:ModifyIcon(true, barlessPlate, RBP.dbp.barlessPlate_BGHiconSize, "LEFT", barlessNameText, "RIGHT", RBP.dbp.barlessPlate_BGHiconOffsetX, RBP.dbp.barlessPlate_BGHiconOffsetY)
+				Virtual.BGHframe:ModifyIcon(true, barlessPlate, RBP.dbp.barlessPlate_BGHiconSize, "LEFT", barlessPlate_nameText, "RIGHT", RBP.dbp.barlessPlate_BGHiconOffsetX, RBP.dbp.barlessPlate_BGHiconOffsetY)
 			elseif RBP.dbp.barlessPlate_BGHiconAnchor == "Bottom" then
-				Virtual.BGHframe:ModifyIcon(true, barlessPlate, RBP.dbp.barlessPlate_BGHiconSize, "TOP", barlessNameText, "BOTTOM", RBP.dbp.barlessPlate_BGHiconOffsetX, RBP.dbp.barlessPlate_BGHiconOffsetY)
+				Virtual.BGHframe:ModifyIcon(true, barlessPlate, RBP.dbp.barlessPlate_BGHiconSize, "TOP", barlessPlate_nameText, "BOTTOM", RBP.dbp.barlessPlate_BGHiconOffsetX, RBP.dbp.barlessPlate_BGHiconOffsetY)
 			else
-				Virtual.BGHframe:ModifyIcon(true, barlessPlate, RBP.dbp.barlessPlate_BGHiconSize, "BOTTOM", barlessNameText, "TOP", RBP.dbp.barlessPlate_BGHiconOffsetX, RBP.dbp.barlessPlate_BGHiconOffsetY)
+				Virtual.BGHframe:ModifyIcon(true, barlessPlate, RBP.dbp.barlessPlate_BGHiconSize, "BOTTOM", barlessPlate_nameText, "TOP", RBP.dbp.barlessPlate_BGHiconOffsetX, RBP.dbp.barlessPlate_BGHiconOffsetY)
 			end
 		elseif Plate.firstProcessing then
 			if RBP.dbp.barlessPlate_BGHiconAnchor == "Left" then
-				Virtual.shouldModifyBGH = {true, barlessPlate, RBP.dbp.barlessPlate_BGHiconSize, "RIGHT", barlessNameText, "LEFT", RBP.dbp.barlessPlate_BGHiconOffsetX, RBP.dbp.barlessPlate_BGHiconOffsetY}
+				Virtual.shouldModifyBGH = {true, barlessPlate, RBP.dbp.barlessPlate_BGHiconSize, "RIGHT", barlessPlate_nameText, "LEFT", RBP.dbp.barlessPlate_BGHiconOffsetX, RBP.dbp.barlessPlate_BGHiconOffsetY}
 			elseif RBP.dbp.barlessPlate_BGHiconAnchor == "Right" then
-				Virtual.shouldModifyBGH = {true, barlessPlate, RBP.dbp.barlessPlate_BGHiconSize, "LEFT", barlessNameText, "RIGHT", RBP.dbp.barlessPlate_BGHiconOffsetX, RBP.dbp.barlessPlate_BGHiconOffsetY}
+				Virtual.shouldModifyBGH = {true, barlessPlate, RBP.dbp.barlessPlate_BGHiconSize, "LEFT", barlessPlate_nameText, "RIGHT", RBP.dbp.barlessPlate_BGHiconOffsetX, RBP.dbp.barlessPlate_BGHiconOffsetY}
 			elseif RBP.dbp.barlessPlate_BGHiconAnchor == "Bottom" then
-				Virtual.shouldModifyBGH = {true, barlessPlate, RBP.dbp.barlessPlate_BGHiconSize, "TOP", barlessNameText, "BOTTOM", RBP.dbp.barlessPlate_BGHiconOffsetX, RBP.dbp.barlessPlate_BGHiconOffsetY}
+				Virtual.shouldModifyBGH = {true, barlessPlate, RBP.dbp.barlessPlate_BGHiconSize, "TOP", barlessPlate_nameText, "BOTTOM", RBP.dbp.barlessPlate_BGHiconOffsetX, RBP.dbp.barlessPlate_BGHiconOffsetY}
 			else
-				Virtual.shouldModifyBGH = {true, barlessPlate, RBP.dbp.barlessPlate_BGHiconSize, "BOTTOM", barlessNameText, "TOP", RBP.dbp.barlessPlate_BGHiconOffsetX, RBP.dbp.barlessPlate_BGHiconOffsetY}
+				Virtual.shouldModifyBGH = {true, barlessPlate, RBP.dbp.barlessPlate_BGHiconSize, "BOTTOM", barlessPlate_nameText, "TOP", RBP.dbp.barlessPlate_BGHiconOffsetX, RBP.dbp.barlessPlate_BGHiconOffsetY}
 			end
 		end
 	end
