@@ -9,7 +9,7 @@ RBP.dbp = RBP.default.profile
 
 -------------------- Default Settings --------------------
 RBP.dbp.globalScale = 1    -- Global scale for nameplates
-RBP.dbp.globalOffsetX = 0  -- Global offset X for nameplates
+RBP.dbp.globalOffsetX = 10.5  -- Global offset X for nameplates
 RBP.dbp.globalOffsetY = 21 -- Global offset Y for nameplates
 RBP.dbp.targetScale = 1    -- Target scale factor
 RBP.dbp.friendlyScale = 1  -- Friendly scale factor
@@ -37,7 +37,7 @@ RBP.dbp.stackingInInstance = false
 -- Name Text
 RBP.dbp.nameText_hide = false
 RBP.dbp.nameText_font = RBP.RefinedFontKey
-RBP.dbp.nameText_size = 9
+RBP.dbp.nameText_size = 7.5
 RBP.dbp.nameText_outline = ""
 RBP.dbp.nameText_anchor = "CENTER"
 RBP.dbp.nameText_offsetX = 0
@@ -49,7 +49,7 @@ RBP.dbp.nameText_classColorEnemies = false
 -- Level Text
 RBP.dbp.levelText_hide = true
 RBP.dbp.levelText_font = RBP.RefinedFontKey
-RBP.dbp.levelText_size = 12
+RBP.dbp.levelText_size = 10.5
 RBP.dbp.levelText_outline = ""
 RBP.dbp.levelText_anchor = "Right"
 RBP.dbp.levelText_offsetX = 0
@@ -57,7 +57,7 @@ RBP.dbp.levelText_offsetY = 0
 -- ArenaID Text
 RBP.dbp.ArenaIDText_show = true
 RBP.dbp.ArenaIDText_font = RBP.RefinedFontKey
-RBP.dbp.ArenaIDText_size = 12
+RBP.dbp.ArenaIDText_size = 10
 RBP.dbp.ArenaIDText_outline = "OUTLINE"
 RBP.dbp.ArenaIDText_anchor = "Right"
 RBP.dbp.ArenaIDText_offsetX = 0
@@ -87,7 +87,7 @@ RBP.dbp.mouseoverGlow_Alpha = 1
 -- Health Text
 RBP.dbp.healthText_hide = false
 RBP.dbp.healthText_font = RBP.RefinedFontKey
-RBP.dbp.healthText_size = 8.8
+RBP.dbp.healthText_size = 7.5
 RBP.dbp.healthText_outline = ""
 RBP.dbp.healthText_anchor = "RIGHT"
 RBP.dbp.healthText_offsetX = 0
@@ -113,7 +113,7 @@ RBP.dbp.castBar_nonTargetPatch = false
 -- Cast Text
 RBP.dbp.castText_hide = false
 RBP.dbp.castText_font = RBP.RefinedFontKey
-RBP.dbp.castText_size = 9
+RBP.dbp.castText_size = 7.5
 RBP.dbp.castText_outline = ""
 RBP.dbp.castText_anchor = "CENTER"
 RBP.dbp.castText_offsetX = 0
@@ -123,7 +123,7 @@ RBP.dbp.castText_color = {1, 1, 1} -- white
 -- Cast Timer Text
 RBP.dbp.castTimerText_hide = false
 RBP.dbp.castTimerText_font = RBP.RefinedFontKey
-RBP.dbp.castTimerText_size = 8.8
+RBP.dbp.castTimerText_size = 7.2
 RBP.dbp.castTimerText_outline = ""
 RBP.dbp.castTimerText_anchor = "RIGHT"
 RBP.dbp.castTimerText_offsetX = 0
@@ -140,19 +140,19 @@ RBP.dbp.eliteIcon_anchor = "Left"
 RBP.dbp.eliteIcon_offsetX = 0
 RBP.dbp.eliteIcon_offsetY = 0
 -- Boss Icon
-RBP.dbp.bossIcon_size = 18
+RBP.dbp.bossIcon_size = 13
 RBP.dbp.bossIcon_anchor = "Right"
 RBP.dbp.bossIcon_offsetX = 0
 RBP.dbp.bossIcon_offsetY = 0
 -- Raid Target Icon
-RBP.dbp.raidTargetIcon_size = 27
+RBP.dbp.raidTargetIcon_size = 22
 RBP.dbp.raidTargetIcon_anchor = "Right"
 RBP.dbp.raidTargetIcon_offsetX = 0
 RBP.dbp.raidTargetIcon_offsetY = 0
 -- Class Icon
 RBP.dbp.showClassOnFriends = true
 RBP.dbp.showClassOnEnemies = true
-RBP.dbp.classIcon_size = 26
+RBP.dbp.classIcon_size = 21
 RBP.dbp.classIcon_anchor = "Left"
 RBP.dbp.classIcon_offsetX = 0
 RBP.dbp.classIcon_offsetY = 0
@@ -264,58 +264,56 @@ RBP.MainOptionTable = {
 					set = function(info, val)
 						RBP.dbp[info[#info]] = val
 						if val == "Blizzard" then
-							RBP.dbp.globalOffsetX = -11
+							RBP.dbp.globalOffsetX = 0
 							RBP.dbp.nameText_font = RBP.BlizzFontKey
-							RBP.dbp.nameText_size = 16
+							RBP.dbp.nameText_size = 13
 							RBP.dbp.nameText_width = 250
 							RBP.dbp.levelText_hide = false
 							RBP.dbp.levelText_font = RBP.BlizzFontKey
-							RBP.dbp.levelText_size = 14
+							RBP.dbp.levelText_size = 11.5
 							RBP.dbp.ArenaIDText_font = RBP.BlizzFontKey
-							RBP.dbp.ArenaIDText_size = 13
+							RBP.dbp.ArenaIDText_size = 10.5
 							RBP.dbp.healthText_font = RBP.BlizzFontKey
-							RBP.dbp.healthText_size = 9.5
 							RBP.dbp.healthText_anchor = "CENTER"
-							RBP.dbp.healthText_offsetX = 11
+							RBP.dbp.healthText_offsetX = 10.5
 							RBP.dbp.castText_font = RBP.BlizzFontKey
-							RBP.dbp.castText_size = 10
+							RBP.dbp.castText_size = 8
 							RBP.dbp.castTimerText_font = RBP.BlizzFontKey
-							RBP.dbp.castTimerText_size = 9.5
+							RBP.dbp.castTimerText_size = 7.8
 							RBP.dbp.healthBar_friendlyPlayerTex = "Blizzard Nameplates"
 							RBP.dbp.healthBar_hostilePlayerTex = "Blizzard Nameplates"
 							RBP.dbp.healthBar_npcTex = "Blizzard Nameplates"
 							RBP.dbp.castBar_Tex = "Blizzard Nameplates"
 							RBP.dbp.eliteIcon_anchor = "Right"
-							RBP.dbp.raidTargetIcon_size = 35
+							RBP.dbp.raidTargetIcon_size = 29
 							RBP.dbp.raidTargetIcon_anchor = "Top"
-							RBP.dbp.classIcon_size = 35
+							RBP.dbp.classIcon_size = 29
 							RBP.dbp.classIcon_anchor = "Top"
 						else
-							RBP.dbp.globalOffsetX = 0
+							RBP.dbp.globalOffsetX = 10.5
 							RBP.dbp.nameText_font = RBP.RefinedFontKey
-							RBP.dbp.nameText_size = 9
+							RBP.dbp.nameText_size = 7.5
 							RBP.dbp.nameText_width = 85
 							RBP.dbp.levelText_hide = true
 							RBP.dbp.levelText_font = RBP.RefinedFontKey
-							RBP.dbp.levelText_size = 12				
+							RBP.dbp.levelText_size = 10.5				
 							RBP.dbp.healthText_font = RBP.RefinedFontKey
 							RBP.dbp.ArenaIDText_font = RBP.RefinedFontKey
-							RBP.dbp.ArenaIDText_size = 12
-							RBP.dbp.healthText_size = 8.8
+							RBP.dbp.ArenaIDText_size = 10
 							RBP.dbp.healthText_anchor = "RIGHT"
 							RBP.dbp.healthText_offsetX = 0
 							RBP.dbp.castText_font = RBP.RefinedFontKey
-							RBP.dbp.castText_size = 9
+							RBP.dbp.castText_size = 7.5
 							RBP.dbp.castTimerText_font = RBP.RefinedFontKey
-							RBP.dbp.castTimerText_size = 8.8
+							RBP.dbp.castTimerText_size = 7.2
 							RBP.dbp.healthBar_friendlyPlayerTex = "KhalBar"
 							RBP.dbp.healthBar_hostilePlayerTex = "KhalBar"
 							RBP.dbp.healthBar_npcTex = "KhalBar"
 							RBP.dbp.castBar_Tex = "KhalBar"
 							RBP.dbp.eliteIcon_anchor = "Left"
-							RBP.dbp.raidTargetIcon_size = 27
+							RBP.dbp.raidTargetIcon_size = 22
 							RBP.dbp.raidTargetIcon_anchor = "Right"
-							RBP.dbp.classIcon_size = 26
+							RBP.dbp.classIcon_size = 21
 							RBP.dbp.classIcon_anchor = "Left"
 						end
 						RBP.dbp.nameText_anchor = "CENTER"
@@ -340,7 +338,7 @@ RBP.MainOptionTable = {
 						RBP.dbp.castTimerText_offsetX = 0
 						RBP.dbp.castTimerText_offsetY = 0
 						RBP.dbp.bossIcon_anchor = "Right"
-						RBP.dbp.bossIcon_size = 18
+						RBP.dbp.bossIcon_size = 13
 						RBP.dbp.bossIcon_offsetX = 0
 						RBP.dbp.bossIcon_offsetY = 0
 						RBP.dbp.eliteIcon_style = "Default"
@@ -389,7 +387,7 @@ RBP.MainOptionTable = {
 					desc = L["Affects only the nameplate's visual regions. The clickbox can't be moved using this feature."],
 					min = -50,
 					max = 50,
-					step = 1,
+					step = 0.1,
 					set = function(info, val)
 						RBP.dbp.globalOffsetX = val
 						RBP:MoveAllShownPlates(RBP.dbp.globalOffsetX - RBP.globalOffsetX, 0)
@@ -403,7 +401,7 @@ RBP.MainOptionTable = {
 					desc = L["Affects only the nameplate's visual regions. The clickbox can't be moved using this feature."],
 					min = -50,
 					max = 50,
-					step = 1,
+					step = 0.1,
 					set = function(info, val)
 						RBP.dbp.globalOffsetY = val
 						RBP:MoveAllShownPlates(0, RBP.dbp.globalOffsetY - RBP.globalOffsetY)
@@ -689,7 +687,7 @@ RBP.MainOptionTable = {
 					order = 5,
 					type = "range",
 					name = L["Font Size"],
-					min = 6,
+					min = 5,
 					max = 18,
 					step = 0.1,
 					disabled = function()
@@ -1313,7 +1311,7 @@ RBP.MainOptionTable = {
 					order = 29,
 					type = "range",
 					name = L["Font Size"],
-					min = 6,
+					min = 5,
 					max = 18,
 					step = 0.1,
 					disabled = function()
@@ -1580,7 +1578,7 @@ RBP.MainOptionTable = {
 					order = 17,
 					type = "range",
 					name = L["Font Size"],
-					min = 6,
+					min = 5,
 					max = 18,
 					step = 0.1,
 					disabled = function()
@@ -1698,7 +1696,7 @@ RBP.MainOptionTable = {
 					order = 30,
 					type = "range",
 					name = L["Font Size"],
-					min = 6,
+					min = 5,
 					max = 18,
 					step = 0.1,
 					disabled = function()
@@ -1927,8 +1925,8 @@ RBP.MainOptionTable = {
 					order = 18,
 					type = "range",
 					name = L["Icon Size"],
-					min = 15,
-					max = 35,
+					min = 10,
+					max = 30,
 					step = 0.1,
 				},
 				lineBreak6 = {order = 19, type = "description",	name = ""},
@@ -1976,20 +1974,20 @@ RBP.MainOptionTable = {
 					order = 26,
 					type = "range",
 					name = L["Icon Size"],
-					min = 20,
+					min = 15,
 					max = 50,
 					step = 0.1,
 				},
 				lineBreak9 = {order = 27, type = "description", name = ""},
 				lineBreak10 = {order = 28, type = "description", name = ""},
 				classIcon_header = {
-					order = 24,
+					order = 29,
 					type = "header",
 					name = L["Class Icon"],
 				},
-				lineBreak11 = {order = 29, type = "description", name = ""},
+				lineBreak11 = {order = 30, type = "description", name = ""},
 				classIcon_anchor = {
-					order = 30,
+					order = 31,
 					type = "select", 
 					name = L["Anchor"],
 					values = {
@@ -2006,7 +2004,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				classIcon_offsetX = {
-					order = 31,
+					order = 32,
 					type = "range",
 					name = L["Offset X"],
 					min = -50,
@@ -2014,7 +2012,7 @@ RBP.MainOptionTable = {
 					step = 0.1,
 				},
 				classIcon_offsetY = {
-					order = 32,
+					order = 33,
 					type = "range",
 					name = L["Offset Y"],
 					min = -50,
@@ -2025,7 +2023,7 @@ RBP.MainOptionTable = {
 					order = 34,
 					type = "range",
 					name = L["Icon Size"],
-					min = 20,
+					min = 15,
 					max = 50,
 					step = 0.1,
 				},

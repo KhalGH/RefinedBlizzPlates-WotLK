@@ -61,8 +61,12 @@ RBP.inArena = false
 RBP.inICC = false
 RBP.inLDWZone = false
 RBP.playerLevel = UnitLevel("player")
-RBP.NP_WIDTH = 156.65118520899
-RBP.NP_HEIGHT = 39.162796302247
+RBP.NP_WIDTH = 128
+RBP.NP_HEIGHT = 32
+RBP.WIDTH_SCALE = 1
+RBP.HEIGHT_SCALE = 1
+RBP.DELTA_X = 8.5759733829502
+RBP.DELTA_Y = 7.5040053203105
 
 -- Plate handling and updating	
 do
@@ -78,7 +82,7 @@ do
 			for Point = 1, Region:GetNumPoints() do
 				local point, relativeTo, relativePoint, xOfs, yOfs = Region:GetPoint(Point)
 				if relativeTo == Plate then
-					Region:SetPoint(point, Virtual, relativePoint, xOfs + RBP.dbp.globalOffsetX + 11, yOfs + RBP.dbp.globalOffsetY)
+					Region:SetPoint(point, Virtual, relativePoint, xOfs + RBP.dbp.globalOffsetX, yOfs + RBP.dbp.globalOffsetY)
 				end
 			end
 		end
@@ -204,12 +208,17 @@ do
 		if nameplateSizeCheck then
 			nameplateSizeCheck = false
 			RBP.NP_WIDTH, RBP.NP_HEIGHT = Plate:GetSize()
+			RBP.WIDTH_SCALE = RBP.NP_WIDTH/128
+			RBP.HEIGHT_SCALE = RBP.NP_HEIGHT/32
+			local PX, PY = Plate:GetCenter()
+			local hBX, hBY = Plate:GetChildren():GetCenter()
+			RBP.DELTA_X = PX - hBX
+			RBP.DELTA_Y = PY - hBY
 		end
 
 		Virtual:Hide() -- Gets explicitly shown on plate show
 		Virtual:SetPoint("TOP")
 		Virtual:SetSize(RBP.NP_WIDTH, RBP.NP_HEIGHT)
-
 		ReparentChildren(Plate, Plate:GetChildren())
 		ReparentRegions(Plate, Plate:GetRegions())
 		Virtual:SetScale(RBP.dbp.globalScale or 1)
