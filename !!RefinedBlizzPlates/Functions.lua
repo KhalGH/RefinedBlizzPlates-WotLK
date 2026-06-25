@@ -931,6 +931,7 @@ local function UpdateBarlessPlate(Plate)
 	local barlessPlate_healthText = Plate.barlessPlate_healthText
 	local barlessPlate_classIcon = Plate.barlessPlate_classIcon
 	local barlessPlate_raidTargetIcon = Plate.barlessPlate_raidTargetIcon
+	local barlessPlate_targetGlow = Plate.barlessPlate_targetGlow
 	if Plate.classKey then
 		barlessPlate_nameText:SetFont(RBP.LSM:Fetch("font", RBP.dbp.barlessPlate_textFont), RBP.dbp.barlessPlate_textSize, RBP.dbp.barlessPlate_textOutline)
 		barlessPlate_nameText:SetPoint("TOP", 0, RBP.dbp.barlessPlate_offset)
@@ -972,6 +973,8 @@ local function UpdateBarlessPlate(Plate)
 	else
 		barlessPlate_raidTargetIcon:SetPoint("BOTTOM", barlessPlate_nameText, "TOP", RBP.dbp.barlessPlate_raidTargetIconOffsetX, RBP.dbp.barlessPlate_raidTargetIconOffsetY)
 	end
+	barlessPlate_targetGlow:SetAlpha(RBP.dbp.barlessPlate_targetGlowAlpha)
+	barlessPlate_targetGlow:SetVertexColor(unpack(RBP.dbp.barlessPlate_targetGlowColor))
 end
 
 local function SetupBarlessPlate(Plate)
@@ -993,7 +996,6 @@ local function SetupBarlessPlate(Plate)
 	Plate.barlessPlate_classIcon:Hide()
 	Plate.barlessPlate_targetGlow = barlessPlate:CreateTexture(nil, "BACKGROUND")
 	Plate.barlessPlate_targetGlow:SetTexture(ASSETS .. "PlateRegions\\BarlessPlate-MouseoverGlow")
-	Plate.barlessPlate_targetGlow:SetVertexColor(1, 0.75, 0)
 	Plate.barlessPlate_targetGlow:SetPoint("CENTER", Plate.barlessPlate_nameText, 0, -1.3)
 	Plate.barlessPlate_targetGlow:SetSize(1, 1)
 	Plate.barlessPlate_targetGlow:Hide()
@@ -1001,7 +1003,7 @@ local function SetupBarlessPlate(Plate)
 end
 
 local function CheckBarlessPlate(Plate)
-	if Plate.isFriendly and ((RBP.inBG and RBP.dbp.barlessPlate_showInBG) or (RBP.inArena and RBP.dbp.barlessPlate_showInArena) or (RBP.inPvEInstance and RBP.dbp.barlessPlate_showInPvE)) then
+	if Plate.isFriendly and ((RBP.inBG and RBP.dbp.barlessPlate_showInBG) or (RBP.inArena and RBP.dbp.barlessPlate_showInArena) or (RBP.inPvEInstance and RBP.dbp.barlessPlate_showInPvE) or (RBP.inOpenWorld and RBP.dbp.barlessPlate_showInOpenWorld)) then
 		if not Plate.barlessPlate then
 			SetupBarlessPlate(Plate)
 		end

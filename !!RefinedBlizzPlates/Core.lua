@@ -54,6 +54,7 @@ local nameplateSizeCheck = true
 RBP.hasTarget = false
 RBP.inCombat = false
 RBP.inInstance = false
+RBP.inOpenWorld = false
 RBP.inPvEInstance = false
 RBP.inPvPInstance = false
 RBP.inBG = false
@@ -445,6 +446,7 @@ end
 function EventHandler:PLAYER_ENTERING_WORLD()
 	local inInstance, instanceType = IsInInstance()
 	RBP.inInstance = inInstance == 1
+	RBP.inOpenWorld = not inInstance
 	RBP.inPvEInstance = instanceType == "party" or instanceType == "raid"
 	RBP.inPvPInstance = instanceType == "pvp" or instanceType == "arena"
 	RBP.inBG = instanceType == "pvp"
