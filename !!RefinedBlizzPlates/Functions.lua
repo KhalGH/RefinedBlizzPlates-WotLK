@@ -425,7 +425,6 @@ local function UpdateCastTimer(Virtual)
 	else
 		castTimerText:SetPoint(RBP.dbp.castTimerText_anchor, RBP.dbp.castTimerText_offsetX - 2.5 * RBP.WIDTH_SCALE, RBP.dbp.castTimerText_offsetY + 0.82 * RBP.HEIGHT_SCALE)
 	end
-	
 end
 
 local function SetupCastTimer(Virtual)
@@ -1354,14 +1353,16 @@ local NAMEPLATE_CLASS_COLORS = {
 local function UpdateClassColor(Plate)
 	local Virtual = Plate.VirtualPlate
 	local class = Plate.classKey
-	Plate.friendClassColor = nil
+	Plate.friendColor = nil
 	if class then
 		if class == "FRIENDLY_PLAYER" then
 			local friendClass = ClassByFriendName[Plate.nameString]
 			if friendClass then
 				Plate.classColor = RAID_CLASS_COLORS[friendClass]
 				if RBP.dbp.healthBar_friendClassColor then
-					Plate.friendClassColor = NAMEPLATE_CLASS_COLORS[friendClass]
+					Plate.friendColor = NAMEPLATE_CLASS_COLORS[friendClass]
+				else
+					Plate.friendColor = RBP.dbp.healthBar_friendColor
 				end
 			end
 		else
@@ -1403,8 +1404,8 @@ local function UpdateHealthBarColor(Plate)
 			Virtual.healthBarTex:SetVertexColor(unpack(Plate.healthBarColor))		
 		end
 	else
-		if Plate.classKey == "FRIENDLY_PLAYER" and Plate.friendClassColor then
-			Virtual.healthBarTex:SetVertexColor(unpack(Plate.friendClassColor))
+		if Plate.classKey == "FRIENDLY_PLAYER" and Plate.friendColor then
+			Virtual.healthBarTex:SetVertexColor(unpack(Plate.friendColor))
 		else
 			Virtual.healthBarTex:SetVertexColor(unpack(Plate.healthBarColor))
 		end
