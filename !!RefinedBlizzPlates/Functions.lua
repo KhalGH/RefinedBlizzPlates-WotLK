@@ -155,7 +155,7 @@ local function UpdateBarlessHealthText(healthText, percent)
 		else
 			r = 1 - (percent - 60) / 40
 		end
-		healthText:SetText("<" .. percent .. "%>")
+		healthText:SetText(percent .. "%")
 		healthText:SetTextColor(r, g, b)
 	else
 		healthText:SetText("")
@@ -998,21 +998,16 @@ local function SetupBarlessPlate(Plate)
 	Plate.barlessPlate_targetGlow = barlessPlate:CreateTexture(nil, "BACKGROUND")
 	local barlessPlate_targetGlow = Plate.barlessPlate_targetGlow
 	barlessPlate_targetGlow:SetTexture(ASSETS .. "PlateRegions\\BarlessPlate-MouseoverGlow")
-	barlessPlate_targetGlow:SetPoint("CENTER", barlessPlate_nameText, 0, -1.3)
-	barlessPlate_targetGlow:SetSize(1, 1)
+	barlessPlate_targetGlow:SetPoint("TOPLEFT", barlessPlate_nameText, -15, 10)
+	barlessPlate_targetGlow:SetPoint("BOTTOMRIGHT", barlessPlate_nameText, 15, -11)
 	barlessPlate_targetGlow:Hide()
-	Plate.barlessPlate_targetGlowHandler = CreateFrame("Frame")
-	Plate.barlessPlate_targetGlowHandler:Hide()
-	Plate.barlessPlate_targetGlowHandler:SetScript("OnUpdate", function(self)
-		self:Hide()
-		barlessPlate_targetGlow:SetSize(barlessPlate_nameText:GetWidth() + 30, barlessPlate_nameText:GetHeight() + 20)
-		barlessPlate_targetGlow:Show()
-	end)
 	UpdateBarlessPlate(Plate)
 end
 
 local function CheckBarlessPlate(Plate)
-	if Plate.isFriendly and ((RBP.inBG and RBP.dbp.barlessPlate_showInBG) or (RBP.inArena and RBP.dbp.barlessPlate_showInArena) or (RBP.inPvEInstance and RBP.dbp.barlessPlate_showInPvE) or (RBP.inOpenWorld and RBP.dbp.barlessPlate_showInOpenWorld)) then
+	local locationEnabled = (RBP.inBG and RBP.dbp.barlessPlate_showInBG) or	(RBP.inArena and RBP.dbp.barlessPlate_showInArena) or (RBP.inPvEInstance and RBP.dbp.barlessPlate_showInPvE) or (RBP.inOpenWorld and RBP.dbp.barlessPlate_showInOpenWorld)
+	local unitEnabled =	(Plate.classKey and RBP.dbp.barlessPlate_showForPlayers) or	(not Plate.classKey and RBP.dbp.barlessPlate_showForNPCs)
+	if Plate.isFriendly and locationEnabled and unitEnabled then
 		if not Plate.barlessPlate then
 			SetupBarlessPlate(Plate)
 		end
@@ -1056,13 +1051,13 @@ local function BarlessPlateHandler(Plate)
 		barlessPlate_nameText:SetTextColor(unpack(Plate.barlessNameTextRGB))
 		barlessPlate_nameText:SetText(Plate.nameString)
 		if Plate.isTarget then
-			Plate.barlessPlate_targetGlowHandler:Show()
+			Plate.barlessPlate_targetGlow:Show()
 		end
 		local healthBarHighlight = Virtual.healthBarHighlight
 		healthBarHighlight:SetTexture(ASSETS .. "PlateRegions\\BarlessPlate-MouseoverGlow")
 		healthBarHighlight:ClearAllPoints()
-		healthBarHighlight:SetPoint("CENTER", barlessPlate_nameText, 0, -1.3)
-		healthBarHighlight:SetSize(barlessPlate_nameText:GetWidth() + 30, barlessPlate_nameText:GetHeight() + 20)
+		healthBarHighlight:SetPoint("TOPLEFT", barlessPlate_nameText, -15, 10)
+		healthBarHighlight:SetPoint("BOTTOMRIGHT", barlessPlate_nameText, 15, -11)
 		if (Plate.classKey and RBP.dbp.barlessPlate_showHealthText) or (not Plate.classKey and RBP.dbp.barlessPlate_showNPCHealthText) then
 			Plate.barlessPlate_healthText:Show()
 			Plate.BarlessHealthTextIsShown = true	
@@ -1114,57 +1109,67 @@ local function BarlessPlateHandler(Plate)
 	end
 end
 
+local function UpdateTarget(Plate)
+	local Virtual = Plate.VirtualPlate
+	if RBP.hasTarget and Plate:GetAlpha() == 1 then
+		Plate.isTarget = true
+		Virtual.targetGlow:Show()		
+		if Plate.isFriendly then
+			Virtual:SetScale(RBP.dbp.globalScale * RBP.dbp.friendlyScale * RBP.dbp.targetScale)
+		else
+			Virtual:SetScale(RBP.dbp.globalScale * RBP.dbp.targetScale)
+		end
+		if Plate.totemPlate_targetGlow then 
+			Plate.totemPlate_targetGlow:Show()
+		end
+		if Virtual.castBarIsShown and not Virtual.castText:GetText() then
+			UpdateCastTextString(Virtual, "target")
+		end
+	else
+		Plate.isTarget = false
+		Virtual.targetGlow:Hide()
+		if Plate.isFriendly then
+			Virtual:SetScale(RBP.dbp.globalScale * RBP.dbp.friendlyScale)
+		else
+			Virtual:SetScale(RBP.dbp.globalScale or 1)
+		end
+		if Plate.totemPlate_targetGlow then Plate.totemPlate_targetGlow:Hide() end
+	end
+	if Virtual.isShown then
+		if Plate.isBarlessPlate then	
+			BarlessPlateHandler(Plate)
+		end
+		if not Plate.isFriendly and not RBP.dbp.stackingEnabled then
+			if (Plate.isTarget and RBP.dbp.clampTarget) or (Plate.hasBossIcon and RBP.dbp.clampBoss and RBP.inPvEInstance) then
+				Plate:SetClampedToScreen(true)
+				Plate:SetClampRectInsets(80*RBP.dbp.globalScale, -80*RBP.dbp.globalScale, RBP.dbp.upperborder, 0)
+			else
+				Plate:SetClampedToScreen(false)
+				Plate:SetClampRectInsets(0, 0, 0, 0)
+			end				
+		end
+	end
+	Plate.firstProcessing = nil
+end
+
 local function SetupTargetHandler(Plate)
 	if Plate.targetHandler then return end
-	local Virtual = Plate.VirtualPlate
 	Plate.targetHandler = CreateFrame("Frame")
+	Plate.targetHandler:Hide()
 	Plate.targetHandler:SetScript("OnUpdate", function(self)
 		self:Hide()
-		if RBP.hasTarget and Plate:GetAlpha() == 1 then
-			Plate.isTarget = true
-			Virtual.targetGlow:Show()		
-			if Plate.isFriendly then
-				Virtual:SetScale(RBP.dbp.globalScale * RBP.dbp.friendlyScale * RBP.dbp.targetScale)
-			else
-				Virtual:SetScale(RBP.dbp.globalScale * RBP.dbp.targetScale)
-			end
-			if Plate.totemPlate_targetGlow then 
-				Plate.totemPlate_targetGlow:Show()
-			end
-			if Virtual.castBarIsShown and not Virtual.castText:GetText() then
-				UpdateCastTextString(Virtual, "target")
-			end
-		else
-			Plate.isTarget = false
-			Virtual.targetGlow:Hide()
-			if Plate.isFriendly then
-				Virtual:SetScale(RBP.dbp.globalScale * RBP.dbp.friendlyScale)
-			else
-				Virtual:SetScale(RBP.dbp.globalScale or 1)
-			end
-			if Plate.totemPlate_targetGlow then Plate.totemPlate_targetGlow:Hide() end
-		end
-		if Virtual.isShown then
-			if Plate.isBarlessPlate then	
-				BarlessPlateHandler(Plate)
-			end
-			if not Plate.isFriendly and not RBP.dbp.stackingEnabled then
-				if (Plate.isTarget and RBP.dbp.clampTarget) or (Plate.hasBossIcon and RBP.dbp.clampBoss and RBP.inPvEInstance) then
-					Plate:SetClampedToScreen(true)
-					Plate:SetClampRectInsets(80*RBP.dbp.globalScale, -80*RBP.dbp.globalScale, RBP.dbp.upperborder, 0)
-				else
-					Plate:SetClampedToScreen(false)
-					Plate:SetClampRectInsets(0, 0, 0, 0)
-				end				
-			end
-		end
-		Plate.firstProcessing = nil
+		UpdateTarget(Plate)
 	end)
 end
 
-local function UpdateTarget(Plate)
-	Plate.targetHandler:Show()
-end
+RBP.TargetHandler = CreateFrame("Frame")
+RBP.TargetHandler:Hide()
+RBP.TargetHandler:SetScript("OnUpdate", function(self)
+	self:Hide()
+	for Plate in pairs(PlatesVisible) do
+		UpdateTarget(Plate)
+	end
+end)
 
 local function SetupClickboxTexture(Plate)
 	Plate.clickboxTexture = Plate:CreateTexture(nil, "OVERLAY")
@@ -1848,7 +1853,7 @@ local function PlatesSecUpdate()
 			UpdatePlateReactionFlags(Plate, r, g, b, reaction)
 			ResetRefinedPlate(Plate)
 			UpdateRefinedPlate(Plate)
-			UpdateTarget(Plate)
+			Plate.targetHandler:Show()
 			if not RBP.inCombat then
 				UpdateClickboxOutOfCombat(Plate)
 			end
@@ -2095,7 +2100,7 @@ function RBP:UpdateAllShownPlates(updateRaidIcon)
 		end
 		ResetRefinedPlate(Plate)
 		UpdateRefinedPlate(Plate)
-		UpdateTarget(Plate)
+		Plate.targetHandler:Show()
 		if not RBP.inCombat then
 			UpdateClickboxOutOfCombat(Plate)
 		end
@@ -2145,7 +2150,6 @@ end
 RBP.VirtualPlates = VirtualPlates
 RBP.PlatesVisible = PlatesVisible
 RBP.UpdateCastTextString = UpdateCastTextString
-RBP.UpdateTarget = UpdateTarget
 RBP.SetupRefinedPlate = SetupRefinedPlate
 RBP.ForceLevelHide = ForceLevelHide
 RBP.CheckLDWZoneIndoors = CheckLDWZoneIndoors

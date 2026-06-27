@@ -13,7 +13,6 @@ local select, next, pairs, ipairs, unpack, string_format, GetAddOnMetadata, sort
 local VirtualPlates = RBP.VirtualPlates
 local PlatesVisible = RBP.PlatesVisible
 local UpdateCastTextString = RBP.UpdateCastTextString
-local UpdateTarget = RBP.UpdateTarget
 local SetupRefinedPlate = RBP.SetupRefinedPlate
 local ForceLevelHide = RBP.ForceLevelHide
 local CheckLDWZoneIndoors = RBP.CheckLDWZoneIndoors
@@ -89,7 +88,7 @@ do
 		end
 		UpdatePlateFlags(Plate)
 		UpdateRefinedPlate(Plate)
-		UpdateTarget(Plate)
+		Plate.targetHandler:Show()
 		if RBP.inCombat then
 			UpdateClickboxInCombat(Plate)
 		else
@@ -438,9 +437,7 @@ end
 
 function EventHandler:PLAYER_TARGET_CHANGED()
 	RBP.hasTarget = UnitExists("target") == 1
-	for Plate in pairs(PlatesVisible) do
-		UpdateTarget(Plate)
-	end
+	RBP.TargetHandler:Show()
 end
 
 function EventHandler:PLAYER_ENTERING_WORLD()

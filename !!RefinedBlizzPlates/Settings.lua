@@ -162,6 +162,8 @@ RBP.dbp.barlessPlate_showInBG = true
 RBP.dbp.barlessPlate_showInArena = false
 RBP.dbp.barlessPlate_showInPvE = true
 RBP.dbp.barlessPlate_showInOpenWorld = true
+RBP.dbp.barlessPlate_showForPlayers = true
+RBP.dbp.barlessPlate_showForNPCs = true
 RBP.dbp.barlessPlate_excludeTarget = true
 RBP.dbp.barlessPlate_targetGlowAlpha = 1
 RBP.dbp.barlessPlate_targetGlowColor = {1, 0.75, 0}
@@ -169,7 +171,7 @@ RBP.dbp.barlessPlate_nameColorByHP = false
 RBP.dbp.barlessPlate_textFont = RBP.BlizzFontKey
 RBP.dbp.barlessPlate_textSize = 14
 RBP.dbp.barlessPlate_textOutline = "OUTLINE"
-RBP.dbp.barlessPlate_textColor = {0.6, 0.6, 0.6}
+RBP.dbp.barlessPlate_textColor = {0.1, 0, 1}
 RBP.dbp.barlessPlate_classColors = true
 RBP.dbp.barlessPlate_offset = 0
 RBP.dbp.barlessPlate_NPCnameColorByHP = false
@@ -2066,57 +2068,72 @@ RBP.MainOptionTable = {
 			end,
 			args = {
 				lineBreak1 = {order = 1, type = "description", name = ""},
-				barlessPlate_Header = {
+				barlessPlate_locationHeader = {
 					order = 2,
 					type = "header",
-					name = L["Barless Plate Enabling"],
+					name = L["Location Type"],
 				},
 				lineBreak2 = {order = 3, type = "description", name = ""},
 				lineBreak3 = {order = 4, type = "description", name = ""},
-				barlessPlate_showInPvE = {
+				barlessPlate_showInOpenWorld = {
 					order = 5,
 					type = "toggle",
-					name = L["Enable in PvE"],
-					desc = L["Replace friendly nameplates with a barless layout: name text and anchored indicators."],
+					name = L["Open World"],
 				},
-				barlessPlate_showInBG = {
+				barlessPlate_showInPvE = {
 					order = 6,
 					type = "toggle",
-					name = L["Enable in BGs"],
-					desc = L["Replace friendly nameplates with a barless layout: name text and anchored indicators."],
+					name = L["PvE Instances"],
 				},
-				barlessPlate_showInArena = {
+				barlessPlate_showInBG = {
 					order = 7,
 					type = "toggle",
-					name = L["Enable in Arenas"],
-					desc = L["Replace friendly nameplates with a barless layout: name text and anchored indicators."],
+					name = L["Battlegrounds"],
 				},
-				barlessPlate_showInOpenWorld = {
+				barlessPlate_showInArena = {
 					order = 8,
 					type = "toggle",
-					name = L["Enable in Open World"],
-					desc = L["Replace friendly nameplates with a barless layout: name text and anchored indicators."],
+					name = L["Arenas"],
 				},
 				lineBreak4 = {order = 9, type = "description", name = ""},
 				lineBreak5 = {order = 10, type = "description", name = ""},
-				barlessPlate_targetHeader = {
+				barlessPlate_unitHeader = {
 					order = 11,
 					type = "header",
-					name = L["Target Settings"],
+					name = L["Unit Type"],
 				},
 				lineBreak6 = {order = 12, type = "description", name = ""},
 				lineBreak7 = {order = 13, type = "description", name = ""},
-				barlessPlate_excludeTarget = {
+				barlessPlate_showForPlayers = {
 					order = 14,
+					type = "toggle",
+					name = L["Players"],
+				},
+				barlessPlate_showForNPCs = {
+					order = 15,
+					type = "toggle",
+					name = L["NPCs"],
+				},
+				lineBreak8 = {order = 16, type = "description", name = ""},
+				lineBreak9 = {order = 17, type = "description", name = ""},
+				barlessPlate_targetHeader = {
+					order = 18,
+					type = "header",
+					name = L["Target Settings"],
+				},
+				lineBreak10 = {order = 19, type = "description", name = ""},
+				lineBreak11 = {order = 20, type = "description", name = ""},
+				barlessPlate_excludeTarget = {
+					order = 21,
 					type = "toggle",
 					name = L["Exclude Target"],
 					desc = L["Shows the normal layout on your target's nameplate."],
 					disabled = function()
-						return not (RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld)
+						return not ((RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld) and (RBP.dbp.barlessPlate_showForPlayers or RBP.dbp.barlessPlate_showForNPCs))
 					end,
 				},
 				barlessPlate_targetGlowColor = {
-					order = 15,
+					order = 22,
 					type = "color",
 					name = L["Target Glow Color"],
 					get = function(info)
@@ -2128,11 +2145,11 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllBarlessPlates()
 					end,
 					disabled = function()
-						return not (RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld)
+						return not ((RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld) and (RBP.dbp.barlessPlate_showForPlayers or RBP.dbp.barlessPlate_showForNPCs))
 					end,
 				},
 				barlessPlate_targetGlowAlpha = {
-					order = 16,
+					order = 23,
 					type = "range",
 					name = L["Target Glow Alpha"],
 					min = 0,
@@ -2143,29 +2160,29 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllBarlessPlates()
 					end,
 					disabled = function()
-						return not (RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld)
+						return not ((RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld) and (RBP.dbp.barlessPlate_showForPlayers or RBP.dbp.barlessPlate_showForNPCs))
 					end,
 				},
-				lineBreak8 = {order = 17, type = "description", name = ""},
-				lineBreak9 = {order = 18, type = "description", name = ""},
+				lineBreak12 = {order = 24, type = "description", name = ""},
+				lineBreak13 = {order = 25, type = "description", name = ""},
 				barlessPlate_nameHeader = {
-					order = 19,
+					order = 26,
 					type = "header",
 					name = L["Player Name Text"],
 				},
-				lineBreak10 = {order = 20, type = "description", name = ""},
+				lineBreak14 = {order = 27, type = "description", name = ""},
 				barlessPlate_textFont = {
-					order = 21,
+					order = 28,
 					type = "select",
 					name = L["Text Font"],
 					values = RBP.LSM:HashTable("font"),
 					dialogControl = "LSM30_Font",
 					disabled = function()
-						return not (RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld)
+						return not RBP.dbp.barlessPlate_showForPlayers or not ((RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld) and (RBP.dbp.barlessPlate_showForPlayers or RBP.dbp.barlessPlate_showForNPCs))
 					end,
 				},
 				barlessPlate_textSize = {
-					order = 22,
+					order = 29,
 					type = "range",
 					name = L["Font Size"],
 					min = 8,
@@ -2178,11 +2195,11 @@ RBP.MainOptionTable = {
 						RBP:UpdateClickboxAttributes()
 					end,
 					disabled = function()
-						return not (RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld)
+						return not RBP.dbp.barlessPlate_showForPlayers or not ((RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld) and (RBP.dbp.barlessPlate_showForPlayers or RBP.dbp.barlessPlate_showForNPCs))
 					end,
 				},
 				barlessPlate_textOutline = {
-					order = 23,
+					order = 30,
 					type = "select", 
 					name = L["Outline"],
 					values = {
@@ -2194,11 +2211,11 @@ RBP.MainOptionTable = {
 						["THICKOUTLINE,MONOCHROME"] = L["Monochrome Thick Outline"],
 					},
 					disabled = function()
-						return not (RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld)
+						return not RBP.dbp.barlessPlate_showForPlayers or not ((RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld) and (RBP.dbp.barlessPlate_showForPlayers or RBP.dbp.barlessPlate_showForNPCs))
 					end,
 				},
 				barlessPlate_offset = {
-					order = 24,
+					order = 31,
 					type = "range",
 					name = L["Offset Y"],
 					desc = L["Adjusts the visual vertical position (does not affect the clickbox)."],
@@ -2206,11 +2223,11 @@ RBP.MainOptionTable = {
 					max = 50,
 					step = 0.1,
 					disabled = function()
-						return not (RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld)
+						return not RBP.dbp.barlessPlate_showForPlayers or not ((RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld) and (RBP.dbp.barlessPlate_showForPlayers or RBP.dbp.barlessPlate_showForNPCs))
 					end,
 				},
 				barlessPlate_textColor = {
-					order = 25,
+					order = 32,
 					type = "color",
 					name = L["Text Color"],
 					get = function(info)
@@ -2223,57 +2240,57 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllShownPlates()
 					end,
 					disabled = function()
-						return not (RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld)
+						return not RBP.dbp.barlessPlate_showForPlayers or not ((RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld) and (RBP.dbp.barlessPlate_showForPlayers or RBP.dbp.barlessPlate_showForNPCs))
 					end,
 				},
 				barlessPlate_nameColorByHP = {
-					order = 26,
+					order = 33,
 					type = "toggle",
 					name = L["Gray Out by Health %"],
 					desc = L["Progressively grays the name from right to left based on remaining health."],
 					disabled = function()
-						return not (RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld)
+						return not RBP.dbp.barlessPlate_showForPlayers or not ((RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld) and (RBP.dbp.barlessPlate_showForPlayers or RBP.dbp.barlessPlate_showForNPCs))
 					end,
 				},
 				barlessPlate_classColors = {
-					order = 27,
+					order = 34,
 					type = "toggle",
 					name = L["Use class color"],
 					disabled = function()
-						return not (RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld)
+						return not RBP.dbp.barlessPlate_showForPlayers or not ((RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld) and (RBP.dbp.barlessPlate_showForPlayers or RBP.dbp.barlessPlate_showForNPCs))
 					end,
 				},
-				lineBreak11 = {order = 28, type = "description", name = ""},
-				lineBreak12 = {order = 29, type = "description", name = ""},
+				lineBreak15 = {order = 35, type = "description", name = ""},
+				lineBreak16 = {order = 36, type = "description", name = ""},
 				barlessPlate_NPCnameHeader = {
-					order = 30,
+					order = 37,
 					type = "header",
 					name = L["NPC Name Text"],
 				},
-				lineBreak13 = {order = 31, type = "description", name = ""},
+				lineBreak17 = {order = 38, type = "description", name = ""},
 				barlessPlate_NPCtextFont = {
-					order = 32,
+					order = 39,
 					type = "select",
 					name = L["Text Font"],
 					values = RBP.LSM:HashTable("font"),
 					dialogControl = "LSM30_Font",
 					disabled = function()
-						return not (RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld)
+						return not RBP.dbp.barlessPlate_showForNPCs or not ((RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld) and (RBP.dbp.barlessPlate_showForPlayers or RBP.dbp.barlessPlate_showForNPCs))
 					end,
 				},
 				barlessPlate_NPCtextSize = {
-					order = 33,
+					order = 40,
 					type = "range",
 					name = L["Font Size"],
 					min = 8,
 					max = 20,
 					step = 0.1,
 					disabled = function()
-						return not (RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld)
+						return not RBP.dbp.barlessPlate_showForNPCs or not ((RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld) and (RBP.dbp.barlessPlate_showForPlayers or RBP.dbp.barlessPlate_showForNPCs))
 					end,
 				},
 				barlessPlate_NPCtextOutline = {
-					order = 34,
+					order = 41,
 					type = "select", 
 					name = L["Outline"],
 					values = {
@@ -2285,11 +2302,11 @@ RBP.MainOptionTable = {
 						["THICKOUTLINE,MONOCHROME"] = L["Monochrome Thick Outline"],
 					},
 					disabled = function()
-						return not (RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld)
+						return not RBP.dbp.barlessPlate_showForNPCs or not ((RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld) and (RBP.dbp.barlessPlate_showForPlayers or RBP.dbp.barlessPlate_showForNPCs))
 					end,
 				},
 				barlessPlate_NPCoffset = {
-					order = 35,
+					order = 42,
 					type = "range",
 					name = L["Offset Y"],
 					desc = L["Adjusts the visual vertical position (does not affect the clickbox)."],
@@ -2297,11 +2314,11 @@ RBP.MainOptionTable = {
 					max = 50,
 					step = 0.1,
 					disabled = function()
-						return not (RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld)
+						return not RBP.dbp.barlessPlate_showForNPCs or not ((RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld) and (RBP.dbp.barlessPlate_showForPlayers or RBP.dbp.barlessPlate_showForNPCs))
 					end,
 				},
 				barlessPlate_NPCtextColor = {
-					order = 36,
+					order = 43,
 					type = "color",
 					name = L["Text Color"],
 					get = function(info)
@@ -2314,45 +2331,45 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllShownPlates()
 					end,
 					disabled = function()
-						return not (RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld)
+						return not RBP.dbp.barlessPlate_showForNPCs or not ((RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld) and (RBP.dbp.barlessPlate_showForPlayers or RBP.dbp.barlessPlate_showForNPCs))
 					end,
 				},
 				barlessPlate_NPCnameColorByHP = {
-					order = 37,
+					order = 44,
 					type = "toggle",
 					name = L["Gray Out by Health %"],
 					desc = L["Progressively grays the name from right to left based on remaining health."],
 					disabled = function()
-						return not (RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld)
+						return not RBP.dbp.barlessPlate_showForNPCs or not ((RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld) and (RBP.dbp.barlessPlate_showForPlayers or RBP.dbp.barlessPlate_showForNPCs))
 					end,
 				},
-				lineBreak14 = {order = 38, type = "description", name = ""},
-				lineBreak15 = {order = 39, type = "description", name = ""},
+				lineBreak18 = {order = 45, type = "description", name = ""},
+				lineBreak19 = {order = 46, type = "description", name = ""},
 				barlessPlate_healthHeader = {
-					order = 40,
+					order = 47,
 					type = "header",
 					name = L["Health Text"],
 				},				
-				lineBreak16 = {order = 41, type = "description", name = ""},
+				lineBreak20 = {order = 48, type = "description", name = ""},
 				barlessPlate_showHealthText = {
-					order = 42,
+					order = 49,
 					type = "toggle",
 					name = L["Show in Players"],
 					disabled = function()
-						return not (RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld)
+						return not RBP.dbp.barlessPlate_showForPlayers or not ((RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld) and (RBP.dbp.barlessPlate_showForPlayers or RBP.dbp.barlessPlate_showForNPCs))
 					end,
 				},
 				barlessPlate_showNPCHealthText = {
-					order = 43,
+					order = 50,
 					type = "toggle",
 					name = L["Show in NPCs"],
 					disabled = function()
-						return not (RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld)
+						return not RBP.dbp.barlessPlate_showForNPCs or not ((RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld) and (RBP.dbp.barlessPlate_showForPlayers or RBP.dbp.barlessPlate_showForNPCs))
 					end,
 				},
-				lineBreak17 = {order = 44, type = "description", name = ""},
+				lineBreak21 = {order = 51, type = "description", name = ""},
 				barlessPlate_healthTextAnchor = {
-					order = 45,
+					order = 52,
 					type = "select", 
 					name = L["Anchor"],
 					values = {
@@ -2369,62 +2386,62 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllShownPlates()
 					end,
 					disabled = function()
-						return not (RBP.dbp.barlessPlate_showHealthText or RBP.dbp.barlessPlate_showNPCHealthText) or not (RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld)
+						return not (RBP.dbp.barlessPlate_showHealthText or RBP.dbp.barlessPlate_showNPCHealthText) or not ((RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld) and (RBP.dbp.barlessPlate_showForPlayers or RBP.dbp.barlessPlate_showForNPCs))
 					end,
 				},
 				barlessPlate_healthTextOffsetX = {
-					order = 46,
+					order = 53,
 					type = "range",
 					name = L["Offset X"],
 					min = -50,
 					max = 50,
 					step = 0.1,
 					disabled = function()
-						return not (RBP.dbp.barlessPlate_showHealthText or RBP.dbp.barlessPlate_showNPCHealthText) or not (RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld)
+						return not (RBP.dbp.barlessPlate_showHealthText or RBP.dbp.barlessPlate_showNPCHealthText) or not ((RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld) and (RBP.dbp.barlessPlate_showForPlayers or RBP.dbp.barlessPlate_showForNPCs))
 					end,
 				},
 				barlessPlate_healthTextOffsetY = {
-					order = 47,
+					order = 54,
 					type = "range",
 					name = L["Offset Y"],
 					min = -50,
 					max = 50,
 					step = 0.1,
 					disabled = function()
-						return not (RBP.dbp.barlessPlate_showHealthText or RBP.dbp.barlessPlate_showNPCHealthText) or not (RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld)
+						return not (RBP.dbp.barlessPlate_showHealthText or RBP.dbp.barlessPlate_showNPCHealthText) or not ((RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld) and (RBP.dbp.barlessPlate_showForPlayers or RBP.dbp.barlessPlate_showForNPCs))
 					end,
 				},
 				barlessPlate_healthTextSize = {
-					order = 48,
+					order = 55,
 					type = "range",
 					name = L["Font Size"],
 					min = 8,
 					max = 20,
 					step = 0.1,
 					disabled = function()
-						return not (RBP.dbp.barlessPlate_showHealthText or RBP.dbp.barlessPlate_showNPCHealthText) or not (RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld)
+						return not (RBP.dbp.barlessPlate_showHealthText or RBP.dbp.barlessPlate_showNPCHealthText) or not ((RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld) and (RBP.dbp.barlessPlate_showForPlayers or RBP.dbp.barlessPlate_showForNPCs))
 					end,
 				},
-				lineBreak18 = {order = 49, type = "description", name = ""},
-				lineBreak19 = {order = 50, type = "description", name = ""},
+				lineBreak22 = {order = 56, type = "description", name = ""},
+				lineBreak23 = {order = 57, type = "description", name = ""},
 				barlessPlate_raidIconHeader = {
-					order = 51,
+					order = 58,
 					type = "header",
 					name = L["Raid Target Icon"],
 				},				
-				lineBreak20 = {order = 52, type = "description", name = ""},
+				lineBreak24 = {order = 59, type = "description", name = ""},
 				barlessPlate_showRaidTarget = {
-					order = 53,
+					order = 60,
 					type = "toggle",
 					name = L["Show Raid Target Icon"],
 					width = "full",
 					disabled = function()
-						return not (RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld)
+						return not ((RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld) and (RBP.dbp.barlessPlate_showForPlayers or RBP.dbp.barlessPlate_showForNPCs))
 					end,
 				},
-				lineBreak21 = {order = 54, type = "description", name = ""},
+				lineBreak25 = {order = 61, type = "description", name = ""},
 				barlessPlate_raidTargetIconAnchor = {
-					order = 55,
+					order = 62,
 					type = "select", 
 					name = L["Anchor"],
 					values = {
@@ -2441,61 +2458,61 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllShownPlates()
 					end,
 					disabled = function() 
-						return not RBP.dbp.barlessPlate_showRaidTarget or not (RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld)
+						return not RBP.dbp.barlessPlate_showRaidTarget or not ((RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld) and (RBP.dbp.barlessPlate_showForPlayers or RBP.dbp.barlessPlate_showForNPCs))
 					end,
 				},
 				barlessPlate_raidTargetIconOffsetX = {
-					order = 56,
+					order = 63,
 					type = "range",
 					name = L["Offset X"],
 					min = -50,
 					max = 50,
 					step = 0.1,
 					disabled = function() 
-						return not RBP.dbp.barlessPlate_showRaidTarget or not (RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld)
+						return not RBP.dbp.barlessPlate_showRaidTarget or not ((RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld) and (RBP.dbp.barlessPlate_showForPlayers or RBP.dbp.barlessPlate_showForNPCs))
 					end,
 				},
 				barlessPlate_raidTargetIconOffsetY = {
-					order = 57,
+					order = 64,
 					type = "range",
 					name = L["Offset Y"],
 					min = -50,
 					max = 50,
 					step = 0.1,
 					disabled = function() 
-						return not RBP.dbp.barlessPlate_showRaidTarget or not (RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld)
+						return not RBP.dbp.barlessPlate_showRaidTarget or not ((RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld) and (RBP.dbp.barlessPlate_showForPlayers or RBP.dbp.barlessPlate_showForNPCs))
 					end,
 				},
 				barlessPlate_raidTargetIconSize = {
-					order = 58,
+					order = 65,
 					type = "range",
 					name = L["Icon Size"],
 					min = 20,
 					max = 50,
 					step = 0.1,
 					disabled = function() 
-						return not RBP.dbp.barlessPlate_showRaidTarget or not (RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld)
+						return not RBP.dbp.barlessPlate_showRaidTarget or not ((RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld) and (RBP.dbp.barlessPlate_showForPlayers or RBP.dbp.barlessPlate_showForNPCs))
 					end,
 				},
-				lineBreak22 = {order = 59, type = "description", name = ""},
-				lineBreak23 = {order = 60, type = "description", name = ""},
+				lineBreak26 = {order = 66, type = "description", name = ""},
+				lineBreak27 = {order = 67, type = "description", name = ""},
 				barlessPlate_classIconHeader = {
-					order = 61,
+					order = 68,
 					type = "header",
 					name = L["Class Icon"],
 				},				
-				lineBreak24 = {order = 62, type = "description", name = ""},
+				lineBreak28 = {order = 69, type = "description", name = ""},
 				barlessPlate_showClassIcon = {
-					order = 63,
+					order = 70,
 					type = "toggle",
 					name = L["Show Class Icon"],
 					disabled = function() 
-						return not (RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld)
+						return not RBP.dbp.barlessPlate_showForPlayers or not ((RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld) and (RBP.dbp.barlessPlate_showForPlayers or RBP.dbp.barlessPlate_showForNPCs))
 					end,
 				},
-				lineBreak25 = {order = 64, type = "description", name = ""},
+				lineBreak29 = {order = 71, type = "description", name = ""},
 				barlessPlate_classIconAnchor = {
-					order = 65,
+					order = 72,
 					type = "select", 
 					name = L["Anchor"],
 					values = {
@@ -2512,69 +2529,69 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllShownPlates()
 					end,
 					disabled = function() 
-						return not RBP.dbp.barlessPlate_showClassIcon or not (RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld)
+						return not RBP.dbp.barlessPlate_showClassIcon or not RBP.dbp.barlessPlate_showForPlayers or not ((RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld) and (RBP.dbp.barlessPlate_showForPlayers or RBP.dbp.barlessPlate_showForNPCs))
 					end,
 				},
 				barlessPlate_classIconOffsetX = {
-					order = 66,
+					order = 73,
 					type = "range",
 					name = L["Offset X"],
 					min = -50,
 					max = 50,
 					step = 0.1,
 					disabled = function() 
-						return not RBP.dbp.barlessPlate_showClassIcon or not (RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld)
+						return not RBP.dbp.barlessPlate_showClassIcon or not RBP.dbp.barlessPlate_showForPlayers or not ((RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld) and (RBP.dbp.barlessPlate_showForPlayers or RBP.dbp.barlessPlate_showForNPCs))
 					end,
 				},
 				barlessPlate_classIconOffsetY = {
-					order = 67,
+					order = 74,
 					type = "range",
 					name = L["Offset Y"],
 					min = -50,
 					max = 50,
 					step = 0.1,
 					disabled = function() 
-						return not RBP.dbp.barlessPlate_showClassIcon or not (RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld)
+						return not RBP.dbp.barlessPlate_showClassIcon or not RBP.dbp.barlessPlate_showForPlayers or not ((RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld) and (RBP.dbp.barlessPlate_showForPlayers or RBP.dbp.barlessPlate_showForNPCs))
 					end,
 				},
 				barlessPlate_classIconSize = {
-					order = 68,
+					order = 75,
 					type = "range",
 					name = L["Icon Size"],
 					min = 20,
 					max = 50,
 					step = 0.1,
 					disabled = function() 
-						return not RBP.dbp.barlessPlate_showClassIcon or not (RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld)
+						return not RBP.dbp.barlessPlate_showClassIcon or not RBP.dbp.barlessPlate_showForPlayers or not ((RBP.dbp.barlessPlate_showInPvE or RBP.dbp.barlessPlate_showInBG or RBP.dbp.barlessPlate_showInArena or RBP.dbp.barlessPlate_showInOpenWorld) and (RBP.dbp.barlessPlate_showForPlayers or RBP.dbp.barlessPlate_showForNPCs))
 					end,
 				},
-				lineBreak26 = {order = 69, type = "description", name = ""},
-				lineBreak27 = {order = 70, type = "description", name = ""},
+				lineBreak30 = {order = 76, type = "description", name = ""},
+				lineBreak31 = {order = 77, type = "description", name = ""},
 				barlessPlate_BGHiconHeader = {
-					order = 71,
+					order = 78,
 					type = "header",
 					name = L["BG Healer Icon"],
 				},				
-				lineBreak28 = {order = 72, type = "description", name = ""},
-				lineBreak29 = {order = 73, type = "description", name = ""},
+				lineBreak32 = {order = 79, type = "description", name = ""},
+				lineBreak33 = {order = 80, type = "description", name = ""},
 				barlessPlate_BGHiconDesc = {
-					order = 74,
+					order = 81,
 					type = "description",
 					fontSize = "medium",
 					name = function()
 						if not IsAddOnLoaded("BattleGroundHealers") then
 							return "|cff808080" .. L["This feature is available only when BattleGroundHealers is loaded."] .. "|r"
-						elseif not RBP.dbp.barlessPlate_showInBG then
+						elseif not RBP.dbp.barlessPlate_showInBG or not RBP.dbp.barlessPlate_showForPlayers then
 							return "|cff808080" .. L["These settings will replace some of BattleGroundHealers’ icon configuration for Barless Plates."] .. "|r"
 						else
 							return L["These settings will replace some of BattleGroundHealers’ icon configuration for Barless Plates."]
 						end
 					end,
 				},
-				lineBreak30 = {order = 75, type = "description", name = ""},
-				lineBreak31 = {order = 76, type = "description", name = ""},
+				lineBreak34 = {order = 82, type = "description", name = ""},
+				lineBreak35 = {order = 83, type = "description", name = ""},
 				barlessPlate_BGHiconAnchor = {
-					order = 77,
+					order = 84,
 					type = "select", 
 					name = L["Anchor"],
 					values = {
@@ -2591,44 +2608,44 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllShownPlates()
 					end,
 					disabled = function() 
-						return not (RBP.dbp.barlessPlate_showInBG and IsAddOnLoaded("BattleGroundHealers"))
+						return not (RBP.dbp.barlessPlate_showInBG and RBP.dbp.barlessPlate_showForPlayers and IsAddOnLoaded("BattleGroundHealers"))
 					end,
 				},
 				barlessPlate_BGHiconOffsetX = {
-					order = 78,
+					order = 85,
 					type = "range",
 					name = L["Offset X"],
 					min = -50,
 					max = 50,
 					step = 0.1,
 					disabled = function() 
-						return not (RBP.dbp.barlessPlate_showInBG and IsAddOnLoaded("BattleGroundHealers"))
+						return not (RBP.dbp.barlessPlate_showInBG and RBP.dbp.barlessPlate_showForPlayers and IsAddOnLoaded("BattleGroundHealers"))
 					end,
 				},
 				barlessPlate_BGHiconOffsetY = {
-					order = 79,
+					order = 86,
 					type = "range",
 					name = L["Offset Y"],
 					min = -50,
 					max = 50,
 					step = 0.1,
 					disabled = function() 
-						return not (RBP.dbp.barlessPlate_showInBG and IsAddOnLoaded("BattleGroundHealers"))
+						return not (RBP.dbp.barlessPlate_showInBG and RBP.dbp.barlessPlate_showForPlayers and IsAddOnLoaded("BattleGroundHealers"))
 					end,
 				},
 				barlessPlate_BGHiconSize = {
-					order = 80,
+					order = 87,
 					type = "range",
 					name = L["Icon Size"],
 					min = 20,
 					max = 60,
 					step = 0.1,
 					disabled = function() 
-						return not (RBP.dbp.barlessPlate_showInBG and IsAddOnLoaded("BattleGroundHealers"))
+						return not (RBP.dbp.barlessPlate_showInBG and RBP.dbp.barlessPlate_showForPlayers and IsAddOnLoaded("BattleGroundHealers"))
 					end,
 				},
-				lineBreak32 = {order = 81, type = "description", name = ""},
-				lineBreak33 = {order = 82, type = "description", name = ""},
+				lineBreak36 = {order = 88, type = "description", name = ""},
+				lineBreak37 = {order = 89, type = "description", name = ""},
 			},
 		},
 		Totems = {
