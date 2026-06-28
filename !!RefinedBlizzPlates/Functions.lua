@@ -1836,6 +1836,7 @@ local function ResetRefinedPlate(Plate)
 		Plate.barlessPlate_healthText:Hide()
 		Plate.barlessPlate_raidTargetIcon:Hide()
 		Plate.barlessPlate_classIcon:Hide()
+		Plate.barlessPlate_classIcon:SetTexture(nil)
 	end
 	Plate.isBarlessPlate = nil
 	Plate.barlessPlateIsShown = nil
