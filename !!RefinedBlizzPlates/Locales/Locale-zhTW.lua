@@ -308,14 +308,15 @@ L["Class icons will only be shown inside PvE or PvP instances."] = "職業圖標
 
 -- Barless Plate --
 L["Barless Plate"] = "無血條模式"
-L["Location Type"] = "地點類型"
+L["Enable Filters"] = "啟用篩選"
 L["Open World"] = "開放世界"
 L["PvE Instances"] = "PvE副本"
 L["Battlegrounds"] = "戰場"
 L["Arenas"] = "競技場"
-L["Unit Type"] = "單位類型"
+L["Disabled"] = "停用"
 L["Players"] = "玩家"
 L["NPCs"] = "NPCs"
+L["Players and NPCs"] = "玩家與NPC"
 L["Target Settings"] = "目標設定"
 L["Exclude Target"] = "排除目標"
 L["Shows the normal layout on your target's nameplate."] = "在你的目標的名條上顯示一般版面配置。"

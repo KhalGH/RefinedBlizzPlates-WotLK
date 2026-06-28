@@ -306,14 +306,15 @@ L["Class icons will only be shown inside PvE or PvP instances."] = "Íconos de c
 
 -- Barless Plate --
 L["Barless Plate"] = "Placas sin Barra"
-L["Location Type"] = "Tipo de ubicación"
+L["Enable Filters"] = "Filtros de Activación"
 L["Open World"] = "Mundo abierto"
 L["PvE Instances"] = "Instancias PvE"
 L["Battlegrounds"] = "Campos de batalla"
 L["Arenas"] = "Arenas"
-L["Unit Type"] = "Tipo de unidad"
+L["Disabled"] = "Desactivado"
 L["Players"] = "Jugadores"
 L["NPCs"] = "PNJs"
+L["Players and NPCs"] = "Jugadores y PNJs"
 L["Target Settings"] = "Configuraciones de Objetivo"
 L["Exclude Target"] = "Excluir Objetivo"
 L["Shows the normal layout on your target's nameplate."] = "Muestra el diseño normal en el nameplate de tu objetivo."

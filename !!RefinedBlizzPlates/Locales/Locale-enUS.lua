@@ -306,14 +306,15 @@ L["Class icons will only be shown inside PvE or PvP instances."] = true
 
 -- Barless Plate --
 L["Barless Plate"] = true
-L["Location Type"] = true
+L["Enable Filters"] = true
 L["Open World"] = true
 L["PvE Instances"] = true
 L["Battlegrounds"] = true
 L["Arenas"] = true
-L["Unit Type"] = true
+L["Disabled"] = true
 L["Players"] = true
 L["NPCs"] = true
+L["Players and NPCs"] = true
 L["Target Settings"] = true
 L["Exclude Target"] = true
 L["Shows the normal layout on your target's nameplate."] = true

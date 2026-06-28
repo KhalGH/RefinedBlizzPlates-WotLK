@@ -1004,9 +1004,17 @@ local function SetupBarlessPlate(Plate)
 end
 
 local function CheckBarlessPlate(Plate)
-	local locationEnabled = (RBP.inBG and RBP.dbp.barlessPlate_showInBG) or	(RBP.inArena and RBP.dbp.barlessPlate_showInArena) or (RBP.inPvEInstance and RBP.dbp.barlessPlate_showInPvE) or (RBP.inOpenWorld and RBP.dbp.barlessPlate_showInOpenWorld)
-	local unitEnabled =	(Plate.classKey and RBP.dbp.barlessPlate_showForPlayers) or	(not Plate.classKey and RBP.dbp.barlessPlate_showForNPCs)
-	if Plate.isFriendly and locationEnabled and unitEnabled then
+	local filter = 0
+	if RBP.inOpenWorld then
+		filter = RBP.dbp.barlessPlate_filterOpenWorld
+	elseif RBP.inPvEInstance then
+		filter = RBP.dbp.barlessPlate_filterPvE
+	elseif RBP.inBG then
+		filter = RBP.dbp.barlessPlate_filterBG
+	elseif RBP.inArena then
+		filter = RBP.dbp.barlessPlate_filterArena
+	end
+	if Plate.isFriendly and (filter == 3 or filter == (Plate.classKey and 2 or 1)) then
 		if not Plate.barlessPlate then
 			SetupBarlessPlate(Plate)
 		end

@@ -308,14 +308,15 @@ L["Class icons will only be shown inside PvE or PvP instances."] = "직업 아�
 
 -- Barless Plate --
 L["Barless Plate"] = "바 없는 이름표"
-L["Location Type"] = "위치 유형"
+L["Enable Filters"] = "필터 활성화"
 L["Open World"] = "오픈 월드"
 L["PvE Instances"] = "PvE 인스턴스"
 L["Battlegrounds"] = "전장"
 L["Arenas"] = "투기장"
-L["Unit Type"] = "유닛 유형"
+L["Disabled"] = "비활성화"
 L["Players"] = "플레이어"
 L["NPCs"] = "NPCs"
+L["Players and NPCs"] = "플레이어 및 NPCs"
 L["Target Settings"] = "대상 설정"
 L["Exclude Target"] = "대상 제외"
 L["Shows the normal layout on your target's nameplate."] = "현재 대상의 이름표에 기본 레이아웃을 표시합니다."
