@@ -2153,7 +2153,7 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllBarlessPlates()
 					end,
 					disabled = function()
-						return IsBarlessPlateDisabled()
+						return RBP.dbp.barlessPlate_excludeTarget or IsBarlessPlateDisabled()
 					end,
 				},
 				barlessPlate_targetGlowAlpha = {
@@ -2168,7 +2168,7 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllBarlessPlates()
 					end,
 					disabled = function()
-						return IsBarlessPlateDisabled()
+						return RBP.dbp.barlessPlate_excludeTarget or IsBarlessPlateDisabled()
 					end,
 				},
 				lineBreak8 = {order = 17, type = "description", name = ""},

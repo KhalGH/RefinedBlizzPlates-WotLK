@@ -1073,8 +1073,8 @@ local function BarlessPlateHandler(Plate)
 			Plate.barlessPlate_raidTargetIcon:SetTexCoord(Virtual.raidTargetIcon:GetTexCoord())
 			Plate.barlessPlate_raidTargetIcon:Show()
 		end
-		if Plate.classKey and RBP.dbp.barlessPlate_showClassIcon then
-			Plate.barlessPlate_classIcon:SetTexture(ASSETS .. "Classes\\" .. (ClassByFriendName[Plate.nameString] or ""))
+		if Plate.classKey and RBP.dbp.barlessPlate_showClassIcon and ClassByFriendName[Plate.nameString] then
+			Plate.barlessPlate_classIcon:SetTexture(ASSETS .. "Classes\\" .. ClassByFriendName[Plate.nameString])
 			Plate.barlessPlate_classIcon:Show()
 		end
 		UpdateBarlessPlate(Plate)
