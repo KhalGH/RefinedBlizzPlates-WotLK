@@ -178,7 +178,7 @@ local BarlessPlateFilterValues = {
 local function IsBarlessPlateDisabled()
 	return RBP.dbp.barlessPlate_filterPvE == 0 and RBP.dbp.barlessPlate_filterBG == 0 and RBP.dbp.barlessPlate_filterArena == 0 and RBP.dbp.barlessPlate_filterOpenWorld == 0
 end
-RBP.dbp.barlessPlate_excludeTarget = true
+RBP.dbp.barlessPlate_excludeTarget = false
 RBP.dbp.barlessPlate_targetGlowAlpha = 1
 RBP.dbp.barlessPlate_targetGlowColor = {1, 0.75, 0}
 RBP.dbp.barlessPlate_nameColorByHP = false
