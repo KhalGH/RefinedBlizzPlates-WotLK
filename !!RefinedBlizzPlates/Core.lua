@@ -384,7 +384,7 @@ function RBP:Initialize()
 	self.db.RegisterCallback(self, "OnProfileCopied", "OnProfileChanged")
 	self.db.RegisterCallback(self, "OnProfileReset", "OnProfileChanged")
 	self.db.RegisterCallback(self, "OnProfileDeleted", "OnProfileChanged")
-
+	
 	RBP.dbp = self.db.profile -- Replace default profile with AceDB profile
 	self.globalOffsetX = RBP.dbp.globalOffsetX
 	self.globalOffsetY = RBP.dbp.globalOffsetY
@@ -401,6 +401,12 @@ function RBP:Initialize()
 	dialog:AddToBlizOptions("RefinedBlizzPlates_Profiles", "Profiles", "RefinedBlizzPlates")
 	config:RegisterOptionsTable("RefinedBlizzPlates_About", self.AboutTable)
 	dialog:AddToBlizOptions("RefinedBlizzPlates_About", "About", "RefinedBlizzPlates")
+
+    SLASH_RBP1 = "/rbp"
+    SlashCmdList["RBP"] = function()
+		InterfaceOptionsFrame_OpenToCategory("RefinedBlizzPlates")
+		InterfaceOptionsFrame_OpenToCategory("RefinedBlizzPlates")
+    end	
 end
 
 --- Initializes settings once loaded.

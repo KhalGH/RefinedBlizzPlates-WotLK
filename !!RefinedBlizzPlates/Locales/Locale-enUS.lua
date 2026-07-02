@@ -339,9 +339,12 @@ L["These settings will replace some of BattleGroundHealers’ icon configuration
 -- Totems --
 L["Totems"] = true
 L["Totem Icon"] = true
-L["Adjusts the vertical position of all Totem and Blacklisted icons (does not affect plate clickbox)."] = true
+L["Adjusts the icon size of all Totem and Blacklisted units."] = true
+L["Adjusts the icon's vertical position for all Totem and Blacklisted units (does not affect plate clickbox)."] = true
 L["Show Reaction Border"] = true
-L["Displays a colored border based on reaction."] = true
+L["Displays a reaction-colored border around the icons of all Totem and Blacklisted units."] = true
+L["Hide Friendly"] = true
+L["Hides icons of friendly Totems and friendly Blacklisted units."] = true
 L["Enable TotemPlate"] = true
 L["Replaces the nameplate with a totem icon."] = true
 L["Hide Totem"] = true

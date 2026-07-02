@@ -218,6 +218,7 @@ RBP.dbp.barlessPlate_BGHiconOffsetY = 0
 RBP.dbp.totemSize = 24 -- Size of the totem (or NPC) icon replacing the nameplate
 RBP.dbp.totemOffset = 0 -- Vertical offset for totem icon
 RBP.dbp.showTotemBorder = true -- Colors the totem border green (friendly) or red (enemy)
+RBP.dbp.hideFriendlyTotem = false
 RBP.dbp.TotemsCheck = { -- 1 = Icon, 0 = Hiden, false = nameplate
 	["Cleansing Totem"] = 1,
 	["Earth Elemental Totem"] = 1,
@@ -2759,7 +2760,7 @@ RBP.MainOptionTable = {
 					order = 5,
 					type = "range",
 					name = L["Icon Size"],
-					desc = L["Controls the size of all Totem and Blacklisted icons."],
+					desc = L["Adjusts the icon size of all Totem and Blacklisted units."],
 					min = 15,
 					max = 35,
 					step = 0.1,
@@ -2774,7 +2775,7 @@ RBP.MainOptionTable = {
 					order = 6,
 					type = "range",
 					name = L["Offset Y"],
-					desc = L["Adjusts the vertical position of all Totem and Blacklisted icons (does not affect plate clickbox)."],
+					desc = L["Adjusts the icon's vertical position for all Totem and Blacklisted units (does not affect plate clickbox)."],
 					min = -50,
 					max = 50,
 					step = 0.1,
@@ -2788,15 +2789,25 @@ RBP.MainOptionTable = {
 					order = 7,
 					type = "toggle",
 					name = L["Show Reaction Border"],
-					desc = L["Displays a colored border based on reaction."],
+					desc = L["Displays a reaction-colored border around the icons of all Totem and Blacklisted units."],
 					set = function(info, val)
 						RBP.dbp[info[#info]] = val
 						RBP:UpdateAllShownPlates()
 					end,
 				},
-				lineBreak4 = {order = 8, type = "description", name = ""},
-				lineBreak5 = {order = 9, type = "description", name = ""},
-				lineBreak6 = {order = 10, type = "description", name = ""},	
+				hideFriendlyTotem = {
+					order = 8,
+					type = "toggle",
+					name = L["Hide Friendly"],
+					desc = L["Hides icons of friendly Totems and friendly Blacklisted units."],
+					set = function(info, val)
+						RBP.dbp[info[#info]] = val
+						RBP:UpdateAllShownPlates()
+					end,
+				},
+				lineBreak4 = {order = 9, type = "description", name = ""},
+				lineBreak5 = {order = 10, type = "description", name = ""},
+				lineBreak6 = {order = 11, type = "description", name = ""},	
 			}
 		},
 		BlackList = {
@@ -2953,7 +2964,7 @@ for i, element in ipairs(TotemOrder) do
 		RBP.MainOptionTable.args.Totems.args[name] = {
 			type = "group",
 			name = iconString .. TotemTextColor[element] .. totemName .. "|r",
-			order = 10*i + j,
+			order = 10*i + j + 1,
 			args = {
 				header = {
 					type = "header",

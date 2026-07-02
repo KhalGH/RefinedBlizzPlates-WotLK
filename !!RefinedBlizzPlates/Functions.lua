@@ -1669,7 +1669,7 @@ local function UpdateRefinedPlate(Plate)
 		if totemCheck or blacklisted then
 			------------------------ TotemPlates Handling ------------------------
 			local iconTexture = (totemCheck == 1 and ASSETS .. "Icons\\" .. totemKey) or (blacklisted ~= "" and blacklisted)
-			if iconTexture and iconTexture ~= "" then
+			if iconTexture and iconTexture ~= "" and not (Plate.isFriendly and RBP.dbp.hideFriendlyTotem) then
 				if not Plate.totemPlate then
 					SetupTotemPlate(Plate) -- Setup TotemPlate on the fly
 				end
