@@ -52,13 +52,6 @@ local function SetupHealthBorder(Virtual)
 	UpdateHealthBorder(Virtual)
 end
 
-local function SetupBarBackground(Bar)
-	if Bar.background then return end
-	Bar.background = Bar:CreateTexture(nil, "BACKGROUND")
-	Bar.background:SetTexture(ASSETS .. "PlateRegions\\NamePlate-Background")
-	Bar.background:SetAllPoints()
-end
-
 local function UpdateNameText(Virtual)
 	local nameText = Virtual.newNameText
 	if not nameText then return end
@@ -326,6 +319,36 @@ local function SetupHealthText(Virtual)
 	end
 end
 
+local function SetupHealthBarTex(Virtual)
+	if Virtual.healthBarTex then return end
+	Virtual.healthBarTex = Virtual.healthBar:CreateTexture(nil, "BORDER")
+	Virtual.healthBarTex:SetAllPoints(Virtual.ogHealthBarTex)
+end
+
+local function UpdateHealthBarBg(Virtual)
+	Virtual.healthBarBg:SetTexture(RBP.LSM:Fetch("statusbar", RBP.dbp.healthBar_bgTex))
+	Virtual.healthBarBg:SetVertexColor(unpack(RBP.dbp.healthBar_bgColor))
+	Virtual.healthBarBg:SetAlpha(RBP.dbp.healthBar_bgAlpha)
+end
+
+local function SetupHealthBarBg(Virtual)
+	if Virtual.healthBarBg then return end
+	Virtual.healthBarBg = Virtual.healthBar:CreateTexture(nil, "BACKGROUND")
+	Virtual.healthBarBg:SetAllPoints()
+	UpdateHealthBarBg(Virtual)
+end
+
+local function UpdateHealthBarTex(Plate)
+	local Virtual = Plate.VirtualPlate
+	if Plate.classKey == "FRIENDLY_PLAYER" then
+		Virtual.healthBarTex:SetTexture(RBP.LSM:Fetch("statusbar", RBP.dbp.healthBar_friendlyPlayerTex))
+	elseif Plate.classKey then
+		Virtual.healthBarTex:SetTexture(RBP.LSM:Fetch("statusbar", RBP.dbp.healthBar_hostilePlayerTex))
+	else
+		Virtual.healthBarTex:SetTexture(RBP.LSM:Fetch("statusbar", RBP.dbp.healthBar_npcTex))
+	end
+end
+
 local function UpdateTargetGlow(Virtual)
 	if not Virtual.targetGlow then return end
 	local targetGlow = Virtual.targetGlow
@@ -399,6 +422,19 @@ local function SetupCastBarTex(Virtual)
 	castBarTex:SetAllPoints(Virtual.ogCastBarTex)
 	castBarTex:SetTexture(RBP.LSM:Fetch("statusbar", RBP.dbp.castBar_Tex))
 	castBarTex:SetVertexColor(unpack(RBP.dbp.castBar_color))
+end
+
+local function UpdateCastBarBg(Virtual)
+	Virtual.castBarBg:SetTexture(RBP.LSM:Fetch("statusbar", RBP.dbp.castBar_bgTex))
+	Virtual.castBarBg:SetVertexColor(unpack(RBP.dbp.castBar_bgColor))
+	Virtual.castBarBg:SetAlpha(RBP.dbp.castBar_bgAlpha)
+end
+
+local function SetupCastBarBg(Virtual)
+	if Virtual.castBarBg then return end
+	Virtual.castBarBg = Virtual.castBar:CreateTexture(nil, "BACKGROUND")
+	Virtual.castBarBg:SetAllPoints()
+	UpdateCastBarBg(Virtual)
 end
 
 local function SetupCastText(Virtual)
@@ -1187,23 +1223,6 @@ local function SetupClickboxTexture(Plate)
 	end
 end
 
-local function SetupHealthBarTex(Virtual)
-	if Virtual.healthBarTex then return end
-	Virtual.healthBarTex = Virtual.healthBar:CreateTexture(nil, "BORDER")
-	Virtual.healthBarTex:SetAllPoints(Virtual.ogHealthBarTex)
-end
-
-local function UpdateHealthBarTex(Plate)
-	local Virtual = Plate.VirtualPlate
-	if Plate.classKey == "FRIENDLY_PLAYER" then
-		Virtual.healthBarTex:SetTexture(RBP.LSM:Fetch("statusbar", RBP.dbp.healthBar_friendlyPlayerTex))
-	elseif Plate.classKey then
-		Virtual.healthBarTex:SetTexture(RBP.LSM:Fetch("statusbar", RBP.dbp.healthBar_hostilePlayerTex))
-	else
-		Virtual.healthBarTex:SetTexture(RBP.LSM:Fetch("statusbar", RBP.dbp.healthBar_npcTex))
-	end
-end
-
 local function SetupRefinedPlate(Virtual)
 	local Plate = Virtual.RealPlate
 	Plate.firstProcessing = true
@@ -1220,10 +1239,10 @@ local function SetupRefinedPlate(Virtual)
 	SetupArenaIDText(Virtual)
 	SetupTargetGlow(Virtual)
 	SetupHealthText(Virtual)
-	SetupBarBackground(Virtual.healthBar)
 	SetupHealthBarTex(Virtual)
-	SetupBarBackground(Virtual.castBar)
+	SetupHealthBarBg(Virtual)
 	SetupCastBarTex(Virtual)
+	SetupCastBarBg(Virtual)
 	SetupCastText(Virtual)
 	SetupCastTimer(Virtual)
 	SetupCastSpark(Virtual)
@@ -1998,6 +2017,7 @@ function RBP:UpdateAllHealthBars()
 	for Plate, Virtual in pairs(VirtualPlates) do
 		UpdateHealthBorder(Virtual)
 		UpdateHealthText(Virtual)
+		UpdateHealthBarBg(Virtual)
 		if RBP.dbp.healthText_hide then
 			Virtual.healthText:Hide()
 		else
@@ -2023,6 +2043,7 @@ function RBP:UpdateAllCastBars()
 		Virtual.shieldCastBarBorder:SetVertexColor(unpack(RBP.dbp.castBar_protectedBorderTint))
 		Virtual.castBarTex:SetTexture(RBP.LSM:Fetch("statusbar", RBP.dbp.castBar_Tex))
 		Virtual.castBarTexFull:SetTexture(RBP.LSM:Fetch("statusbar", RBP.dbp.castBar_Tex))
+		UpdateCastBarBg(Virtual)
 		UpdateCastText(Virtual)
 		UpdateCastTimer(Virtual)
 		if RBP.dbp.castText_hide then

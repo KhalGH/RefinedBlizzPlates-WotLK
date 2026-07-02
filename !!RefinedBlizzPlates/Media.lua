@@ -29,6 +29,7 @@ LSM:Register("statusbar", "Dragonflight 1", ASSETS .. "StatusBars\\Dragonflight1
 LSM:Register("statusbar", "Dragonflight 2", ASSETS .. "StatusBars\\Dragonflight2")
 LSM:Register("statusbar", "Dragonflight 3", ASSETS .. "StatusBars\\Dragonflight3")
 LSM:Register("statusbar", "Dragonflight 4", ASSETS .. "StatusBars\\Dragonflight4")
+LSM:Register("statusbar", "Dragonflight Bg", ASSETS .. "StatusBars\\DragonflightBg")
 LSM:Register("statusbar", "Falumn", ASSETS .. "StatusBars\\Falumn")
 LSM:Register("statusbar", "Ferous 1", ASSETS .. "StatusBars\\Ferous1")
 LSM:Register("statusbar", "Ferous 2", ASSETS .. "StatusBars\\Ferous2")
