@@ -1,4 +1,4 @@
-local Type, Version = "MultiLineEditBox", 28
+local Type, Version = "MultiLineEditBox", 35
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 if not AceGUI or (AceGUI:GetWidgetVersion(Type) or 0) >= Version then return end
 
@@ -9,10 +9,6 @@ local pairs = pairs
 local GetCursorInfo, GetSpellInfo, ClearCursor = GetCursorInfo, GetSpellInfo, ClearCursor
 local CreateFrame, UIParent = CreateFrame, UIParent
 local _G = _G
-
--- Global vars/functions that we don't upvalue since they might get hooked, or upgraded
--- List them here for Mikk's FindGlobals script
--- GLOBALS: ACCEPT, ChatFontNormal
 
 --[[-----------------------------------------------------------------------------
 Support functions
@@ -145,6 +141,14 @@ local function OnVerticalScroll(self, offset)                                   
 	editBox:SetHitRectInsets(0, 0, offset, editBox:GetHeight() - offset - self:GetHeight())
 end
 
+local function OnScrollRangeChanged(self, xrange, yrange)
+	if yrange == 0 then
+		self.obj.editBox:SetHitRectInsets(0, 0, 0, 0)
+	else
+		OnVerticalScroll(self, self:GetVerticalScroll())
+	end
+end
+
 local function OnShowFocus(frame)
 	frame.obj.editBox:SetFocus()
 	frame:SetScript("OnShow", nil)
@@ -257,8 +261,6 @@ local methods = {
 	["SetCursorPosition"] = function(self, ...)
 		return self.editBox:SetCursorPosition(...)
 	end,
-
-
 }
 
 --[[-----------------------------------------------------------------------------
@@ -271,10 +273,10 @@ local backdrop = {
 }
 
 local function Constructor()
-	local frame = CreateFrame("Frame", nil, UIParent)
-	frame:Hide()
-
 	local widgetNum = AceGUI:GetNextWidgetNum(Type)
+
+	local frame = CreateFrame("Frame", string.format("%s%d", Type, widgetNum), UIParent)
+	frame:Hide()
 
 	local label = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 	label:SetPoint("TOPLEFT", frame, "TOPLEFT", 0, -4)
@@ -283,7 +285,8 @@ local function Constructor()
 	label:SetText(ACCEPT)
 	label:SetHeight(10)
 
-	local button = CreateFrame("Button", ("%s%dButton"):format(Type, widgetNum), frame, "UIPanelButtonTemplate2")
+	local button = CreateFrame("Button", ("%s%dButton"):format(Type, widgetNum), frame, "UIPanelButtonTemplate")
+	button:SetFrameLevel(frame:GetFrameLevel() + 1)
 	button:SetPoint("BOTTOMLEFT", 0, 4)
 	button:SetHeight(22)
 	button:SetWidth(label:GetStringWidth() + 24)
@@ -298,11 +301,13 @@ local function Constructor()
 	text:SetJustifyV("MIDDLE")
 
 	local scrollBG = CreateFrame("Frame", nil, frame)
+	scrollBG:SetFrameLevel(frame:GetFrameLevel() + 1)
 	scrollBG:SetBackdrop(backdrop)
 	scrollBG:SetBackdropColor(0, 0, 0)
 	scrollBG:SetBackdropBorderColor(0.4, 0.4, 0.4)
 
 	local scrollFrame = CreateFrame("ScrollFrame", ("%s%dScrollFrame"):format(Type, widgetNum), frame, "UIPanelScrollFrameTemplate")
+	scrollFrame:SetFrameLevel(frame:GetFrameLevel() + 1)
 
 	local scrollBar = _G[scrollFrame:GetName() .. "ScrollBar"]
 	scrollBar:ClearAllPoints()
@@ -319,10 +324,13 @@ local function Constructor()
 	scrollFrame:SetScript("OnLeave", OnLeave)
 	scrollFrame:SetScript("OnMouseUp", OnMouseUp)
 	scrollFrame:SetScript("OnReceiveDrag", OnReceiveDrag)
+	scrollFrame:EnableMouse(true)
 	scrollFrame:SetScript("OnSizeChanged", OnSizeChanged)
 	scrollFrame:HookScript("OnVerticalScroll", OnVerticalScroll)
+	scrollFrame:HookScript("OnScrollRangeChanged", OnScrollRangeChanged)
 
 	local editBox = CreateFrame("EditBox", ("%s%dEdit"):format(Type, widgetNum), scrollFrame)
+	editBox:SetFrameLevel(scrollFrame:GetFrameLevel() + 1)
 	editBox:SetAllPoints()
 	editBox:SetFontObject(ChatFontNormal)
 	editBox:SetMultiLine(true)

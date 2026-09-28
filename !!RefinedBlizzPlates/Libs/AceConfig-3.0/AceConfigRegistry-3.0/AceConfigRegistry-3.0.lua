@@ -8,7 +8,7 @@
 -- :IterateOptionsTables() (and :GetOptionsTable() if only given one argument) return a function reference that the requesting config handling addon must call with valid "uiType", "uiName".
 -- @class file
 -- @name AceConfigRegistry-3.0
--- @release $Id: AceConfigRegistry-3.0.lua 1207 2019-06-23 12:08:33Z nevcairiel $
+-- @release $Id: AceConfigRegistry-3.0.lua 1385 2025-12-06 11:26:20Z nevcairiel $
 local CallbackHandler = LibStub("CallbackHandler-1.0")
 
 local MAJOR, MINOR = "AceConfigRegistry-3.0", 22
@@ -83,6 +83,7 @@ local basekeys={
 		dialogHidden=optmethodbool,
 		dropdownHidden=optmethodbool,
 	cmdHidden=optmethodbool,
+	tooltipHyperlink=optstringfunc,
 	icon=optstringnumberfunc,
 	iconCoords=optmethodtable,
 	handler=opttable,
@@ -91,6 +92,7 @@ local basekeys={
 	func=optmethodfalse,
 	arg={["*"]=true},
 	width=optstringnumber,
+	relWidth=optnumber,
 }
 
 local typedkeys={

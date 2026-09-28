@@ -1,4 +1,4 @@
---[[ $Id: AceGUIWidget-DropDown.lua 1209 2019-06-24 21:01:01Z nevcairiel $ ]]--
+--[[ $Id: AceGUIWidget-DropDown.lua 1284 2022-09-25 09:15:30Z nevcairiel $ ]]--
 local AceGUI = LibStub("AceGUI-3.0")
 
 -- Lua APIs
@@ -10,10 +10,6 @@ local tsort = table.sort
 local PlaySound = PlaySound
 local UIParent, CreateFrame = UIParent, CreateFrame
 local _G = _G
-
--- Global vars/functions that we don't upvalue since they might get hooked, or upgraded
--- List them here for Mikk's FindGlobals script
--- GLOBALS: CLOSE
 
 local function fixlevels(parent,...)
 	local i = 1
@@ -39,7 +35,7 @@ end
 
 do
 	local widgetType = "Dropdown-Pullout"
-	local widgetVersion = 3
+	local widgetVersion = 7
 
 	--[[ Static data ]]--
 
@@ -193,12 +189,7 @@ do
 
 		local height = 8
 		for i, item in pairs(items) do
-			if i == 1 then
-				item:SetPoint("TOP", itemFrame, "TOP", 0, -2)
-			else
-				item:SetPoint("TOP", items[i-1].frame, "BOTTOM", 0, 1)
-			end
-
+			item:SetPoint("TOP", itemFrame, "TOP", 0, -2 + (i - 1) * -16)
 			item:Show()
 
 			height = height + 16
@@ -301,7 +292,9 @@ do
 
 		-- NOTE: The whole scroll frame code is copied from the AceGUI-3.0 widget ScrollFrame
 		local scrollFrame = CreateFrame("ScrollFrame", nil, frame)
+		scrollFrame:SetFrameLevel(frame:GetFrameLevel() + 1)
 		local itemFrame = CreateFrame("Frame", nil, scrollFrame)
+		itemFrame:SetFrameLevel(scrollFrame:GetFrameLevel() + 1)
 
 		self.scrollFrame = scrollFrame
 		self.itemFrame = itemFrame
@@ -310,6 +303,7 @@ do
 		itemFrame.obj = self
 
 		local slider = CreateFrame("Slider", "AceGUI30PulloutScrollbar"..count, scrollFrame)
+		slider:SetFrameLevel(scrollFrame:GetFrameLevel() + 1)
 		slider:SetOrientation("VERTICAL")
 		slider:SetHitRectInsets(0, 0, -10, 0)
 		slider:SetBackdrop(sliderBackdrop)
@@ -356,7 +350,7 @@ end
 
 do
 	local widgetType = "Dropdown"
-	local widgetVersion = 34
+	local widgetVersion = 38
 
 	--[[ Static data ]]--
 
@@ -381,7 +375,6 @@ do
 
 	local function Dropdown_TogglePullout(this)
 		local self = this.obj
-		PlaySound("igMainMenuOptionCheckBoxOn") -- missleading name, but the Blizzard code uses this sound
 		if self.open then
 			self.open = nil
 			self.pullout:Close()
@@ -465,6 +458,7 @@ do
 		self:SetWidth(200)
 		self:SetLabel()
 		self:SetPulloutWidth(nil)
+		self.list = {}
 	end
 
 	-- exported, AceGUI callback
@@ -535,9 +529,7 @@ do
 
 	-- exported
 	local function SetValue(self, value)
-		if self.list then
-			self:SetText(self.list[value] or "")
-		end
+		self:SetText(self.list[value] or "")
 		self.value = value
 	end
 
@@ -601,7 +593,7 @@ do
 		end
 	end
 	local function SetList(self, list, order, itemType)
-		self.list = list
+		self.list = list or {}
 		self.pullout:Clear()
 		self.hasClose = nil
 		if not list then return end
@@ -629,10 +621,8 @@ do
 
 	-- exported
 	local function AddItem(self, value, text, itemType)
-		if self.list then
-			self.list[value] = text
-			AddListItem(self, value, text, itemType)
-		end
+		self.list[value] = text
+		AddListItem(self, value, text, itemType)
 	end
 
 	-- exported
@@ -657,8 +647,9 @@ do
 
 	local function Constructor()
 		local count = AceGUI:GetNextWidgetNum(widgetType)
-		local frame = CreateFrame("Frame", nil, UIParent)
+		local frame = CreateFrame("Frame", widgetType .. count, UIParent)
 		local dropdown = CreateFrame("Frame", "AceGUI30DropDown"..count, frame, "UIDropDownMenuTemplate")
+		dropdown:SetFrameLevel(frame:GetFrameLevel() + 1)
 
 		local self = {}
 		self.type = widgetType
@@ -713,7 +704,8 @@ do
 		button:SetScript("OnLeave",Control_OnLeave)
 		button:SetScript("OnClick",Dropdown_TogglePullout)
 
-		local button_cover = CreateFrame("BUTTON",nil,self.frame)
+		local button_cover = CreateFrame("Button",nil,self.frame)
+		button_cover:SetFrameLevel(self.frame:GetFrameLevel() + 1)
 		self.button_cover = button_cover
 		button_cover.obj = self
 		button_cover:SetPoint("TOPLEFT",self.frame,"BOTTOMLEFT",0,25)

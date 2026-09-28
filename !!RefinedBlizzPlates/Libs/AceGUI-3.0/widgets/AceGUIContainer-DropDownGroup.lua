@@ -2,7 +2,7 @@
 DropdownGroup Container
 Container controlled by a dropdown on the top.
 -------------------------------------------------------------------------------]]
-local Type, Version = "DropdownGroup", 21
+local Type, Version = "DropdownGroup", 24
 local AceGUI = LibStub and LibStub("AceGUI-3.0", true)
 if not AceGUI or (AceGUI:GetWidgetVersion(Type) or 0) >= Version then return end
 
@@ -106,7 +106,7 @@ local PaneBackdrop  = {
 }
 
 local function Constructor()
-	local frame = CreateFrame("Frame")
+	local frame = CreateFrame("Frame", string.format("%s%d", Type, AceGUI:GetNextWidgetNum(Type)))
 	frame:SetHeight(100)
 	frame:SetWidth(100)
 	frame:SetFrameStrata("FULLSCREEN_DIALOG")
@@ -119,13 +119,14 @@ local function Constructor()
 
 	local dropdown = AceGUI:Create("Dropdown")
 	dropdown.frame:SetParent(frame)
-	dropdown.frame:SetFrameLevel(dropdown.frame:GetFrameLevel() + 2)
+	dropdown.frame:SetFrameLevel(frame:GetFrameLevel() + 3)
 	dropdown:SetCallback("OnValueChanged", SelectedGroup)
 	dropdown.frame:SetPoint("TOPLEFT", -1, 0)
 	dropdown.frame:Show()
 	dropdown:SetLabel("")
 
 	local border = CreateFrame("Frame", nil, frame)
+	border:SetFrameLevel(frame:GetFrameLevel() + 1)
 	border:SetPoint("TOPLEFT", 0, -26)
 	border:SetPoint("BOTTOMRIGHT", 0, 3)
 	border:SetBackdrop(PaneBackdrop)
@@ -134,6 +135,7 @@ local function Constructor()
 
 	--Container Support
 	local content = CreateFrame("Frame", nil, border)
+	content:SetFrameLevel(border:GetFrameLevel() + 1)
 	content:SetPoint("TOPLEFT", 10, -10)
 	content:SetPoint("BOTTOMRIGHT", -10, 10)
 

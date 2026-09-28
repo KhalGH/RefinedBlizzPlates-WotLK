@@ -1,5 +1,5 @@
---[[ $Id: CallbackHandler-1.0.lua 18 2014-10-16 02:52:20Z mikk $ ]]
-local MAJOR, MINOR = "CallbackHandler-1.0", 7
+--[[ $Id: CallbackHandler-1.0.lua 26 2022-12-12 15:09:39Z nevcairiel $ ]]
+local MAJOR, MINOR = "CallbackHandler-1.0", 8
 local CallbackHandler = LibStub:NewLibrary(MAJOR, MINOR)
 
 if not CallbackHandler then return end -- No upgrade needed
@@ -11,10 +11,6 @@ local tconcat = table.concat
 local assert, error, loadstring = assert, error, loadstring
 local setmetatable, rawset, rawget = setmetatable, rawset, rawget
 local next, select, pairs, type, tostring = next, select, pairs, type, tostring
-
--- Global vars/functions that we don't upvalue since they might get hooked, or upgraded
--- List them here for Mikk's FindGlobals script
--- GLOBALS: geterrorhandler
 
 local xpcall = xpcall
 
@@ -65,7 +61,7 @@ end})
 --   UnregisterName    - name of the callback unregistration API, default "UnregisterCallback"
 --   UnregisterAllName - name of the API to unregister all callbacks, default "UnregisterAllCallbacks". false == don't publish this API.
 
-function CallbackHandler:New(target, RegisterName, UnregisterName, UnregisterAllName)
+function CallbackHandler.New(_self, target, RegisterName, UnregisterName, UnregisterAllName)
 
 	RegisterName = RegisterName or "RegisterCallback"
 	UnregisterName = UnregisterName or "UnregisterCallback"
@@ -93,13 +89,13 @@ function CallbackHandler:New(target, RegisterName, UnregisterName, UnregisterAll
 
 		if registry.insertQueue and oldrecurse==0 then
 			-- Something in one of our callbacks wanted to register more callbacks; they got queued
-			for eventname,callbacks in pairs(registry.insertQueue) do
-				local first = not rawget(events, eventname) or not next(events[eventname])	-- test for empty before. not test for one member after. that one member may have been overwritten.
-				for self,func in pairs(callbacks) do
-					events[eventname][self] = func
+			for event,callbacks in pairs(registry.insertQueue) do
+				local first = not rawget(events, event) or not next(events[event])	-- test for empty before. not test for one member after. that one member may have been overwritten.
+				for object,func in pairs(callbacks) do
+					events[event][object] = func
 					-- fire OnUsed callback?
 					if first and registry.OnUsed then
-						registry.OnUsed(registry, target, eventname)
+						registry.OnUsed(registry, target, event)
 						first = nil
 					end
 				end

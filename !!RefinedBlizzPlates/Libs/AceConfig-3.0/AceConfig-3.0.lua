@@ -3,7 +3,7 @@
 -- as well as associate it with a slash command.
 -- @class file
 -- @name AceConfig-3.0
--- @release $Id: AceConfig-3.0.lua 1202 2019-05-15 23:11:22Z nevcairiel $
+-- @release $Id: AceConfig-3.0.lua 1335 2024-05-05 19:35:16Z nevcairiel $
 
 --[[
 AceConfig-3.0
@@ -15,7 +15,7 @@ Very light wrapper library that combines all the AceConfig subcomponents into on
 local cfgreg = LibStub("AceConfigRegistry-3.0")
 local cfgcmd = LibStub("AceConfigCmd-3.0")
 
-local MAJOR, MINOR = "AceConfig-3.0", 4
+local MAJOR, MINOR = "AceConfig-3.0", 3
 local AceConfig = LibStub:NewLibrary(MAJOR, MINOR)
 
 if not AceConfig then return end
@@ -27,7 +27,7 @@ if not AceConfig then return end
 local pcall, error, type, pairs = pcall, error, type, pairs
 
 -- -------------------------------------------------------------------
--- :RegisterOptionsTable(appName, options, slashcmd, persist)
+-- :RegisterOptionsTable(appName, options, slashcmd)
 --
 -- - appName - (string) application name
 -- - options - table or function ref, see AceConfigRegistry
