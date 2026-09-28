@@ -15,6 +15,7 @@ It preserves a Blizzlike appearance while adding functional and visual improveme
 - Added click-through behavior for blacklist and, optionally, friendly nameplates.
 - Integrated optional system that simulates Retail's nameplate stacking.
 - Added parameters to modify the nameplate's Box Selection Space (Clickbox).
+- Added depth perspective for distant nameplates (AwesomeWotlk).
 
 ## Recommendations
 - RefinedBlizzPlates may conflict with Gladdy’s Totem Plates module. Disable it to ensure proper functionality.
@@ -39,12 +40,12 @@ It preserves a Blizzlike appearance while adding functional and visual improveme
 </p>
 
 ## Installation  
-1. [Download](https://github.com/KhalGH/RefinedBlizzPlates-WotLK/releases/download/v1.11.2/RefinedBlizzPlates-v1.11.2.zip) the addon
+1. [Download](https://github.com/KhalGH/RefinedBlizzPlates-WotLK/releases/download/v1.11.3/RefinedBlizzPlates-v1.11.3.zip) the addon
 2. Extract the **!!RefinedBlizzPlates** folder into `World of Warcraft/Interface/AddOns/`.
 3. Optional: [Patch](https://raw.githubusercontent.com/KhalGH/RefinedBlizzPlates-WotLK/assets/assets/Non-target_CastBars.zip) to enable cast bars on non-target units (check your server’s policy to ensure it's allowed).
 4. Restart the game and enable the addon.  
 
 ## Information  
-- **Addon Version:** 1.11.2  
+- **Addon Version:** 1.11.3  
 - **Game Version:** 3.3.5a (WotLK)  
 - **Author:** Khal  
