@@ -2,6 +2,10 @@
 local AddonFile, RBP = ... -- namespace
 local L = RBP.L
 
+if C_NamePlate and C_NamePlate.GetNamePlateForUnit then
+	RBP.hasModernAPI = true
+end
+
 ------------- Database -------------
 RBP.default = {}
 RBP.default.profile = {}
@@ -31,8 +35,18 @@ RBP.dbp.stackingEnabled = false
 RBP.dbp.xspace = 130
 RBP.dbp.yspace = 15
 RBP.dbp.originpos = 0
+RBP.dbp.yspeed = 210
 RBP.dbp.FreezeMouseover = false
 RBP.dbp.stackingInInstance = false
+-- Depth Perspective
+RBP.dbp.depthScaling = false
+RBP.dbp.depthPivot = 80
+RBP.dbp.minScaleFactor = 0.25
+RBP.dbp.depthFading = false
+RBP.dbp.depthFadeStart = 90
+RBP.dbp.depthFadeRange = 30
+RBP.dbp.fadeNPCs = false
+RBP.dbp.fadePlateBuffs = true
 -- Name Text
 RBP.dbp.nameText_hide = false
 RBP.dbp.nameText_font = RBP.RefinedFontKey
@@ -149,27 +163,28 @@ RBP.dbp.enableCastGlow = true
 RBP.dbp.eliteIcon_style = "Default"
 RBP.dbp.eliteIcon_widthScale = 1
 RBP.dbp.eliteIcon_heightScale = 1
-RBP.dbp.eliteIcon_Tint = {1, 1, 1}
 RBP.dbp.eliteIcon_anchor = "Left"
 RBP.dbp.eliteIcon_offsetX = 0
 RBP.dbp.eliteIcon_offsetY = 0
+RBP.dbp.eliteIcon_Tint = {1, 1, 1}
 -- Boss Icon
-RBP.dbp.bossIcon_size = 13
 RBP.dbp.bossIcon_anchor = "Right"
 RBP.dbp.bossIcon_offsetX = 0
 RBP.dbp.bossIcon_offsetY = 0
+RBP.dbp.bossIcon_size = 13
 -- Raid Target Icon
-RBP.dbp.raidTargetIcon_size = 22
 RBP.dbp.raidTargetIcon_anchor = "Right"
 RBP.dbp.raidTargetIcon_offsetX = 0
 RBP.dbp.raidTargetIcon_offsetY = 0
+RBP.dbp.raidTargetIcon_size = 22
+RBP.dbp.raidTargetIcon_hide = false
 -- Class Icon
-RBP.dbp.showClassOnFriends = true
-RBP.dbp.showClassOnEnemies = true
-RBP.dbp.classIcon_size = 21
 RBP.dbp.classIcon_anchor = "Left"
 RBP.dbp.classIcon_offsetX = 0
 RBP.dbp.classIcon_offsetY = 0
+RBP.dbp.classIcon_size = 21
+RBP.dbp.showClassOnFriends = true
+RBP.dbp.showClassOnEnemies = true
 -- Barless Plate: Enable Filters
 RBP.dbp.barlessPlate_filterBG = 3
 RBP.dbp.barlessPlate_filterArena = 0
@@ -239,7 +254,7 @@ RBP.dbp.barlessPlate_BGHiconAnchor = "Top"
 RBP.dbp.barlessPlate_BGHiconOffsetX = 0
 RBP.dbp.barlessPlate_BGHiconOffsetY = 0
 -- Totem Plate
-RBP.dbp.totemSize = 24 -- Size of the totem (or NPC) icon replacing the nameplate
+RBP.dbp.totemSize = 27 -- Size of the totem (or NPC) icon replacing the nameplate
 RBP.dbp.totemOffset = 0 -- Vertical offset for totem icon
 RBP.dbp.showTotemBorder = true -- Colors the totem border green (friendly) or red (enemy)
 RBP.dbp.hideFriendlyTotem = false
@@ -308,104 +323,7 @@ RBP.MainOptionTable = {
 					},
 					set = function(info, val)
 						RBP.dbp[info[#info]] = val
-						if val == "Blizzard" then
-							RBP.dbp.globalOffsetX = 0
-							RBP.dbp.globalOffsetY = 0
-							RBP.dbp.nameText_font = RBP.BlizzFontKey
-							RBP.dbp.nameText_size = 13
-							RBP.dbp.nameText_width = 250
-							RBP.dbp.levelText_hide = false
-							RBP.dbp.levelText_font = RBP.BlizzFontKey
-							RBP.dbp.levelText_size = 11.5
-							RBP.dbp.ArenaIDText_font = RBP.BlizzFontKey
-							RBP.dbp.ArenaIDText_size = 10.5
-							RBP.dbp.healthText_font = RBP.BlizzFontKey
-							RBP.dbp.healthText_anchor = "CENTER"
-							RBP.dbp.healthText_offsetX = 10.5
-							RBP.dbp.castText_font = RBP.BlizzFontKey
-							RBP.dbp.castText_size = 8
-							RBP.dbp.castTimerText_font = RBP.BlizzFontKey
-							RBP.dbp.castTimerText_size = 7.8
-							RBP.dbp.healthBar_friendlyPlayerTex = "Blizzard Nameplates"
-							RBP.dbp.healthBar_hostilePlayerTex = "Blizzard Nameplates"
-							RBP.dbp.healthBar_npcTex = "Blizzard Nameplates"
-							RBP.dbp.castBar_Tex = "Blizzard Nameplates"
-							RBP.dbp.eliteIcon_anchor = "Right"
-							RBP.dbp.raidTargetIcon_size = 29
-							RBP.dbp.raidTargetIcon_anchor = "Top"
-							RBP.dbp.classIcon_size = 29
-							RBP.dbp.classIcon_anchor = "Top"
-						else
-							RBP.dbp.globalOffsetX = 10.5
-							RBP.dbp.globalOffsetY = 21
-							RBP.dbp.nameText_font = RBP.RefinedFontKey
-							RBP.dbp.nameText_size = 7.5
-							RBP.dbp.nameText_width = 85
-							RBP.dbp.levelText_hide = true
-							RBP.dbp.levelText_font = RBP.RefinedFontKey
-							RBP.dbp.levelText_size = 10.5				
-							RBP.dbp.healthText_font = RBP.RefinedFontKey
-							RBP.dbp.ArenaIDText_font = RBP.RefinedFontKey
-							RBP.dbp.ArenaIDText_size = 10
-							RBP.dbp.healthText_anchor = "RIGHT"
-							RBP.dbp.healthText_offsetX = 0
-							RBP.dbp.castText_font = RBP.RefinedFontKey
-							RBP.dbp.castText_size = 7.5
-							RBP.dbp.castTimerText_font = RBP.RefinedFontKey
-							RBP.dbp.castTimerText_size = 7.2
-							RBP.dbp.healthBar_friendlyPlayerTex = "KhalBar"
-							RBP.dbp.healthBar_hostilePlayerTex = "KhalBar"
-							RBP.dbp.healthBar_npcTex = "KhalBar"
-							RBP.dbp.castBar_Tex = "KhalBar"
-							RBP.dbp.eliteIcon_anchor = "Left"
-							RBP.dbp.raidTargetIcon_size = 22
-							RBP.dbp.raidTargetIcon_anchor = "Right"
-							RBP.dbp.classIcon_size = 21
-							RBP.dbp.classIcon_anchor = "Left"
-						end
-						RBP.dbp.nameText_anchor = "CENTER"
-						RBP.dbp.nameText_offsetX = 0
-						RBP.dbp.nameText_offsetY = 0
-						RBP.dbp.levelText_outline = ""
-						RBP.dbp.levelText_anchor = "Right"
-						RBP.dbp.levelText_offsetX = 0
-						RBP.dbp.levelText_offsetY = 0
-						RBP.dbp.ArenaIDText_anchor = "Right"
-						RBP.dbp.ArenaIDText_offsetX = 0
-						RBP.dbp.ArenaIDText_offsetY = 0
-						RBP.dbp.healthText_offsetY = 0
-						RBP.dbp.ArenaIDText_HideLevel = true
-						RBP.dbp.castText_anchor = "CENTER"
-						RBP.dbp.castText_outline = ""
-						RBP.dbp.castText_width = 90
-						RBP.dbp.castText_offsetX = 0
-						RBP.dbp.castText_offsetY = 0
-						RBP.dbp.castTimerText_outline = ""
-						RBP.dbp.castTimerText_anchor = "RIGHT"
-						RBP.dbp.castTimerText_offsetX = 0
-						RBP.dbp.castTimerText_offsetY = 0
-						RBP.dbp.bossIcon_anchor = "Right"
-						RBP.dbp.bossIcon_size = 13
-						RBP.dbp.bossIcon_offsetX = 0
-						RBP.dbp.bossIcon_offsetY = 0
-						RBP.dbp.eliteIcon_style = "Default"
-						RBP.dbp.eliteIcon_widthScale = 1
-						RBP.dbp.eliteIcon_heightScale = 1
-						RBP.dbp.eliteIcon_offsetX = 0
-						RBP.dbp.eliteIcon_offsetY = 0
-						RBP.dbp.raidTargetIcon_offsetX = 0
-						RBP.dbp.raidTargetIcon_offsetY = 0
-						RBP.dbp.classIcon_offsetX = 0
-						RBP.dbp.classIcon_offsetY = 0
-						RBP:UpdateAllTexts()
-						RBP:UpdateAllHealthBars()
-						RBP:UpdateAllCastBars()
-						RBP:UpdateAllIcons()
-						RBP:UpdateAllBarlessPlates()
-						RBP:UpdateAllGlows()
-						RBP:UpdateAllCastBarBorders()
-						RBP:UpdateAllShownPlates()
-						RBP:UpdateClickboxAttributes()
+						RBP:ApplyPreset()
 					end,
 				},
 				lineBreak3 = {order = 5, type = "description", name = ""},
@@ -631,16 +549,7 @@ RBP.MainOptionTable = {
 					desc = L["Hide nameplates when mind-controlled by Lady Deathwhisper."],
 					set = function(info, val)
 						RBP.dbp[info[#info]] = val
-						if val then
-							RBP:CheckLDWZone()
-						else
-							RBP.inICC = false
-							RBP.inLDWZone = false
-							if RBP.DominateMind then
-								RBP.DominateMind = nil
-								SetUIVisibility(true)
-							end
-						end
+						RBP:UpdateLDWfix()
 					end,
 				},
 				lineBreak17 = {order = 37, type = "description", name = ""},
@@ -700,8 +609,20 @@ RBP.MainOptionTable = {
 						return not RBP.dbp.stackingEnabled
 					end,
 				},
-				FreezeMouseover = {
+				yspeed = {
 					order = 47,
+					type = "range",
+					name = L["Stacking Speed"],
+					desc = L["Speed at which nameplates move to resolve overlaps."],
+					min = 100,
+					max = 320,
+					step = 1,
+					disabled = function()
+						return not RBP.dbp.stackingEnabled
+					end,
+				},
+				FreezeMouseover = {
+					order = 48,
 					type = "toggle",
 					name = L["Freeze Mouseover"],
 					desc = L["Stops the nameplate you're mousing over from moving for better selection."],
@@ -710,7 +631,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				stackingInInstance = {
-					order = 48,
+					order = 49,
 					type = "toggle",
 					name = L["Disable in Open World"],
 					desc = L["Only process stacking inside PvE and PvP instances. This will reduce CPU usage in the open world."],
@@ -722,8 +643,148 @@ RBP.MainOptionTable = {
 						return not RBP.dbp.stackingEnabled
 					end,
 				},
-				lineBreak22 = {order = 49, type = "description", name = ""},
-				lineBreak23 = {order = 50, type = "description", name = ""},
+				lineBreak22 = {order = 50, type = "description", name = ""},
+				lineBreak23 = {order = 51, type = "description", name = ""},
+				depth_header = {
+					order = 52,
+					type = "header",
+					name = L["Depth Perspective"],
+					hidden = function() return not RBP.hasModernAPI end,
+				},
+				lineBreak24 = {order = 53, type = "description", name = ""},
+				depthScaling = {
+					order = 54,
+					type = "toggle",
+					name = L["Depth Scaling"],
+					desc = L["Scales nameplates by camera distance, so distant plates appear smaller. This feature has a high CPU cost, use it with discretion. Not recommended to use together with Retail-like Stacking."],
+					set = function(info, val)
+						RBP.dbp[info[#info]] = val
+						if not val then
+							RBP:ResetDynamicScales()
+							RBP:UpdateAllShownPlates()
+						end
+					end,
+					hidden = function() return not RBP.hasModernAPI end,
+				},
+				depthPivot = {
+					order = 55,
+					type = "range",
+					name = L["Depth Pivot"],
+					desc = L["Reference depth where plates keep their normal size. Beyond it, they shrink."],
+					min = 40,
+					max = 120,
+					step = 1,
+					disabled = function() return not RBP.dbp.depthScaling end,
+					hidden = function() return not RBP.hasModernAPI end,
+				},
+				minScaleFactor = {
+					order = 56,
+					type = "range",
+					name = L["Min Scale Factor"],
+					desc = L["The smallest scale a distant nameplate can reach."],
+					min = 0.1,
+					max = 1.0,
+					step = 0.01,
+					disabled = function() return not RBP.dbp.depthScaling end,
+					hidden = function() return not RBP.hasModernAPI end,
+				},
+				lineBreak25 = {order = 57, type = "description", name = ""},
+				depthFading = {
+					order = 58,
+					type = "toggle",
+					name = L["Depth Fading"],
+					desc = L["Fades nameplates as they move further from the camera. This feature has a high CPU cost, use it with discretion. Not recommended to use together with Retail-like Stacking."],
+					set = function(info, val)
+						RBP.dbp[info[#info]] = val
+						if not val then
+							RBP:ResetAllRegionsAlpha()
+							RBP:ResetPBFlags()
+						end
+					end,
+					hidden = function() return not RBP.hasModernAPI end,
+				},
+				depthFadeStart = {
+					order = 59,
+					type = "range",
+					name = L["Fade Start Depth"],
+					desc = L["Depth where fading begins. Closer plates stay fully visible."],
+					min = 40,
+					max = 140,
+					step = 1,
+					disabled = function() return not RBP.dbp.depthFading end,
+					hidden = function() return not RBP.hasModernAPI end,
+				},
+				depthFadeRange = {
+					order = 60,
+					type = "range",
+					name = L["Fade Range"],
+					desc = L["Depth distance over which nameplates fade out completely."],
+					min = 1,
+					max = 60,
+					step = 1,
+					disabled = function() return not RBP.dbp.depthFading end,
+					hidden = function() return not RBP.hasModernAPI end,
+				},
+				fadeNPCs = {
+					order = 61,
+					type = "toggle",
+					name = L["Hide Distant NPCs"],
+					desc = L["Hides NPC nameplates at very long distances."],
+					disabled = function() return not RBP.dbp.depthFading end,					
+					hidden = function() return not RBP.hasModernAPI end,
+				},
+				fadePlateBuffs = {
+					order = 62,
+					type = "toggle",
+					name = L["Fade PlateBuffs"],
+					desc = L["Fades PlateBuffs icons on distant nameplates. Improves performance."],
+					set = function(info, val)
+						RBP.dbp[info[#info]] = val
+						if not val then
+							RBP:ResetPBFlags()
+						end
+					end,
+					disabled = function() return not RBP.dbp.depthFading end,					
+					hidden = function() return not RBP.hasModernAPI end,
+				},
+				nameplateDistance = {
+					order = 63,
+					type = "range",
+					name = L["Extended Draw Distance"],
+					desc = L["Extends the distance at which nameplates are drawn."],
+					min = 0,
+					max = 1,
+					isPercent = true,
+					width = "full",
+					step = 0.01,
+					get = function()
+						local val = tonumber(GetCVar("nameplateDistance")) or 41
+						return math.log(val / 41) / math.log(500 / 41)
+					end,
+					set = function(_, val)
+						SetCVar("nameplateDistance", 41 * (500 / 41)^val)
+					end,
+					hidden = function() return not RBP.hasModernAPI end,
+				},
+				cameraFov = {
+					order = 64,
+					type = "range",
+					name = L["Field of View"],
+					desc = L["Adjusts the camera field of view."],
+					min = 60,
+					max = 120,
+					width = "full",
+					step = 1,
+					get = function()
+						return tonumber(GetCVar("cameraFov"))
+					end,
+					set = function(_, val)
+						SetCVar("cameraFov", val)
+					end,
+					hidden = function() return not RBP.hasModernAPI end,
+				},
+				lineBreak26 = {order = 65, type = "description", name = ""},
+				lineBreak27 = {order = 66, type = "description", name = ""},
 			},
 		},
 		Text = {
@@ -1525,12 +1586,12 @@ RBP.MainOptionTable = {
 				lineBreak12 = {order = 43, type = "description", name = ""},
 				lineBreak13 = {order = 44, type = "description", name = ""},
 				lowHpColoring_header = {
-					order = 44,
+					order = 45,
 					type = "header",
 					name = L["Low Health Coloring"],
 				},
 				lowHpColor_EnemyPlayers = {
-					order = 45,
+					order = 46,
 					type = "toggle",
 					name = L["Enemy Players"],
 					set = function(info, val)
@@ -1539,7 +1600,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				lowHpColor_EnemyNPCs = {
-					order = 46,
+					order = 47,
 					type = "toggle",
 					name = L["Enemy NPCs"],
 					set = function(info, val)
@@ -1548,7 +1609,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				lowHpColor_FriendlyPlayers = {
-					order = 47,
+					order = 48,
 					type = "toggle",
 					name = L["Friendly Players"],
 					set = function(info, val)
@@ -1557,7 +1618,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				lowHpColor_FriendlyNPCs = {
-					order = 48,
+					order = 49,
 					type = "toggle",
 					name = L["Friendly NPCs"],
 					set = function(info, val)
@@ -1565,9 +1626,9 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllShownPlates()
 					end,
 				},		
-				lineBreak14 = {order = 49, type = "description", name = ""},
+				lineBreak14 = {order = 50, type = "description", name = ""},
 				lowHpColor_threshold = {
-					order = 50,
+					order = 51,
 					type = "range",
 					name = L["Threshold"],
 					desc = L["Overrides health bar colors when health is at or below the configured percentage threshold."],
@@ -1584,7 +1645,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				lowHpColor_color = {
-					order = 51,
+					order = 52,
 					type = "color",
 					name = L["Color"],
 					get = function(info)
@@ -1599,16 +1660,16 @@ RBP.MainOptionTable = {
 						return not (RBP.dbp.lowHpColor_EnemyPlayers or RBP.dbp.lowHpColor_EnemyNPCs or RBP.dbp.lowHpColor_FriendlyPlayers or RBP.dbp.lowHpColor_FriendlyNPCs)
 					end,
 				},
-				lineBreak15 = {order = 52, type = "description", name = ""},
-				lineBreak16 = {order = 53, type = "description", name = ""},						
+				lineBreak15 = {order = 53, type = "description", name = ""},
+				lineBreak16 = {order = 54, type = "description", name = ""},						
 				aggroOverlay_header = {
-					order = 54,
+					order = 55,
 					type = "header",
 					name = L["Aggro Coloring"],
 				},
-				lineBreak17 = {order = 55, type = "description", name = ""},
+				lineBreak17 = {order = 56, type = "description", name = ""},
 				enableAggroColoring = {
-					order = 56,
+					order = 57,
 					type = "toggle",
 					name = L["Enable"],
 					desc = L["Changes NPC health bar color based on aggro status."],
@@ -1618,10 +1679,10 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllShownPlates()
 					end,
 				},
-				lineBreak18 = {order = 57, type = "description", name = ""},
-				lineBreak19 = {order = 58, type = "description", name = ""},
+				lineBreak18 = {order = 58, type = "description", name = ""},
+				lineBreak19 = {order = 59, type = "description", name = ""},
 				aggroColor = {
-					order = 59,
+					order = 60,
 					type = "color",
 					name = L["Aggro"],
 					get = function(info)
@@ -1636,7 +1697,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				gainingAggroColor = {
-					order = 60,
+					order = 61,
 					type = "color",
 					name = L["Gaining Aggro"],
 					get = function(info)
@@ -1651,7 +1712,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				losingAggroColor = {
-					order = 61,
+					order = 62,
 					type = "color",
 					name = L["Losing Aggro"],
 					get = function(info)
@@ -1666,7 +1727,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				disableAggroOpenworld = {
-					order = 62,
+					order = 63,
 					type = "toggle",
 					name = L["Disable in Open World"],
 					set = function(info, val)
@@ -1678,8 +1739,8 @@ RBP.MainOptionTable = {
 						return not RBP.dbp.enableAggroColoring
 					end,
 				},
-				lineBreak20 = {order = 63, type = "description", name = ""},
-				lineBreak21 = {order = 64, type = "description", name = ""},
+				lineBreak20 = {order = 64, type = "description", name = ""},
+				lineBreak21 = {order = 65, type = "description", name = ""},
 			},
 		},
 		CastBar = {
@@ -2207,6 +2268,9 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllIcons()
 						RBP:UpdateAllShownPlates()
 					end,
+					disabled = function() 
+						return RBP.dbp.raidTargetIcon_hide
+					end,
 				},
 				raidTargetIcon_offsetX = {
 					order = 24,
@@ -2215,6 +2279,9 @@ RBP.MainOptionTable = {
 					min = -50,
 					max = 50,
 					step = 0.1,
+					disabled = function() 
+						return RBP.dbp.raidTargetIcon_hide
+					end,
 				},
 				raidTargetIcon_offsetY = {
 					order = 25,
@@ -2223,6 +2290,9 @@ RBP.MainOptionTable = {
 					min = -50,
 					max = 50,
 					step = 0.1,
+					disabled = function() 
+						return RBP.dbp.raidTargetIcon_hide
+					end,
 				},
 				raidTargetIcon_size = {
 					order = 26,
@@ -2231,17 +2301,25 @@ RBP.MainOptionTable = {
 					min = 15,
 					max = 50,
 					step = 0.1,
+					disabled = function() 
+						return RBP.dbp.raidTargetIcon_hide
+					end,
 				},
-				lineBreak9 = {order = 27, type = "description", name = ""},
-				lineBreak10 = {order = 28, type = "description", name = ""},
+				raidTargetIcon_hide = {
+					order = 27,
+					type = "toggle",
+					name = L["Hide Icon"],
+				},
+				lineBreak9 = {order = 28, type = "description", name = ""},
+				lineBreak10 = {order = 29, type = "description", name = ""},
 				classIcon_header = {
-					order = 29,
+					order = 30,
 					type = "header",
 					name = L["Class Icon"],
 				},
-				lineBreak11 = {order = 30, type = "description", name = ""},
+				lineBreak11 = {order = 31, type = "description", name = ""},
 				classIcon_anchor = {
-					order = 31,
+					order = 32,
 					type = "select", 
 					name = L["Anchor"],
 					values = {
@@ -2256,45 +2334,57 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllIcons()
 						RBP:UpdateAllShownPlates()
 					end,
+					disabled = function() 
+						return not (RBP.dbp.showClassOnFriends or RBP.dbp.showClassOnEnemies)
+					end,
 				},
 				classIcon_offsetX = {
-					order = 32,
+					order = 33,
 					type = "range",
 					name = L["Offset X"],
 					min = -50,
 					max = 50,
 					step = 0.1,
+					disabled = function() 
+						return not (RBP.dbp.showClassOnFriends or RBP.dbp.showClassOnEnemies)
+					end,
 				},
 				classIcon_offsetY = {
-					order = 33,
+					order = 34,
 					type = "range",
 					name = L["Offset Y"],
 					min = -50,
 					max = 50,
 					step = 0.1,
+					disabled = function() 
+						return not (RBP.dbp.showClassOnFriends or RBP.dbp.showClassOnEnemies)
+					end,
 				},
 				classIcon_size = {
-					order = 34,
+					order = 35,
 					type = "range",
 					name = L["Icon Size"],
 					min = 15,
 					max = 50,
 					step = 0.1,
+					disabled = function() 
+						return not (RBP.dbp.showClassOnFriends or RBP.dbp.showClassOnEnemies)
+					end,
 				},
 				showClassOnFriends = {
-					order = 35,
+					order = 36,
 					type = "toggle",
 					name = L["Show on Friends"],
 					desc = L["Class icons will only be shown inside PvE or PvP instances."],
 				},
 				showClassOnEnemies = {
-					order = 36,
+					order = 37,
 					type = "toggle",
 					name = L["Show on Enemies"],
 					desc = L["Class icons will only be shown inside PvE or PvP instances."],
 				},
-				lineBreak12 = {order = 37, type = "description", name = ""},
-				lineBreak13 = {order = 38, type = "description", name = ""},
+				lineBreak12 = {order = 38, type = "description", name = ""},
+				lineBreak13 = {order = 39, type = "description", name = ""},
 			},
 		},
 		BarlessPlate = {

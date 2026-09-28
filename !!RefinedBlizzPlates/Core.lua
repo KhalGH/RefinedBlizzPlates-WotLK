@@ -6,37 +6,40 @@
 local AddonFile, RBP = ...
 
 -- API
-local select, next, pairs, ipairs, unpack, string_format, GetAddOnMetadata, sort, wipe, CreateFrame, UnitName, UnitLevel, UnitDebuff, IsInInstance, SetUIVisibility, SetCVar =
-      select, next, pairs, ipairs, unpack, string.format, GetAddOnMetadata, sort, wipe, CreateFrame, UnitName, UnitLevel, UnitDebuff, IsInInstance, SetUIVisibility, SetCVar
+local select, next, pairs, ipairs, unpack, string_format, math_sqrt, GetAddOnMetadata, CreateFrame, UnitLevel, UnitDebuff, IsInInstance, SetUIVisibility, SetCVar, C_NamePlate =
+      select, next, pairs, ipairs, unpack, string.format, math.sqrt, GetAddOnMetadata, CreateFrame, UnitLevel, UnitDebuff, IsInInstance, SetUIVisibility, SetCVar, C_NamePlate
 
 -- Localized namespace definitions
+local hasModernAPI = RBP.hasModernAPI
+local EventHandler = RBP.EventHandler
 local VirtualPlates = RBP.VirtualPlates
 local PlatesVisible = RBP.PlatesVisible
-local UpdateCastTextString = RBP.UpdateCastTextString
-local TargetHandler = RBP.TargetHandler
+local UpdateRefinedPlateDelayed = RBP.UpdateRefinedPlateDelayed
 local SetupRefinedPlate = RBP.SetupRefinedPlate
 local ForceLevelHide = RBP.ForceLevelHide
 local CheckLDWZoneIndoors = RBP.CheckLDWZoneIndoors
 local CheckDominateMind = RBP.CheckDominateMind
 local UpdateGroupInfo = RBP.UpdateGroupInfo
 local UpdateArenaInfo = RBP.UpdateArenaInfo
-local UpdateClassColor = RBP.UpdateClassColor
-local UpdateHealthBarColor = RBP.UpdateHealthBarColor
 local ExecuteClickboxSecureScript = RBP.ExecuteClickboxSecureScript
 local InitPlatesClickboxes = RBP.InitPlatesClickboxes
 local ClickboxAttributeUpdater = RBP.ClickboxAttributeUpdater
+local UpdateClickboxOutOfCombat = RBP.UpdateClickboxOutOfCombat
 local UpdateClickbox = RBP.UpdateClickbox
 local UpdatePlateFlags = RBP.UpdatePlateFlags
 local ResetPlateFlags = RBP.ResetPlateFlags
+local PlatesUpdate = RBP.PlatesUpdate 
+local PlatesUpdateModern = RBP.PlatesUpdateModern
+local PlatesSecUpdate = RBP.PlatesSecUpdate
+local RefreshGroupVisuals = RBP.RefreshGroupVisuals
+local UpdateRaidIcon = RBP.UpdateRaidIcon
 local UpdateRefinedPlate = RBP.UpdateRefinedPlate
 local ResetRefinedPlate = RBP.ResetRefinedPlate
 local UpdateStacking = RBP.UpdateStacking
-local PlatesSecUpdate = RBP.PlatesSecUpdate
+local SetRegionsAlpha = RBP.SetRegionsAlpha
 
 -- Local definitions
-local EventHandler = CreateFrame("Frame", nil, WorldFrame) -- Main addon frame (event handler + access to native frame methods)
 local PlateOverrides = {}	 -- Storage table: [MethodName] = override function for virtual plates
-local PlateLevels = 3 	     -- Frame level difference between plates so one plate's children don't overlap the next closest plate
 local NextUpdate = 0.05		 -- Time controller for PlatesUpdate
 local UpdateRate = 0.05	     -- Minimum time between PlatesUpdate.
 local NextSecUpdate = 0.2    -- Time controller for PlatesSecUpdate
@@ -44,7 +47,6 @@ local SecUpdateRate = 0.2	 -- Minimum time between PlatesSecUpdate.
 
 -- Backup of native frame methods
 local WorldFrame_GetChildren = WorldFrame.GetChildren
-local SetFrameLevel = EventHandler.SetFrameLevel
 local GetParent = EventHandler.GetParent
 
 -- Status Flags
@@ -71,207 +73,144 @@ RBP.HB_BOTTOMLEFT_Y = 4
 RBP.TG_TOP_X = -1.28
 RBP.TG_TOP_Y = -8.32
 
--- Plate handling and updating	
-do
-	local SortOrder, Depths = {}, {}
+local function PlateOnShow(Plate)
+	local Virtual = Plate.VirtualPlate
+	PlatesVisible[Plate] = Virtual
+	ExistsVisiblePlates = true
+	UpdatePlateFlags(Virtual)
+	UpdateRefinedPlate(Virtual)
+	UpdateRefinedPlateDelayed(Virtual)
+	UpdateClickbox(Virtual)
+	NextUpdate = 0
+end
 
-	local function PlateOnShow(Plate)
-		local Virtual = Plate.VirtualPlate
-		PlatesVisible[Plate] = Virtual
-		ExistsVisiblePlates = true
-		NextUpdate = 0 -- sorts instantly
-		UpdatePlateFlags(Plate)
-		UpdateRefinedPlate(Plate)
-		TargetHandler(Plate)
-		UpdateClickbox(Plate)
+local function PlateOnHide(Plate)
+	local Virtual = Plate.VirtualPlate
+	PlatesVisible[Plate] = nil
+	ExistsVisiblePlates = next(PlatesVisible) ~= nil
+	ResetPlateFlags(Virtual)
+	ResetRefinedPlate(Virtual)
+	if RBP.inCombat then
+		ExecuteClickboxSecureScript()
 	end
+end
 
-	local function PlateOnHide(Plate)
-		PlatesVisible[Plate] = nil
-		ExistsVisiblePlates = next(PlatesVisible) ~= nil
-		ResetPlateFlags(Plate)
-		ResetRefinedPlate(Plate)
-		if RBP.inCombat then
-			ExecuteClickboxSecureScript()
+--- Parents all plate children to the Virtual, and saves references to them in the plate.
+-- @ param Plate  Original nameplate children are being removed from.
+-- @ param ...  Children of Plate to be reparented.
+local function ReparentChildren(Plate, ...)
+	local Virtual = Plate.VirtualPlate
+	for Index = 1, select("#", ...) do
+		local Child = select(Index, ...)
+		if Child ~= Virtual then
+			local LevelOffset = Child:GetFrameLevel() - Plate:GetFrameLevel()
+			Child:SetParent(Virtual)
+			Child:SetFrameLevel( Virtual:GetFrameLevel() + LevelOffset) -- Maintain relative frame levels
+			Plate[#Plate + 1] = Child;
 		end
 	end
+end
 
-	--- Update all visible nameplates
-	local mouseoverName, Depth, Virtual
-	local function PlatesUpdate()
-		if not ExistsVisiblePlates then return end
-		mouseoverName = UnitName("mouseover")
-		for Plate, Virtual in pairs(PlatesVisible) do
-			Depth = Virtual:GetEffectiveDepth()
-			if Depth > 0 then
-				SortOrder[#SortOrder + 1] = Plate
-				if Plate.isTarget then
-					Depths[Plate] = -1
-				else
-					Depths[Plate] = Depth
-				end
-				if Virtual.isShown then
-					----------------------- Improved mouseover highlight -----------------------
-					if Virtual.healthBarHighlight:IsShown() then
-						if Plate.nameString ~= mouseoverName then
-							Virtual.healthBarHighlight:Hide()
-						elseif not Virtual.nameTextIsYellow then
-							Virtual.newNameText:SetTextColor(1, 1, 0)
-							Virtual.nameTextIsYellow  = true
-							if Virtual.castBarIsShown and not Virtual.castText:GetText() then
-								UpdateCastTextString(Virtual, "mouseover")
-							end
-						end
-					elseif Virtual.nameTextIsYellow then
-						Virtual.newNameText:SetTextColor(Virtual.nameColorR, Virtual.nameColorG, Virtual.nameColorB)
-						Virtual.nameTextIsYellow = false
-					end
-				end
+--- Parents all plate regions to the Virtual, similar to ReparentChildren.
+-- @ see ReparentChildren
+local function ReparentRegions(Plate, ...)
+	local Virtual = Plate.VirtualPlate
+	for Index = 1, select("#", ...) do
+		local Region = select(Index, ...)
+		Region:SetParent(Virtual)
+		Plate[#Plate + 1] = Region
+	end
+end
+
+--- Adds and skins a new nameplate.
+-- @ param Plate  Newly found default nameplate to be hooked.
+local function PlateAdd(Plate)
+	local Virtual = CreateFrame("Frame", nil, Plate)
+	Plate.VirtualPlate = Virtual
+	Virtual.RealPlate = Plate
+	VirtualPlates[Plate] = Virtual
+	
+	if nameplateSizeCheck then
+		nameplateSizeCheck = false
+		RBP.NP_WIDTH, RBP.NP_HEIGHT = Plate:GetSize()
+		RBP.NP_SCALE = RBP.NP_WIDTH/128
+		local healthBar = Plate:GetChildren()
+		local NPx, NPy = Plate:GetCenter()
+		local HBx, HBy = healthBar:GetCenter()
+		if NPy and HBy then
+			RBP.HB_CENTER_X, RBP.HB_CENTER_Y = HBx - NPx, HBy - NPy
+			RBP.HB_BOTTOMLEFT_X, RBP.HB_BOTTOMLEFT_Y = select(4, healthBar:GetPoint(1))
+			RBP.TG_TOP_X, RBP.TG_TOP_Y = select(4,Plate:GetRegions():GetPoint(1))
+		else
+			RBP.HB_CENTER_X, RBP.HB_CENTER_Y = RBP.HB_CENTER_X * RBP.NP_SCALE, RBP.HB_CENTER_Y * RBP.NP_SCALE
+			RBP.HB_BOTTOMLEFT_X, RBP.HB_BOTTOMLEFT_Y = RBP.HB_BOTTOMLEFT_X * RBP.NP_SCALE, RBP.HB_BOTTOMLEFT_Y * RBP.NP_SCALE
+			RBP.TG_TOP_X, RBP.TG_TOP_Y = RBP.TG_TOP_X * RBP.NP_SCALE, RBP.TG_TOP_Y * RBP.NP_SCALE
+		end
+		RBP:UpdateClickboxAttributes()
+	end
+
+	Virtual:Hide() -- Gets explicitly shown on plate show
+	Virtual:SetPoint("TOP")
+	Virtual:SetSize(RBP.NP_WIDTH, RBP.NP_HEIGHT)
+	ReparentChildren(Plate, Plate:GetChildren())
+	ReparentRegions(Plate, Plate:GetRegions())
+	Virtual:SetScale(RBP.dbp.globalScale or 1)
+	Virtual:EnableDrawLayer("HIGHLIGHT") -- Allows the highlight to show without enabling mouse events
+
+	Plate:SetScript("OnShow", PlateOnShow)
+	Plate:SetScript("OnHide", PlateOnHide)
+
+	-- Hook methods
+	for Key, Value in pairs(PlateOverrides) do
+		Virtual[Key] = Value
+	end
+
+	SetupRefinedPlate(Virtual)
+
+	if not hasModernAPI and Plate:IsVisible() then
+		PlateOnShow(Plate)
+	end
+
+	-- Force recalculation of effective depth for all child frames
+	local WFDepth = WorldFrame:GetDepth()
+	WorldFrame:SetDepth(WFDepth + 1)
+	WorldFrame:SetDepth(WFDepth)
+end
+
+local function IsNamePlate(frame)
+	local _, r2 = frame:GetRegions()
+	return r2 and r2:GetObjectType() == "Texture" and r2:GetTexture() == "Interface\\Tooltips\\Nameplate-Border"
+end
+
+local ChildCount, NewChildCount = 0
+local function WorldFrameOnUpdate(self, elapsed)
+	NewChildCount = self:GetNumChildren()
+	if ChildCount ~= NewChildCount then
+		for i = ChildCount + 1, NewChildCount do
+			local child = select(i, WorldFrame_GetChildren(self))
+			if not VirtualPlates[child] and IsNamePlate(child) then
+				PlateAdd(child)
 			end
 		end
-		------- FrameLevels update based on sorting so regions don't overlap -------
-		if #SortOrder > 0 then
-			sort(SortOrder, function(a, b) return Depths[a] > Depths[b] end)
-			for Index, Plate in ipairs(SortOrder) do
-				Virtual = Plate.VirtualPlate
-				if RBP.dbp.showClickbox then
-					SetFrameLevel(Plate, Index * PlateLevels + 1)
-				end
-				if Plate.totemPlateIsShown then
-					SetFrameLevel(Plate.totemPlate, Index * PlateLevels)
-				end
-				if Plate.barlessPlateIsShown then
-					SetFrameLevel(Plate.barlessPlate, Index * PlateLevels + 1)
-				end
-				if Virtual.isShown then
-					SetFrameLevel(Virtual, Index * PlateLevels)
-				end
-				if Virtual.healthBarIsShown then
-					SetFrameLevel(Virtual.healthBar, Index * PlateLevels)
-				end
-				if Virtual.castBarIsShown then
-					SetFrameLevel(Virtual.castBar, Index * PlateLevels - 1)
-				end
-				if Virtual.BGHframe then
-					SetFrameLevel(Virtual.BGHframe, Index * PlateLevels + 1) 
-				end
-			end
-			wipe(SortOrder)
-		end
+		ChildCount = NewChildCount
 	end
-
-	--- Parents all plate children to the Virtual, and saves references to them in the plate.
-	-- @ param Plate  Original nameplate children are being removed from.
-	-- @ param ...  Children of Plate to be reparented.
-	local function ReparentChildren(Plate, ...)
-		local Virtual = Plate.VirtualPlate
-		for Index = 1, select("#", ...) do
-			local Child = select(Index, ...)
-			if Child ~= Virtual then
-				local LevelOffset = Child:GetFrameLevel() - Plate:GetFrameLevel()
-				Child:SetParent(Virtual)
-				Child:SetFrameLevel( Virtual:GetFrameLevel() + LevelOffset) -- Maintain relative frame levels
-				Plate[#Plate + 1] = Child;
-			end
-		end
+	if not ExistsVisiblePlates then return end
+	if RBP.dbp.stackingEnabled then
+		UpdateStacking(elapsed)
 	end
-
-	--- Parents all plate regions to the Virtual, similar to ReparentChildren.
-	-- @ see ReparentChildren
-	local function ReparentRegions(Plate, ...)
-		local Virtual = Plate.VirtualPlate
-		for Index = 1, select("#", ...) do
-			local Region = select(Index, ...)
-			Region:SetParent(Virtual)
-			Plate[#Plate + 1] = Region
-		end
-	end
-
-	--- Adds and skins a new nameplate.
-	-- @ param Plate  Newly found default nameplate to be hooked.
-	local function PlateAdd(Plate)
-		local Virtual = CreateFrame("Frame", nil, Plate)
-		Plate.VirtualPlate = Virtual
-		Virtual.RealPlate = Plate
-		VirtualPlates[Plate] = Virtual
-		
-		if nameplateSizeCheck then
-			nameplateSizeCheck = false
-			RBP.NP_WIDTH, RBP.NP_HEIGHT = Plate:GetSize()
-			RBP.NP_SCALE = RBP.NP_WIDTH/128
-			local healthBar = Plate:GetChildren()
-			local NPx, NPy = Plate:GetCenter()
-			local HBx, HBy = healthBar:GetCenter()
-			if NPy and HBy then
-				RBP.HB_CENTER_X, RBP.HB_CENTER_Y = HBx - NPx, HBy - NPy
-				RBP.HB_BOTTOMLEFT_X, RBP.HB_BOTTOMLEFT_Y = select(4, healthBar:GetPoint(1))
-				RBP.TG_TOP_X, RBP.TG_TOP_Y = select(4,Plate:GetRegions():GetPoint(1))
-			else
-				RBP.HB_CENTER_X, RBP.HB_CENTER_Y = RBP.HB_CENTER_X * RBP.NP_SCALE, RBP.HB_CENTER_Y * RBP.NP_SCALE
-				RBP.HB_BOTTOMLEFT_X, RBP.HB_BOTTOMLEFT_Y = RBP.HB_BOTTOMLEFT_X * RBP.NP_SCALE, RBP.HB_BOTTOMLEFT_Y * RBP.NP_SCALE
-				RBP.TG_TOP_X, RBP.TG_TOP_Y = RBP.TG_TOP_X * RBP.NP_SCALE, RBP.TG_TOP_Y * RBP.NP_SCALE
-			end
-			RBP:UpdateClickboxAttributes()
-		end
-
-		Virtual:Hide() -- Gets explicitly shown on plate show
-		Virtual:SetPoint("TOP")
-		Virtual:SetSize(RBP.NP_WIDTH, RBP.NP_HEIGHT)
-		ReparentChildren(Plate, Plate:GetChildren())
-		ReparentRegions(Plate, Plate:GetRegions())
-		Virtual:SetScale(RBP.dbp.globalScale or 1)
-		Virtual:EnableDrawLayer("HIGHLIGHT") -- Allows the highlight to show without enabling mouse events
-
-		Plate:SetScript("OnShow", PlateOnShow)
-		Plate:SetScript("OnHide", PlateOnHide)
-
-		-- Hook methods
-		for Key, Value in pairs(PlateOverrides) do
-			Virtual[Key] = Value
-		end
-
-		SetupRefinedPlate(Virtual)
-
-		if Plate:IsVisible() then
-			PlateOnShow(Plate)
-		end
-
-		-- Force recalculation of effective depth for all child frames
-		local Depth = WorldFrame:GetDepth()
-		WorldFrame:SetDepth(Depth + 1)
-		WorldFrame:SetDepth(Depth)
-	end
-
-	local function IsNamePlate(frame)
-		local _, r2 = frame:GetRegions()
-		return r2 and r2:GetObjectType() == "Texture" and r2:GetTexture() == "Interface\\Tooltips\\Nameplate-Border"
-	end
-
-	local ChildCount, NewChildCount = 0
-	function RBP:WorldFrameOnUpdate(elapsed)
-		NewChildCount = self:GetNumChildren()
-		if ChildCount ~= NewChildCount then
-			for i = ChildCount + 1, NewChildCount do
-				local child = select(i, WorldFrame_GetChildren(self))
-				if IsNamePlate(child) then
-					PlateAdd(child)
-				end
-			end
-			ChildCount = NewChildCount
-		end
-		if RBP.dbp.stackingEnabled then
-			UpdateStacking()
-		end
-		NextUpdate = NextUpdate - elapsed
-		if NextUpdate <= 0 then
-			NextUpdate = UpdateRate
+	NextUpdate = NextUpdate - elapsed
+	if NextUpdate <= 0 then
+		NextUpdate = UpdateRate
+		if hasModernAPI then
+			PlatesUpdateModern()
+		else
 			PlatesUpdate()
 		end
-		NextSecUpdate = NextSecUpdate - elapsed
-		if NextSecUpdate <= 0 then
-			NextSecUpdate = SecUpdateRate
-			PlatesSecUpdate()
-		end
+	end
+	NextSecUpdate = NextSecUpdate - elapsed
+	if NextSecUpdate <= 0 then
+		NextSecUpdate = SecUpdateRate
+		PlatesSecUpdate()
 	end
 end
 
@@ -296,7 +235,7 @@ do
 	end
 end
 
-WorldFrame:HookScript("OnUpdate", RBP.WorldFrameOnUpdate) -- First OnUpdate handler to run
+WorldFrame:HookScript("OnUpdate", WorldFrameOnUpdate) -- First OnUpdate handler to run
 
 do
 	--- Add method overrides to be applied to plates' Virtuals.
@@ -425,6 +364,11 @@ function EventHandler:PLAYER_REGEN_ENABLED()
 		RBP.delayedClickboxUpdate = false
 		ClickboxAttributeUpdater()
 	end
+    if hasModernAPI and RBP.dbp.depthScaling then
+        for _, Virtual in pairs(PlatesVisible) do
+        	UpdateClickboxOutOfCombat(Virtual)
+        end
+    end
 end
 
 function EventHandler:PLAYER_REGEN_DISABLED()
@@ -435,7 +379,7 @@ end
 
 function EventHandler:PLAYER_TARGET_CHANGED()
 	RBP.hasTarget = UnitExists("target") == 1
-	RBP.TargetUpdater:Show()
+	RBP.GlobalDelayedUpdater:Show()
 end
 
 function EventHandler:PLAYER_ENTERING_WORLD()
@@ -457,10 +401,7 @@ end
 
 function EventHandler:PARTY_MEMBERS_CHANGED()
 	UpdateGroupInfo()
-	for Plate in pairs(PlatesVisible) do
-		UpdateClassColor(Plate)
-		UpdateHealthBarColor(Plate)
-	end
+	RefreshGroupVisuals()
 end
 
 function EventHandler:PLAYER_PVP_RANK_CHANGED()
@@ -495,13 +436,29 @@ function EventHandler:UNIT_AURA(event, unit)
 end
 
 function EventHandler:RAID_TARGET_UPDATE()
-	RBP:UpdateAllShownPlates()
+	for _, Virtual in pairs(PlatesVisible) do
+		UpdateRaidIcon(Virtual)
+	end
 end
 
-function EventHandler:NAME_PLATE_UNIT_ADDED(event, token)
-	local Plate = C_NamePlate.GetNamePlateForUnit(token)
-	if Plate and not Plate.namePlateUnitToken then
-		Plate.namePlateUnitToken = token
+function EventHandler:NAME_PLATE_CREATED(event, Plate)
+	if not VirtualPlates[Plate] then
+		PlateAdd(Plate)
+	end
+end
+
+function EventHandler:NAME_PLATE_UNIT_ADDED(event, nameplateID)
+	local Plate = C_NamePlate.GetNamePlateForUnit(nameplateID)
+	if not Plate then return end
+	if not Plate.namePlateUnitToken then
+		Plate.namePlateUnitToken = nameplateID
+		Plate.VirtualPlate.namePlateUnitToken = nameplateID
+		if Plate:IsVisible() then
+			PlateOnShow(Plate)
+		end
+	else
+		Plate.namePlateUnitToken = nameplateID
+		Plate.VirtualPlate.namePlateUnitToken = nameplateID
 	end
 end
 
@@ -526,7 +483,7 @@ EventHandler:RegisterEvent("ARENA_OPPONENT_UPDATE")
 EventHandler:RegisterEvent("ZONE_CHANGED_INDOORS")
 EventHandler:RegisterEvent("UNIT_AURA")
 EventHandler:RegisterEvent("RAID_TARGET_UPDATE")
-if C_NamePlate then
+if hasModernAPI then
+	EventHandler:RegisterEvent("NAME_PLATE_CREATED")
 	EventHandler:RegisterEvent("NAME_PLATE_UNIT_ADDED")
 end
-RBP.EventHandler = EventHandler
