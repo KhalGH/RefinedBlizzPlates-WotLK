@@ -128,7 +128,7 @@ RBP.dbp.gainingAggroColor = {0.36, 1.00, 0.82}
 RBP.dbp.losingAggroColor = {0.7, 0.2, 0.4}
 -- CastBar
 RBP.dbp.castBar_Tex = "KhalBar"
-RBP.dbp.castBar_progressiveTexCrop = true
+RBP.dbp.castBar_progressiveTexCrop = false
 RBP.dbp.castBar_color = {1, 0.7, 0}
 RBP.dbp.castBar_channelingColor = {1, 0.7, 0}
 RBP.dbp.castBar_showSpark = true
@@ -137,7 +137,8 @@ RBP.dbp.castBar_protectedBorderTint = {1, 1, 1} -- This a tint overlay, not a re
 RBP.dbp.castBar_bgTex = "KhalBar"
 RBP.dbp.castBar_bgColor = {0, 0, 0}
 RBP.dbp.castBar_bgAlpha = 0.5
-RBP.dbp.castBar_nonTargetPatch = false
+RBP.dbp.castBar_forcedFading = false
+RBP.dbp.castBar_completionTol = 0.05
 -- Cast Text
 RBP.dbp.castText_hide = false
 RBP.dbp.castText_font = RBP.RefinedFontKey
@@ -404,7 +405,7 @@ RBP.MainOptionTable = {
 					order = 17,
 					type = "toggle",
 					name = L["Non-target Alpha Mod"],
-					desc = L["Overrides non-target nameplate opacity. May slightly increase CPU usage."],
+					desc = L["Overrides non-target nameplate opacity. May increase CPU usage depending on the number of visible nameplates."],
 					set = function(info, val)
 						RBP.dbp[info[#info]] = val
 						RBP:UpdateNonTargetAlphaDriver()
@@ -440,7 +441,7 @@ RBP.MainOptionTable = {
 					name = L["Clickbox Width Factor"],
 					desc = L["Scales the nameplate clickbox relative to its original size. Recommended to change this setting while out of combat."],
 					min = 0.25,
-					max = 1.5,
+					max = 2.5,
 					step = 0.01,
 					set = function(info, val)
 						RBP.dbp[info[#info]] = val
@@ -454,7 +455,7 @@ RBP.MainOptionTable = {
 					name = L["Clickbox Height Factor"],
 					desc = L["Scales the nameplate clickbox relative to its original size. Recommended to change this setting while out of combat."],
 					min = 0.25,
-					max = 1.5,
+					max = 2.5,
 					step = 0.01,
 					set = function(info, val)
 						RBP.dbp[info[#info]] = val
@@ -578,7 +579,7 @@ RBP.MainOptionTable = {
 					type = "range",
 					name = L["Collider Width"],
 					desc = L["Sets the width of the virtual collider centered on each nameplate used to detect overlaps."],
-					min = 20,
+					min = 0,
 					max = 200,
 					step = 1,
 					disabled = function()
@@ -590,7 +591,7 @@ RBP.MainOptionTable = {
 					type = "range",
 					name = L["Collider Height"],
 					desc = L["Sets the height of the virtual collider centered on each nameplate used to detect overlaps."],
-					min = 5,
+					min = 0,
 					max = 50,
 					step = 1,
 					disabled = function()
@@ -648,15 +649,15 @@ RBP.MainOptionTable = {
 				depth_header = {
 					order = 52,
 					type = "header",
-					name = L["Depth Perspective"],
+					name = L["Depth Perception"],
 					hidden = function() return not RBP.hasModernAPI end,
 				},
 				lineBreak24 = {order = 53, type = "description", name = ""},
 				depthScaling = {
 					order = 54,
 					type = "toggle",
-					name = L["Depth Scaling"],
-					desc = L["Scales nameplates by camera distance, so distant plates appear smaller. This feature has a high CPU cost, use it with discretion. Not recommended to use together with Retail-like Stacking."],
+					name = L["Distance Shrinking"],
+					desc = L["Shrinks nameplates by camera distance. This feature has a high CPU cost, use it with discretion. Not recommended to use together with Retail-like Stacking."],
 					set = function(info, val)
 						RBP.dbp[info[#info]] = val
 						if not val then
@@ -669,8 +670,8 @@ RBP.MainOptionTable = {
 				depthPivot = {
 					order = 55,
 					type = "range",
-					name = L["Depth Pivot"],
-					desc = L["Reference depth where plates keep their normal size. Beyond it, they shrink."],
+					name = L["Shrink Start Distance"],
+					desc = L["Camera distance where shrinking begins. Closer plates keep their normal size."],
 					min = 40,
 					max = 120,
 					step = 1,
@@ -680,7 +681,7 @@ RBP.MainOptionTable = {
 				minScaleFactor = {
 					order = 56,
 					type = "range",
-					name = L["Min Scale Factor"],
+					name = L["Minimum Scale"],
 					desc = L["The smallest scale a distant nameplate can reach."],
 					min = 0.1,
 					max = 1.0,
@@ -692,8 +693,8 @@ RBP.MainOptionTable = {
 				depthFading = {
 					order = 58,
 					type = "toggle",
-					name = L["Depth Fading"],
-					desc = L["Fades nameplates as they move further from the camera. This feature has a high CPU cost, use it with discretion. Not recommended to use together with Retail-like Stacking."],
+					name = L["Distance Fading"],
+					desc = L["Fades nameplates by camera distance. This feature has a high CPU cost, use it with discretion. Not recommended to use together with Retail-like Stacking."],
 					set = function(info, val)
 						RBP.dbp[info[#info]] = val
 						if not val then
@@ -706,8 +707,8 @@ RBP.MainOptionTable = {
 				depthFadeStart = {
 					order = 59,
 					type = "range",
-					name = L["Fade Start Depth"],
-					desc = L["Depth where fading begins. Closer plates stay fully visible."],
+					name = L["Fade Start Distance"],
+					desc = L["Camera distance where fading begins. Closer plates stay fully visible."],
 					min = 40,
 					max = 140,
 					step = 1,
@@ -718,7 +719,7 @@ RBP.MainOptionTable = {
 					order = 60,
 					type = "range",
 					name = L["Fade Range"],
-					desc = L["Depth distance over which nameplates fade out completely."],
+					desc = L["Distance between fading stages. Higher values make nameplates disappear farther away."],
 					min = 1,
 					max = 60,
 					step = 1,
@@ -1282,7 +1283,8 @@ RBP.MainOptionTable = {
 				healthBar_progressiveTexCrop = {
 					order = 8,
 					type = "toggle",
-					name = L["Progressive Texture Cropping"],
+					name = L["Progressive Cropping"],
+					desc = L["Reveals the health bar texture progressively as health changes, instead of stretching it."],
 				},
 				healthBar_friendColor = {
 					order = 9,
@@ -1795,21 +1797,17 @@ RBP.MainOptionTable = {
 				castBar_progressiveTexCrop = {
 					order = 7,
 					type = "toggle",
-					name = L["Progressive Texture Cropping"],
+					name = L["Progressive Cropping"],
+					desc = L["Reveals the cast bar texture progressively as the cast advances, instead of stretching it."],
 				},
 				castBar_showSpark = {
 					order = 8,
 					type = "toggle",
 					name = L["Show Spark"],
-				},
-				castBar_nonTargetPatch = {
-					order = 9,
-					type = "toggle",
-					name = L["Non-target units fade"],
-					desc = L["Improves the non-target castbar fade effect when using the corresponding patch. Leave this option disabled if the patch is not installed."],
+					desc = L["Shows a spark that follows the current cast progress."],
 				},
 				castBar_borderTint = {
-					order = 10,
+					order = 9,
 					type = "color",
 					name = L["Border Tint"],
 					desc = L["This is a tint overlay, not a regular color. 'White' keeps the original look."],
@@ -1823,7 +1821,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castBar_protectedBorderTint = {
-					order = 11,
+					order = 10,
 					type = "color",
 					name = L["Protected Border Tint"],
 					desc = L["This is a tint overlay, not a regular color. 'White' keeps the original look."],
@@ -1836,22 +1834,22 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllCastBars()
 					end,
 				},
-				lineBreak3 = {order = 12, type = "description", name = ""},
+				lineBreak3 = {order = 11, type = "description", name = ""},
 				castBar_bgHeader = {
-					order = 13,
+					order = 12,
 					type = "header",
 					name = L["Background"],
 				},
-				lineBreak4 = {order = 14, type = "description", name = ""},
+				lineBreak4 = {order = 13, type = "description", name = ""},
 				castBar_bgTex = {
-					order = 15,
+					order = 14,
 					type = "select",
 					name = L["Texture"],
 					dialogControl = "LSM30_Statusbar",
 					values = AceGUIWidgetLSMlists.statusbar,
 				},
 				castBar_bgColor = {
-					order = 16,
+					order = 15,
 					type = "color",
 					name = L["Color"],
 					get = function(info)
@@ -1864,7 +1862,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castBar_bgAlpha = {
-					order = 17,
+					order = 16,
 					type = "range",
 					name = L["Alpha"],
 					min = 0,
@@ -1872,15 +1870,40 @@ RBP.MainOptionTable = {
 					step = 0.01,
 					isPercent = true,
 				},
-				lineBreak5 = {order = 18, type = "description", name = ""},
+				lineBreak5 = {order = 17, type = "description", name = ""},
+				castBar_fadingHeader = {
+					order = 18,
+					type = "header",
+					name = L["Fading"],
+				},
+				lineBreak6 = {order = 19, type = "description", name = ""},
+				castBar_forcedFading = {
+					order = 20,
+					type = "toggle",
+					name = L["Enable"],
+					desc = L["Forces ended casts to fade out smoothly instead of disappearing instantly."],
+				},
+				castBar_completionTol = {
+					order = 21,
+					type = "range",
+					name = L["Completion Tolerance"],
+					desc = L["Tolerance for detecting completed casts, which may vary with server latency. Increase it if completed casts are shown as Failed; decrease it if failed casts are shown as completed."],
+					min = 0.01,
+					max = 0.2,
+					step = 0.01,
+					disabled = function()
+						return not RBP.dbp.castBar_forcedFading
+					end,
+				},
+				lineBreak7 = {order = 22, type = "description", name = ""},
 				castText_header = {
-					order = 19,
+					order = 23,
 					type = "header",
 					name = L["Cast Text"],
 				},
-				lineBreak6 = {order = 20, type = "description", name = ""},
+				lineBreak8 = {order = 24, type = "description", name = ""},
 				castText_font = {
-					order = 21,
+					order = 25,
 					type = "select",
 					name = L["Text Font"],
 					values = RBP.LSM:HashTable("font"),
@@ -1890,7 +1913,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castText_size = {
-					order = 22,
+					order = 26,
 					type = "range",
 					name = L["Font Size"],
 					min = 5,
@@ -1901,7 +1924,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castText_outline = {
-					order = 23,
+					order = 27,
 					type = "select", 
 					name = L["Outline"],
 					values = {
@@ -1917,7 +1940,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castText_anchor = {
-					order = 24,
+					order = 28,
 					type = "select", 
 					name = L["Anchor"],
 					values = {
@@ -1936,7 +1959,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castText_offsetX = {
-					order = 25,
+					order = 29,
 					type = "range",
 					name = L["Offset X"],
 					min = -50,
@@ -1947,7 +1970,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castText_offsetY = {
-					order = 26,
+					order = 30,
 					type = "range",
 					name = L["Offset Y"],
 					min = -50,
@@ -1958,7 +1981,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castText_width = {
-					order = 27,
+					order = 31,
 					type = "range",
 					name = L["Width"],
 					min = 50,
@@ -1969,7 +1992,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castText_color = {
-					order = 28,
+					order = 32,
 					type = "color",
 					name = L["Text Color"],
 					get = function(info)
@@ -1985,20 +2008,20 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castText_hide = {
-					order = 29,
+					order = 33,
 					type = "toggle",
 					name = L["Hide Cast Text"],
 				},
-				lineBreak7 = {order = 30, type = "description", name = ""},
-				lineBreak8 = {order = 31, type = "description",	name = ""},
+				lineBreak9 = {order = 34, type = "description", name = ""},
+				lineBreak10 = {order = 35, type = "description",	name = ""},
 				castTimerText_header = {
-					order = 32,
+					order = 36,
 					type = "header",
 					name = L["Cast Timer Text"],
 				},
-				lineBreak9 = {order = 33, type = "description", name = ""},
+				lineBreak11 = {order = 37, type = "description", name = ""},
 				castTimerText_font = {
-					order = 34,
+					order = 38,
 					type = "select",
 					name = L["Text Font"],
 					values = RBP.LSM:HashTable("font"),
@@ -2008,7 +2031,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castTimerText_size = {
-					order = 35,
+					order = 39,
 					type = "range",
 					name = L["Font Size"],
 					min = 5,
@@ -2019,7 +2042,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castTimerText_outline = {
-					order = 36,
+					order = 40,
 					type = "select", 
 					name = L["Outline"],
 					values = {
@@ -2035,7 +2058,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castTimerText_anchor = {
-					order = 37,
+					order = 41,
 					type = "select", 
 					name = L["Anchor"],
 					values = {
@@ -2054,7 +2077,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castTimerText_offsetX = {
-					order = 38,
+					order = 42,
 					type = "range",
 					name = L["Offset X"],
 					min = -50,
@@ -2065,7 +2088,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castTimerText_offsetY = {
-					order = 39,
+					order = 43,
 					type = "range",
 					name = L["Offset Y"],
 					min = -50,
@@ -2076,7 +2099,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castTimerText_color = {
-					order = 40,
+					order = 44,
 					type = "color",
 					name = L["Text Color"],
 					get = function(info)
@@ -2092,12 +2115,12 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castTimerText_hide = {
-					order = 41,
+					order = 45,
 					type = "toggle",
 					name = L["Hide Cast Timer Text"],
 				},
-				lineBreak10 = {order = 42, type = "description", name = ""},
-				lineBreak11 = {order = 43, type = "description", name = ""},
+				lineBreak12 = {order = 46, type = "description", name = ""},
+				lineBreak13 = {order = 47, type = "description", name = ""},
 			},
 		},
 		Icons = {

@@ -14,8 +14,8 @@ local ClassByFriendName = {}  	-- Storage table: maps friendly player names (par
 local ArenaID = {}            	-- Storage table: maps arena names to their ID number
 local PartyID = {}           	-- Storage table: maps party names to their ID number
 local StackablePlates = {}    	-- Storage table: Plates filtered for improved stacking
-local StackableList = {}
-local StackableCount = 0
+local StackableList = {}		-- Storage table: StackablePlates entries packed in a dense array for fast iteration
+local StackableCount = 0		-- Number of entries in StackableList
 local PlateLevels = 3			-- Frame level difference between plates so one plate's children don't overlap the next closest plate
 local ASSETS = "Interface\\AddOns\\" .. AddonFile .. "\\Assets\\"
 local EventHandler = CreateFrame("Frame", nil, WorldFrame)
@@ -622,7 +622,7 @@ local function HookCastBarScripts(Virtual)
 	local castBarTexFull = Virtual.RBP_castBarTexFull
 	local castText = Virtual.RBP_castText
 	local castTimerText = Virtual.RBP_castTimerText
-	local firstCastVal, secondCastVal, currCastVal, maxCastVal, lastOVC, channelingCompleted, castingFailed, alpha
+	local firstCastVal, secondCastVal, currCastVal, maxCastVal, lastOVC, channelingCompleted, castingFailed, alpha, lastTimerTenths, texCropped
 	local delayedCastBarOnShow = CreateFrame("Frame")
 	delayedCastBarOnShow:SetScript("OnUpdate", function(self)
 		self:Hide()
@@ -690,7 +690,7 @@ local function HookCastBarScripts(Virtual)
 	delayedCastBarOnHide:Hide()
 	delayedCastBarOnHide:SetScript("OnUpdate", function(self)
 		self:Hide()
-		if (RBP.dbp.castBar_nonTargetPatch or (RBP.hasTarget and Plate:GetAlpha() == 1)) and maxCastVal and not castBar:IsShown() and Virtual.RBP_healthBarIsShown then
+		if maxCastVal and Virtual.RBP_healthBarIsShown and not castBar:IsShown() and Virtual.RBP_isTarget == (RBP.hasTarget and Plate:GetAlpha() == 1) then
 			if Virtual.RBP_shieldCastBarBorderIsShown then
 				shieldCastBarBorder:Show()
 				UpdateShieldCastBarBorder(Virtual)
@@ -709,6 +709,7 @@ local function HookCastBarScripts(Virtual)
 	castBar:HookScript("OnShow", function(self)
 		castText:SetAlpha(1)
 		castText:SetText("")
+		lastTimerTenths = nil
 		if castBarRegionsFadeOut:IsShown() then
 			castBarRegionsFadeOut:Hide()
 			castBarRegionsFadeOut.elapsed = 0
@@ -730,23 +731,29 @@ local function HookCastBarScripts(Virtual)
 		secondCastVal = nil
 		currCastVal = nil
 		lastOVC = nil
-		delayedCastBarOnHide:Show()
+		if RBP.dbp.castBar_forcedFading then
+			delayedCastBarOnHide:Show()
+		else
+			maxCastVal = nil
+			castText:SetAlpha(1)
+			castText:SetText("")
+		end
 	end)
 	castBar:HookScript("OnValueChanged", function(self, val)
 		if val < 0.002 then
-			if currCastVal and maxCastVal and not lastOVC then
+			if RBP.dbp.castBar_forcedFading and currCastVal and maxCastVal and not lastOVC then
 				lastOVC = true
 				channelingCompleted = nil
 				castingFailed = nil
 				if Virtual.RBP_channelingFlag == 1 then
-					if currCastVal < 0.05 then
+					if currCastVal < RBP.dbp.castBar_completionTol then
 						castBarTexFull:SetVertexColor(0, 0, 0, 0.5)
 						channelingCompleted = true
 					else
 						castBarTexFull:SetVertexColor(unpack(RBP.dbp.castBar_channelingColor))
 					end
 				else
-					if maxCastVal - currCastVal < 0.05 then
+					if maxCastVal - currCastVal < RBP.dbp.castBar_completionTol then
 						castBarTexFull:SetVertexColor(0, 1, 0)
 					else
 						castBarTexFull:SetVertexColor(1, 0, 0)
@@ -783,13 +790,16 @@ local function HookCastBarScripts(Virtual)
 			if max > 0 then
 				if Virtual.RBP_castBarTexCrop then
 					castBarTex:SetTexCoord(0, val / max, 0, 1)
-				else
+					texCropped = true
+				elseif texCropped then
 					castBarTex:SetTexCoord(0, 1, 0, 1)
+					texCropped = nil
 				end
-				if Virtual.RBP_channelingFlag == 1 then
-					castTimerText:SetFormattedText("%.1f", val)
-				else
-					castTimerText:SetFormattedText("%.1f", max - val)					
+				local t = Virtual.RBP_channelingFlag == 1 and val or max - val
+				local tenths = math_floor(t * 10 + 0.5)
+				if lastTimerTenths ~= tenths then
+					lastTimerTenths = tenths
+					castTimerText:SetFormattedText("%.1f", t)
 				end
 			end
 		end
@@ -1253,7 +1263,7 @@ end
 local function DelayedUpdate(Virtual)
 	local Plate = Virtual.RealPlate
 	local dbp = RBP.dbp
-	Virtual.RBP_isTarget = RBP.hasTarget and Plate:GetAlpha() > 0.999
+	Virtual.RBP_isTarget = RBP.hasTarget and Plate:GetAlpha() == 1
 	if Virtual.RBP_isTarget then
 		Virtual.RBP_targetGlow:Show()		
 		if Virtual.RBP_totemPlate_targetGlow then
@@ -1312,7 +1322,7 @@ end)
 local function UpdateNonTargetAlpha()
 	if not RBP.hasTarget then return end
 	for Plate in pairs(PlatesVisible) do
-		if Plate:GetAlpha() < 0.999 then
+		if Plate:GetAlpha() ~= 1 then
 			Plate:SetAlpha(RBP.dbp.nonTargetAlpha)
 		end
 	end
@@ -2462,6 +2472,7 @@ function RBP:UpdateAllCastBars()
 			Virtual.RBP_castBarTex:SetVertexColor(unpack(dbp.castBar_color))
 		end
 		Virtual.RBP_castBarBorder:SetVertexColor(unpack(dbp.castBar_borderTint))
+		Virtual.RBP_castBarBorderAux:SetVertexColor(unpack(dbp.castBar_borderTint))
 		Virtual.RBP_shieldCastBarBorder:SetVertexColor(unpack(dbp.castBar_protectedBorderTint))
 		Virtual.RBP_castBarTex:SetTexture(RBP.LSM:Fetch("statusbar", dbp.castBar_Tex))
 		Virtual.RBP_castBarTexFull:SetTexture(RBP.LSM:Fetch("statusbar", dbp.castBar_Tex))
