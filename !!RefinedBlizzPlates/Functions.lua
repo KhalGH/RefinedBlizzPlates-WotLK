@@ -2472,7 +2472,6 @@ function RBP:UpdateAllCastBars()
 			Virtual.RBP_castBarTex:SetVertexColor(unpack(dbp.castBar_color))
 		end
 		Virtual.RBP_castBarBorder:SetVertexColor(unpack(dbp.castBar_borderTint))
-		Virtual.RBP_castBarBorderAux:SetVertexColor(unpack(dbp.castBar_borderTint))
 		Virtual.RBP_shieldCastBarBorder:SetVertexColor(unpack(dbp.castBar_protectedBorderTint))
 		Virtual.RBP_castBarTex:SetTexture(RBP.LSM:Fetch("statusbar", dbp.castBar_Tex))
 		Virtual.RBP_castBarTexFull:SetTexture(RBP.LSM:Fetch("statusbar", dbp.castBar_Tex))
