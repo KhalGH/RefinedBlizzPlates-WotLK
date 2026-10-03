@@ -36,7 +36,6 @@ local UpdateRaidIcon = RBP.UpdateRaidIcon
 local UpdateRefinedPlate = RBP.UpdateRefinedPlate
 local ResetRefinedPlate = RBP.ResetRefinedPlate
 local UpdateStacking = RBP.UpdateStacking
-local SetRegionsAlpha = RBP.SetRegionsAlpha
 
 -- Local definitions
 local PlateOverrides = {}	 -- Storage table: [MethodName] = override function for virtual plates
