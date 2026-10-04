@@ -861,9 +861,10 @@ local function HookCastBarScripts(Virtual)
 					if castTimerText:IsShown() then
 						castTimerText:SetFormattedText("%.1f", t)
 					end
-					if Virtual.RBP_castBarExpectedY then
+					local expectedY = Virtual.RBP_castBarExpectedY
+					if expectedY then
 						local _, _, _, _, y = self:GetPoint(1)
-						if math_abs(y - Virtual.RBP_castBarExpectedY) > 0.01 then
+						if math_abs(y - expectedY) > 0.01 then
 							UpdateCastBarRegionsAnchor(Virtual)
 						end
 					end
