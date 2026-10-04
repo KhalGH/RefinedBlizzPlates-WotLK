@@ -549,13 +549,23 @@ local function UpdateCastTextString(Virtual, unit)
 	end
 end
 
-local function UpdateCastBarRegions(Virtual)
+local function UpdateCastBarRegionsVisibility(Virtual)
 	Virtual.RBP_castBarBorder:SetAlpha(1)
 	Virtual.RBP_shieldCastBarBorder:SetAlpha(1)
 	if Virtual.RBP_ogShieldCastBarBorderIsShown then
 		Virtual.RBP_castBarBorder:Hide()
 		Virtual.RBP_shieldCastBarBorder:Show()
-		Virtual.RBP_castBar:SetPoint("BOTTOMRIGHT", Virtual.RBP_ogCastBarBorder, - 3 * RBP.NP_SCALE, 0.5 * RBP.NP_SCALE)
+		Virtual.RBP_castBarExpectedY = 0.5 * RBP.NP_SCALE
+	else
+		Virtual.RBP_castBarBorder:Show()
+		Virtual.RBP_shieldCastBarBorder:Hide()
+		Virtual.RBP_castBarExpectedY = 4.5 * RBP.NP_SCALE
+	end
+end
+
+local function UpdateCastBarRegionsAnchor(Virtual)
+	if Virtual.RBP_ogShieldCastBarBorderIsShown then
+		Virtual.RBP_castBar:SetPoint("BOTTOMRIGHT", Virtual.RBP_ogCastBarBorder, - 3 * RBP.NP_SCALE, Virtual.RBP_castBarExpectedY)
 		if RBP.dbp.healthBar_border == "Blizzard" then
 			Virtual.RBP_spellIcon:SetPoint("CENTER", Virtual.RBP_ogCastBarBorder, "BOTTOMLEFT", 11.8 * RBP.NP_SCALE, 4.5 * RBP.NP_SCALE)
 			Virtual.RBP_spellIcon:SetSize(13.73 * RBP.NP_SCALE, 13.73 * RBP.NP_SCALE)
@@ -564,9 +574,7 @@ local function UpdateCastBarRegions(Virtual)
 			Virtual.RBP_spellIcon:SetSize(13.73 * RBP.NP_SCALE, 13.73 * RBP.NP_SCALE)
 		end
 	else
-		Virtual.RBP_castBarBorder:Show()
-		Virtual.RBP_shieldCastBarBorder:Hide()
-		Virtual.RBP_castBar:SetPoint("BOTTOMRIGHT", Virtual.RBP_ogCastBarBorder, - 3.8 * RBP.NP_SCALE, 4.5 * RBP.NP_SCALE)
+		Virtual.RBP_castBar:SetPoint("BOTTOMRIGHT", Virtual.RBP_ogCastBarBorder, - 3.8 * RBP.NP_SCALE, Virtual.RBP_castBarExpectedY)
 		if RBP.dbp.healthBar_border == "Blizzard" then
 			Virtual.RBP_spellIcon:SetPoint("CENTER", Virtual.RBP_ogCastBarBorder, "BOTTOMLEFT", 13.16 * RBP.NP_SCALE, 8.58 * RBP.NP_SCALE)
 			Virtual.RBP_spellIcon:SetSize(13.73 * RBP.NP_SCALE, 13.73 * RBP.NP_SCALE)
@@ -669,7 +677,8 @@ local function HookCastBarScripts(Virtual)
 			Virtual.RBP_castBarIsShown = true
 			local unit = Virtual.namePlateUnitToken or Virtual.RBP_unitToken or (Virtual.RBP_isTarget and "target")
 			UpdateCastTextString(Virtual, unit)
-			UpdateCastBarRegions(Virtual)
+			UpdateCastBarRegionsVisibility(Virtual)
+			UpdateCastBarRegionsAnchor(Virtual)
 			if dbp.castBar_showSpark then
 				Virtual.RBP_castSpark:Hide()
 				Virtual.RBP_castBarInitSpark = true
@@ -738,7 +747,8 @@ local function HookCastBarScripts(Virtual)
 		self:Hide()
 		if castBar:IsShown() then return end
 		if maxCastVal and Virtual.RBP_healthBarIsShown and Virtual.RBP_isTarget == (RBP.hasTarget and Plate:GetAlpha() == 1) then
-			UpdateCastBarRegions(Virtual)
+			UpdateCastBarRegionsVisibility(Virtual)
+			UpdateCastBarRegionsAnchor(Virtual)
 			spellIcon:Show()
 			castBarTexFull:Show()
 			castBarRegionsFadeOut:Show()
@@ -773,6 +783,7 @@ local function HookCastBarScripts(Virtual)
 		Virtual.RBP_castBarInitSpark = nil
 		Virtual.RBP_castBarTexCrop = nil
 		Virtual.RBP_channelingFlag = nil
+		Virtual.RBP_castBarExpectedY = nil
 		firstCastVal = nil
 		secondCastVal = nil
 		currCastVal = nil
@@ -847,7 +858,15 @@ local function HookCastBarScripts(Virtual)
 				local tenths = math_floor(t * 10 + 0.5)
 				if lastTimerTenths ~= tenths then
 					lastTimerTenths = tenths
-					castTimerText:SetFormattedText("%.1f", t)
+					if castTimerText:IsShown() then
+						castTimerText:SetFormattedText("%.1f", t)
+					end
+					if Virtual.RBP_castBarExpectedY then
+						local _, _, _, _, y = self:GetPoint(1)
+						if math_abs(y - Virtual.RBP_castBarExpectedY) > 0.01 then
+							UpdateCastBarRegionsAnchor(Virtual)
+						end
+					end
 				end
 			end
 		end
