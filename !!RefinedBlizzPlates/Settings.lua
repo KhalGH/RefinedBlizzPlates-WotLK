@@ -4,6 +4,7 @@ local L = RBP.L
 
 if C_NamePlate and C_NamePlate.GetNamePlateForUnit then
 	RBP.hasModernAPI = true
+	RBP.hasPersistentClamping = GetCVar("nameplateOriginPos") ~= nil
 end
 
 ------------- Database -------------
@@ -32,6 +33,7 @@ RBP.dbp.levelFilter = 1    -- Minimum unit level to show its nameplate
 RBP.dbp.LDWfix = false      -- Hide nameplates when controlled by LDW
 -- Enhanced Stacking
 RBP.dbp.stackingEnabled = false
+RBP.dbp.disableCollisions = false
 RBP.dbp.xspace = 130
 RBP.dbp.yspace = 15
 RBP.dbp.originpos = 0
@@ -572,10 +574,23 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllShownPlates()
 					end,
 				},
-				lineBreak20 = {order = 42, type = "description", name = ""},
-				lineBreak21 = {order = 43, type = "description", name = ""},
+				disableCollisions = {
+					order = 42,
+					type = "toggle",
+					name = L["Disable Collisions"],
+					desc = L["Disables nameplate overlap resolution while preserving Vertical Offset and Clamping. In this mode, friendly and enemy nameplates are treated equally. Reduces CPU usage."],
+					set = function(info, val)
+						RBP.dbp[info[#info]] = val
+						RBP:UpdateAllShownPlates()
+					end,
+					disabled = function()
+						return not RBP.dbp.stackingEnabled
+					end,
+				},
+				lineBreak20 = {order = 43, type = "description", name = ""},
+				lineBreak21 = {order = 44, type = "description", name = ""},
 				xspace = {
-					order = 44,
+					order = 45,
 					type = "range",
 					name = L["Collider Width"],
 					desc = L["Sets the width of the virtual collider centered on each nameplate used to detect overlaps."],
@@ -583,11 +598,11 @@ RBP.MainOptionTable = {
 					max = 200,
 					step = 1,
 					disabled = function()
-						return not RBP.dbp.stackingEnabled
+						return not RBP.dbp.stackingEnabled or RBP.dbp.disableCollisions
 					end,
 				},
 				yspace = {
-					order = 45,
+					order = 46,
 					type = "range",
 					name = L["Collider Height"],
 					desc = L["Sets the height of the virtual collider centered on each nameplate used to detect overlaps."],
@@ -595,19 +610,7 @@ RBP.MainOptionTable = {
 					max = 50,
 					step = 1,
 					disabled = function()
-						return not RBP.dbp.stackingEnabled
-					end,
-				},
-				originpos = {
-					order = 46,
-					type = "range",
-					name = L["Vertical Offset"],
-					desc = L["Vertically offsets the entire nameplate, including its clickbox."],
-					min = 0,
-					max = 50,
-					step = 1,
-					disabled = function()
-						return not RBP.dbp.stackingEnabled
+						return not RBP.dbp.stackingEnabled or RBP.dbp.disableCollisions
 					end,
 				},
 				yspeed = {
@@ -619,20 +622,38 @@ RBP.MainOptionTable = {
 					max = 320,
 					step = 1,
 					disabled = function()
+						return not RBP.dbp.stackingEnabled or RBP.dbp.disableCollisions
+					end,
+				},
+				originpos = {
+					order = 48,
+					type = "range",
+					name = L["Vertical Offset"],
+					desc = L["Vertically offsets the entire nameplate, including its clickbox."],
+					min = 0,
+					max = 50,
+					step = 1,
+					disabled = function()
 						return not RBP.dbp.stackingEnabled
+					end,
+					hidden = function()
+						return RBP.hasPersistentClamping
 					end,
 				},
 				FreezeMouseover = {
-					order = 48,
+					order = 49,
 					type = "toggle",
 					name = L["Freeze Mouseover"],
 					desc = L["Stops the nameplate you're mousing over from moving for better selection."],
 					disabled = function()
-						return not RBP.dbp.stackingEnabled
+						return not RBP.dbp.stackingEnabled or RBP.dbp.disableCollisions
+					end,
+					hidden = function()
+						return RBP.hasPersistentClamping
 					end,
 				},
 				stackingInInstance = {
-					order = 49,
+					order = 50,
 					type = "toggle",
 					name = L["Disable in Open World"],
 					desc = L["Only process stacking inside PvE and PvP instances. This will reduce CPU usage in the open world."],
@@ -644,17 +665,17 @@ RBP.MainOptionTable = {
 						return not RBP.dbp.stackingEnabled
 					end,
 				},
-				lineBreak22 = {order = 50, type = "description", name = ""},
-				lineBreak23 = {order = 51, type = "description", name = ""},
+				lineBreak22 = {order = 51, type = "description", name = ""},
+				lineBreak23 = {order = 52, type = "description", name = ""},
 				depth_header = {
-					order = 52,
+					order = 53,
 					type = "header",
 					name = L["Depth Perception"],
 					hidden = function() return not RBP.hasModernAPI end,
 				},
-				lineBreak24 = {order = 53, type = "description", name = ""},
+				lineBreak24 = {order = 54, type = "description", name = ""},
 				depthScaling = {
-					order = 54,
+					order = 55,
 					type = "toggle",
 					name = L["Distance Shrinking"],
 					desc = L["Shrinks nameplates by camera distance. This feature has a high CPU cost, use it with discretion. Not recommended to use together with Retail-like Stacking."],
@@ -668,7 +689,7 @@ RBP.MainOptionTable = {
 					hidden = function() return not RBP.hasModernAPI end,
 				},
 				depthPivot = {
-					order = 55,
+					order = 56,
 					type = "range",
 					name = L["Shrink Start Distance"],
 					desc = L["Camera distance where shrinking begins. Closer plates keep their normal size."],
@@ -679,7 +700,7 @@ RBP.MainOptionTable = {
 					hidden = function() return not RBP.hasModernAPI end,
 				},
 				minScaleFactor = {
-					order = 56,
+					order = 57,
 					type = "range",
 					name = L["Minimum Scale"],
 					desc = L["The smallest scale a distant nameplate can reach."],
@@ -689,9 +710,9 @@ RBP.MainOptionTable = {
 					disabled = function() return not RBP.dbp.depthScaling end,
 					hidden = function() return not RBP.hasModernAPI end,
 				},
-				lineBreak25 = {order = 57, type = "description", name = ""},
+				lineBreak25 = {order = 58, type = "description", name = ""},
 				depthFading = {
-					order = 58,
+					order = 59,
 					type = "toggle",
 					name = L["Distance Fading"],
 					desc = L["Fades nameplates by camera distance. This feature has a high CPU cost, use it with discretion. Not recommended to use together with Retail-like Stacking."],
@@ -705,7 +726,7 @@ RBP.MainOptionTable = {
 					hidden = function() return not RBP.hasModernAPI end,
 				},
 				depthFadeStart = {
-					order = 59,
+					order = 60,
 					type = "range",
 					name = L["Fade Start Distance"],
 					desc = L["Camera distance where fading begins. Closer plates stay fully visible."],
@@ -716,7 +737,7 @@ RBP.MainOptionTable = {
 					hidden = function() return not RBP.hasModernAPI end,
 				},
 				depthFadeRange = {
-					order = 60,
+					order = 61,
 					type = "range",
 					name = L["Fade Range"],
 					desc = L["Distance between fading stages. Higher values make nameplates disappear farther away."],
@@ -727,7 +748,7 @@ RBP.MainOptionTable = {
 					hidden = function() return not RBP.hasModernAPI end,
 				},
 				fadeNPCs = {
-					order = 61,
+					order = 62,
 					type = "toggle",
 					name = L["Hide Distant NPCs"],
 					desc = L["Hides NPC nameplates at very long distances."],
@@ -735,7 +756,7 @@ RBP.MainOptionTable = {
 					hidden = function() return not RBP.hasModernAPI end,
 				},
 				fadePlateBuffs = {
-					order = 62,
+					order = 63,
 					type = "toggle",
 					name = L["Fade PlateBuffs"],
 					desc = L["Fades PlateBuffs icons on distant nameplates. Improves performance."],
@@ -749,7 +770,7 @@ RBP.MainOptionTable = {
 					hidden = function() return not RBP.hasModernAPI end,
 				},
 				nameplateDistance = {
-					order = 63,
+					order = 64,
 					type = "range",
 					name = L["Extended Draw Distance"],
 					desc = L["Extends the distance at which nameplates are drawn."],
@@ -768,7 +789,7 @@ RBP.MainOptionTable = {
 					hidden = function() return not RBP.hasModernAPI end,
 				},
 				cameraFov = {
-					order = 64,
+					order = 65,
 					type = "range",
 					name = L["Field of View"],
 					desc = L["Adjusts the camera field of view."],
@@ -784,8 +805,8 @@ RBP.MainOptionTable = {
 					end,
 					hidden = function() return not RBP.hasModernAPI end,
 				},
-				lineBreak26 = {order = 65, type = "description", name = ""},
-				lineBreak27 = {order = 66, type = "description", name = ""},
+				lineBreak26 = {order = 66, type = "description", name = ""},
+				lineBreak27 = {order = 67, type = "description", name = ""},
 			},
 		},
 		Text = {

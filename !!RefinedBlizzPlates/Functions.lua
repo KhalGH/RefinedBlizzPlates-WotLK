@@ -2,6 +2,7 @@
 local AddonFile, RBP = ... -- namespace
 local L = RBP.L
 local hasModernAPI = RBP.hasModernAPI
+local hasPersistentClamping = RBP.hasPersistentClamping
 
 ----------------------------- API -----------------------------
 local pairs, ipairs, unpack, tonumber, tostring, select, math_exp, math_floor, math_abs, string_format, string_char, string_sub, table_insert, SetCVar, sort, wipe, WorldFrame, CreateFrame, UnitCastingInfo, UnitChannelInfo, UnitName, UnitClass, UnitIsUnit, UnitCanAttack, UnitDebuff, GetNumArenaOpponents, GetNumPartyMembers, GetNumRaidMembers, GetRaidRosterInfo, RAID_CLASS_COLORS, SetMapToCurrentZone, GetCurrentMapAreaID, GetSubZoneText, SecureHandlerWrapScript, ToggleFrame, UIPanelWindows, SetUIVisibility =
@@ -1333,7 +1334,7 @@ local function DelayedUpdate(Virtual)
 		BarlessPlateVisibilityHandler(Virtual)
 		UpdateHealthTextValue(Virtual.RBP_healthBar)
 	end
-	if Virtual.RBP_isShown and not Virtual.RBP_isFriendly and not dbp.stackingEnabled then
+	if Virtual.RBP_isShown and not Virtual.RBP_isFriendly and not (dbp.stackingEnabled and (not dbp.stackingInInstance or RBP.inInstance)) and not hasPersistentClamping then
 		if (Virtual.RBP_isTarget and dbp.clampTarget) or (Virtual.RBP_hasBossIcon and dbp.clampBoss and RBP.inPvEInstance) then
 			Plate:SetClampedToScreen(true)
 			Plate:SetClampRectInsets(80*dbp.globalScale, -80*dbp.globalScale, dbp.upperborder, 0)
@@ -2079,14 +2080,15 @@ local function UpdateRefinedPlate(Virtual)
 			----------------- Init Enhanced Plate Stacking -----------------
 			if not Virtual.RBP_isFriendly then
 				local Plate = Virtual.RealPlate
-				if dbp.stackingEnabled then
-					AddStackablePlate(Plate)
-				elseif Virtual.RBP_hasBossIcon and dbp.clampBoss and RBP.inPvEInstance then
+				if dbp.stackingEnabled and (not dbp.stackingInInstance or RBP.inInstance) then
+					if not dbp.disableCollisions then
+						AddStackablePlate(Plate)
+					end
+				elseif not hasPersistentClamping and Virtual.RBP_hasBossIcon and dbp.clampBoss and RBP.inPvEInstance then
 					Plate:SetClampedToScreen(true)
 					Plate:SetClampRectInsets(80 * dbp.globalScale, -80 * dbp.globalScale, dbp.upperborder, 0)
 				end
 			end
-
 		end	
 	end
 end
@@ -2110,6 +2112,7 @@ local function ResetRefinedPlate(Virtual)
 	Virtual.RBP_classIcon:Hide()
 	Virtual.RBP_ArenaIDText:Hide()
 	Virtual.RBP_isShown = nil
+	Virtual.RBP_healthBarIsShown = nil
 	Virtual.RBP_nameTextIsYellow = nil
 	Virtual.RBP_healthBarTexCrop = nil
 	Virtual.RBP_raidIconIndex = nil
@@ -2135,8 +2138,10 @@ local function ResetRefinedPlate(Virtual)
 	Virtual.RBP_castBarBorder:Hide()
 	Virtual.RBP_shieldCastBarBorder:Hide()
 	RemoveStackablePlate(Plate)
-	Plate:SetClampedToScreen(false)
-	Plate:SetClampRectInsets(0, 0, 0, 0)
+	if not hasPersistentClamping then
+		Plate:SetClampedToScreen(false)
+		Plate:SetClampRectInsets(0, 0, 0, 0)
+	end
 	Virtual.RBP_castText:SetText("")
 	if Virtual.BGHframe then
 		Virtual.BGHframe:ModifyIcon()
@@ -2387,32 +2392,46 @@ end
 -- If there is no other nameplate in the immediate vicinity of the original position, the position is reset (to prevent the nameplates from rising higher and higher).
 -- Depending on whether the position is to be reset or the nameplate is above or below the closest one different functions are used for a smooth movement.
 local delta = 3
-local resetSpeedFactor = 1
-local raiseSpeedFactor = 1
-local lowerSpeedFactor = 1
 local function UpdateStacking(elapsed)
-	if RBP.dbp.stackingInInstance and not RBP.inInstance then return end
-	if StackableCount == 0 then return end
-	local dt = elapsed or 0.016
-	if dt > 0.05 then dt = 0.05 end
 	local dbp = RBP.dbp
-	local step = dbp.yspeed * dt
-	local globalScale = dbp.globalScale
-	local colliderW = dbp.xspace * globalScale
-	local colliderH = dbp.yspace * globalScale
-	local originY = dbp.originpos
+	if dbp.stackingInInstance and not RBP.inInstance then return end
+	local originY = hasPersistentClamping and (tonumber(GetCVar("nameplateOriginPos")) or 0) or dbp.originpos
 	local clampTop = dbp.upperborder
-	local freeze = dbp.FreezeMouseover
 	local clampTarget = dbp.clampTarget
 	local clampBoss = dbp.clampBoss
 	local inPvEInstance = RBP.inPvEInstance
+	local globalScale = dbp.globalScale
+	local hideInset = -1.5 * RBP.NP_HEIGHT * globalScale * dbp.targetScale
+	if dbp.disableCollisions then
+		for Plate, Virtual in pairs(PlatesVisible) do
+			local width, height = Plate:GetSize()
+			local halfW = width * 0.5
+			local _, _, _, _, y = Plate:GetPoint(1)
+			local plateH = hasPersistentClamping and (height * 0.5) or height
+			local bottomInset = -y - originY + plateH
+			Plate:SetClampedToScreen(true)
+			if (Virtual.RBP_isTarget and clampTarget) or (Virtual.RBP_hasBossIcon and clampBoss and inPvEInstance) then
+				Plate:SetClampRectInsets(halfW, -halfW, clampTop, bottomInset)
+			else
+				Plate:SetClampRectInsets(halfW, -halfW, hideInset, bottomInset)
+			end
+		end
+		return
+	end
+	if StackableCount == 0 then return end
+	local dt = elapsed or 0.016
+	if dt > 0.05 then dt = 0.05 end
+	local step = dbp.yspeed * dt
+	local colliderW = dbp.xspace * globalScale
+	local colliderH = dbp.yspace * globalScale
+	local freeze = dbp.FreezeMouseover
 	local worldWidth = RBP.WorldFrameWidth
 	local negWorldWidth = -2 * worldWidth
 	local plateWidth = RBP.NP_WIDTH * globalScale * dbp.clickboxWidthFactor
 	local plateHeight = RBP.NP_HEIGHT * globalScale * dbp.clickboxHeightFactor
+	local plateH = hasPersistentClamping and (plateHeight * 0.5) or plateHeight
 	local halfWidth = plateWidth * 0.5
 	local negHalfWidth = -halfWidth
-	local negPlateHeight = -plateHeight
 	local halfPlateHeight = plateHeight * 0.5
 	local hasCollisions = StackableCount > 1
 	for i = 1, StackableCount do
@@ -2423,7 +2442,7 @@ local function UpdateStacking(elapsed)
 		Data1.xpos = x
 		Data1.ypos = y
 		Plate1:SetClampedToScreen(true)
-		if freeze and Virtual1.RBP_healthBarHighlight:IsShown() then -- Freeze Mouseover Nameplate
+		if freeze and not hasPersistentClamping and Virtual1.RBP_healthBarHighlight:IsShown() then -- Freeze Mouseover Nameplate
 			local cx, cy = Plate1:GetCenter() -- actual visual center (GetPoint returns the anchor)
 			Data1.position = cy - y - originY + halfPlateHeight
 			Data1.xpos = cx
@@ -2453,19 +2472,19 @@ local function UpdateStacking(elapsed)
 				end
 			end
 			local newOffset = offset
-			if offset >= delta and isolated then
-				newOffset = offset - math_exp(-10 / offset) * step * resetSpeedFactor
-			elseif gapAbove < colliderH then
-				newOffset = offset + math_exp(-gapAbove / colliderH) * step * raiseSpeedFactor
-			elseif offset >= delta and gapAbove > colliderH + delta then
-				newOffset = offset - math_exp(-colliderH / gapAbove) * step * lowerSpeedFactor
+			if offset >= delta and isolated then -- reset
+				newOffset = offset - math_exp(-10 / offset) * step
+			elseif gapAbove < colliderH then -- raise
+				newOffset = offset + math_exp(-gapAbove / colliderH) * step
+			elseif offset >= delta and gapAbove > colliderH + delta then -- lower
+				newOffset = offset - math_exp(-colliderH / gapAbove) * step
 			end
 			Data1.position = newOffset
-			local bottomInset = -y - newOffset - originY + plateHeight
+			local bottomInset = -y - newOffset - originY + plateH
 			if (Virtual1.RBP_isTarget and clampTarget) or (Virtual1.RBP_hasBossIcon and clampBoss and inPvEInstance) then
 				Plate1:SetClampRectInsets(halfWidth, negHalfWidth, clampTop, bottomInset)
 			else
-				Plate1:SetClampRectInsets(halfWidth, negHalfWidth, negPlateHeight, bottomInset)
+				Plate1:SetClampRectInsets(halfWidth, negHalfWidth, hideInset, bottomInset)
 			end
 		end
 	end
