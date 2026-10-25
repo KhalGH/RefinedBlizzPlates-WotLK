@@ -38,6 +38,18 @@ It preserves a Blizzlike appearance while adding useful features and visual refi
   <img src="https://raw.githubusercontent.com/KhalGH/RefinedBlizzPlates-WotLK/refs/heads/assets/assets/KhalPlatesIMG6.jpg" 
        alt="KhalPlatesIMG6" width="90%">
 </p>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/KhalGH/AwesomePlates-WotLK/refs/heads/assets/assets/AP_img1.jpg" 
+       alt="KhalPlatesIMG7" width="90%">
+</p>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/KhalGH/AwesomePlates-WotLK/refs/heads/assets/assets/AP_img2.jpg" 
+       alt="KhalPlatesIMG8" width="90%">
+</p>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/KhalGH/AwesomePlates-WotLK/refs/heads/assets/assets/AP_img3.jpg" 
+       alt="KhalPlatesIMG9" width="90%">
+</p>
 
 ## Installation  
 1. [Download](https://github.com/KhalGH/RefinedBlizzPlates-WotLK/releases/download/v1.11.6/RefinedBlizzPlates-v1.11.6.zip) the addon
