@@ -40,12 +40,12 @@ It preserves a Blizzlike appearance while adding useful features and visual refi
 </p>
 
 ## Installation  
-1. [Download](https://github.com/KhalGH/RefinedBlizzPlates-WotLK/releases/download/v1.11.5/RefinedBlizzPlates-v1.11.5.zip) the addon
+1. [Download](https://github.com/KhalGH/RefinedBlizzPlates-WotLK/releases/download/v1.11.6/RefinedBlizzPlates-v1.11.6.zip) the addon
 2. Extract the **!!RefinedBlizzPlates** folder into `World of Warcraft/Interface/AddOns/`.
 3. Optional: [Patch](https://raw.githubusercontent.com/KhalGH/RefinedBlizzPlates-WotLK/assets/assets/Non-target_CastBars.zip) to enable cast bars on non-target units (check your server’s policy to ensure it's allowed).
 4. Restart the game and enable the addon.  
 
 ## Information  
-- **Addon Version:** 1.11.5  
+- **Addon Version:** 1.11.6  
 - **Game Version:** 3.3.5a (WotLK)  
 - **Author:** Khal  
