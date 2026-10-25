@@ -523,15 +523,14 @@ end
 
 local function UpdateCastTextString(Virtual, unit)
 	if unit then
-		local spellCasting = UnitCastingInfo(unit)
-		local spellChanneling = UnitChannelInfo(unit)
-		local spellName
-		if spellChanneling then
-			Virtual.RBP_channelingFlag = 1
-			spellName = spellChanneling
-		elseif spellCasting then
+		local spellName = UnitCastingInfo(unit)
+		if spellName then
 			Virtual.RBP_channelingFlag = 0
-			spellName = spellCasting
+		else
+			spellName = UnitChannelInfo(unit)
+			if spellName then
+				Virtual.RBP_channelingFlag = 1
+			end
 		end
 		if spellName then
 			Virtual.RBP_castText:SetText(spellName)
@@ -2781,11 +2780,11 @@ function RBP:ApplyPreset()
 	dbp.classIcon_offsetX = 0
 	dbp.classIcon_offsetY = 0
 	self:UpdateAllTexts()
+	self:UpdateAllBarlessPlates()
 	self:UpdateAllHealthBars()
 	self:UpdateAllCastBars()
 	self:UpdateAllCastBarBorders()
 	self:UpdateAllIcons()
-	self:UpdateAllBarlessPlates()
 	self:UpdateAllGlows()
 	self:UpdateAllShownPlates()
 	self:UpdateClickboxAttributes()
@@ -2799,11 +2798,11 @@ function RBP:UpdateProfile()
 	self:ResetPBFlags()
 	self:UpdateAllVirtualsScale()
 	self:UpdateAllTexts()
+	self:UpdateAllBarlessPlates()
 	self:UpdateAllHealthBars()
 	self:UpdateAllCastBars()
 	self:UpdateAllCastBarBorders()
 	self:UpdateAllIcons()
-	self:UpdateAllBarlessPlates()
 	self:UpdateAllGlows()
 	self:BuildBlacklistUI()
 	self:UpdateAllClickboxTextures()
