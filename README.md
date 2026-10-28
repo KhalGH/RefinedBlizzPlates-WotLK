@@ -21,7 +21,7 @@ It preserves a Blizzlike appearance while adding useful features and visual refi
 ## Recommendations
 - Gladdy’s Totem Plates module may conflict with this addon. Disable the module to ensure proper functionality.
 - The Retail-like stacking system was replicated from Cheeta's WeakAura. Delete or disable it to avoid conflicts.
-- Users of Someweirdhuman's AwesomeWotlk must disable its hitbox size CVars and use this addon's clickbox settings instead.
+- Users of Someweirdhuman's AwesomeWotlk must disable its hitbox CVars and use this addon's clickbox settings.
 
 ## Screenshots
 <p align="center">
