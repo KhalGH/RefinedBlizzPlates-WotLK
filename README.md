@@ -14,7 +14,7 @@ It preserves a Blizzlike appearance while adding useful features and visual refi
 - Optional "Barless Plates" mode that displays only names and indicators on friendly nameplates.
 - Added click-through behavior for blacklisted nameplates and, optionally, friendly nameplates.
 - Integrated an optional system that simulates Retail's nameplate stacking.
-- Added settings to adjust nameplate clickbox size.
+- Added settings to adjust the nameplate's Box Selection Space (clickbox).
 - Added depth perception for distant nameplates.
 - Improved compatibility with different versions of AwesomeWotlk.
 
