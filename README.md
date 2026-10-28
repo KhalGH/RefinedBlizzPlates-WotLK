@@ -15,7 +15,7 @@ It preserves a Blizzlike appearance while adding useful features and visual refi
 - Added click-through behavior for blacklisted nameplates and, optionally, friendly nameplates.
 - Integrated an optional system that simulates Retail's nameplate stacking.
 - Added settings to adjust the nameplate's Box Selection Space (clickbox).
-- Added depth perception for distant nameplates.
+- Added Depth Perception for distant nameplates by adjusting their scale and opacity.
 - Improved compatibility with different versions of AwesomeWotlk.
 
 ## Recommendations
