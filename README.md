@@ -3,23 +3,25 @@
 It preserves a Blizzlike appearance while adding useful features and visual refinements.
 
 ## Features  
-- Blizzlike nameplates with adjustable visual parameters.
-- Nameplates drawing order based on distance to the camera.
-- Adjusted Z-order spacing to prevent subregions from overlapping between nameplates.
-- Custom glow for the target and mouseover nameplates.
-- Optional class icons inside PvE or PvP instances.
-- Displays arenaID and partyID numbers as optional text in arenas.
-- Integrated TotemPlates system with in-game configuration.
-- Implemented a Blacklist to hide specific nameplates or replace them with icons.
-- Optional "Barless Plates" that replace friendly nameplates with only the name and indicators.
-- Added click-through behavior for blacklist and, optionally, friendly nameplates.
-- Integrated optional system that simulates Retail's nameplate stacking.
-- Added parameters to modify the nameplate's Box Selection Space (Clickbox).
-- Added depth perception for distant nameplates (AwesomeWotlk).
+- Blizzlike nameplates with configurable visual elements.
+- Nameplate frame levels based on distance from the camera.
+- Adjusted Z-order spacing to prevent subregions of different nameplates from overlapping.
+- Custom glow for target and mouseover nameplates.
+- Optional class icons in PvE or PvP instances.
+- Optional arenaID and partyID text in arenas.
+- Integrated TotemPlates with settings for each totem type.
+- Blacklist system for hiding specific nameplates or replacing them with icons.
+- Optional "Barless Plates" mode that displays only names and indicators on friendly nameplates.
+- Added click-through behavior for blacklisted nameplates and, optionally, friendly nameplates.
+- Integrated an optional system that simulates Retail's nameplate stacking.
+- Added settings to adjust nameplate clickbox size.
+- Added depth perception for distant nameplates.
+- Improved compatibility with different versions of AwesomeWotlk.
 
 ## Recommendations
-- RefinedBlizzPlates may conflict with Gladdy’s Totem Plates module. Disable it to ensure proper functionality.
-- Retail-like stacking is replicated from Cheeta’s WeakAura. Disable it to avoid conflicts and duplication.
+- Gladdy’s Totem Plates module may conflict with this addon. Disable the module to ensure proper functionality.
+- The Retail-like stacking system was replicated from Cheeta's WeakAura. Delete or disable it to avoid conflicts.
+- Users of Someweirdhuman's AwesomeWotlk must disable its hitbox size CVars and use this addon's clickbox settings instead.
 
 ## Screenshots
 <p align="center">
@@ -52,12 +54,19 @@ It preserves a Blizzlike appearance while adding useful features and visual refi
 </p>
 
 ## Installation  
-1. [Download](https://github.com/KhalGH/RefinedBlizzPlates-WotLK/releases/download/v1.11.6/RefinedBlizzPlates-v1.11.6.zip) the addon
+1. [Download](https://github.com/KhalGH/RefinedBlizzPlates-WotLK/releases/download/v1.12.0/RefinedBlizzPlates-v1.12.0.zip) the addon
 2. Extract the **!!RefinedBlizzPlates** folder into `World of Warcraft/Interface/AddOns/`.
-3. Optional: [Patch](https://raw.githubusercontent.com/KhalGH/RefinedBlizzPlates-WotLK/assets/assets/Non-target_CastBars.zip) to enable cast bars on non-target units (check your server’s policy to ensure it's allowed).
-4. Restart the game and enable the addon.  
+3. Restart the game and enable the addon.  
+
+## Optional Dependencies  
+The addon supports features from certain client modifications and patches popular in the community, such as:
+- Different versions of the AwesomeWotlk library. [[1]](https://github.com/FrostAtom/awesome_wotlk) [[2]](https://github.com/KhalGH/awesome_wotlk) [[3]](https://github.com/someweirdhuman/awesome_wotlk) [[4]](https://github.com/noname08662/awesome_wotlk)
+- A [patch](https://raw.githubusercontent.com/KhalGH/RefinedBlizzPlates-WotLK/assets/assets/Non-target_CastBars.zip) that enables cast bars on non-target nameplates.
+- A [patch](https://raw.githubusercontent.com/KhalGH/RefinedBlizzPlates-WotLK/assets/assets/Extended_Nameplate_Distance.zip) that extends nameplate viewing distance.
+
+**Disclaimer**: Some servers may have specific rules regarding the use of client modifications. Please check your server's policy to ensure they are allowed before using them.
 
 ## Information  
-- **Addon Version:** 1.11.6  
+- **Addon Version:** 1.12.0  
 - **Game Version:** 3.3.5a (WotLK)  
 - **Author:** Khal  
