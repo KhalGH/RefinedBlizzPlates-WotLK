@@ -6,11 +6,12 @@
 local AddonFile, RBP = ...
 
 -- API
-local select, next, pairs, ipairs, unpack, string_format, math_sqrt, GetAddOnMetadata, CreateFrame, UnitLevel, UnitDebuff, IsInInstance, SetUIVisibility, SetCVar, C_NamePlate =
-      select, next, pairs, ipairs, unpack, string.format, math.sqrt, GetAddOnMetadata, CreateFrame, UnitLevel, UnitDebuff, IsInInstance, SetUIVisibility, SetCVar, C_NamePlate
+local select, next, pairs, unpack, string_format, GetAddOnMetadata, CreateFrame, UnitLevel, IsInInstance, SetUIVisibility, C_NamePlate =
+      select, next, pairs, unpack, string.format, GetAddOnMetadata, CreateFrame, UnitLevel, IsInInstance, SetUIVisibility, C_NamePlate
 
 -- Localized namespace definitions
-local hasModernAPI = RBP.hasModernAPI
+local hasModernEngine = RBP.hasModernEngine
+local hasModernStacking = RBP.hasModernStacking
 local EventHandler = RBP.EventHandler
 local VirtualPlates = RBP.VirtualPlates
 local PlatesVisible = RBP.PlatesVisible
@@ -29,7 +30,6 @@ local UpdateClickbox = RBP.UpdateClickbox
 local UpdatePlateFlags = RBP.UpdatePlateFlags
 local ResetPlateFlags = RBP.ResetPlateFlags
 local PlatesUpdate = RBP.PlatesUpdate 
-local PlatesUpdateModern = RBP.PlatesUpdateModern
 local PlatesSecUpdate = RBP.PlatesSecUpdate
 local RefreshGroupVisuals = RBP.RefreshGroupVisuals
 local UpdateRaidIcon = RBP.UpdateRaidIcon
@@ -104,7 +104,7 @@ local function ReparentChildren(Plate, ...)
 		if Child ~= Virtual then
 			local LevelOffset = Child:GetFrameLevel() - Plate:GetFrameLevel()
 			Child:SetParent(Virtual)
-			Child:SetFrameLevel( Virtual:GetFrameLevel() + LevelOffset) -- Maintain relative frame levels
+			Child:SetFrameLevel(Virtual:GetFrameLevel() + LevelOffset) -- Maintain relative frame levels
 			Plate[#Plate + 1] = Child;
 		end
 	end
@@ -148,6 +148,7 @@ local function PlateAdd(Plate)
 		RBP:UpdateClickboxAttributes()
 	end
 
+	Virtual:SetFrameLevel(Plate:GetFrameLevel())
 	Virtual:Hide() -- Gets explicitly shown on plate show
 	Virtual:SetPoint("TOP")
 	Virtual:SetSize(RBP.NP_WIDTH, RBP.NP_HEIGHT)
@@ -166,7 +167,7 @@ local function PlateAdd(Plate)
 
 	SetupRefinedPlate(Virtual)
 
-	if not hasModernAPI and Plate:IsVisible() then
+	if not hasModernEngine and Plate:IsVisible() then
 		PlateOnShow(Plate)
 	end
 
@@ -194,17 +195,13 @@ local function WorldFrameOnUpdate(self, elapsed)
 		ChildCount = NewChildCount
 	end
 	if not ExistsVisiblePlates then return end
-	if RBP.dbp.stackingEnabled then
+	if not hasModernStacking and RBP.dbp.stackingEnabled then
 		UpdateStacking(elapsed)
 	end
 	NextUpdate = NextUpdate - elapsed
 	if NextUpdate <= 0 then
 		NextUpdate = UpdateRate
-		if hasModernAPI then
-			PlatesUpdateModern()
-		else
-			PlatesUpdate()
-		end
+		PlatesUpdate()
 	end
 	NextSecUpdate = NextSecUpdate - elapsed
 	if NextSecUpdate <= 0 then
@@ -314,12 +311,12 @@ function RBP:Initialize()
 	self.db.RegisterCallback(self, "OnProfileCopied", "OnProfileChanged")
 	self.db.RegisterCallback(self, "OnProfileReset", "OnProfileChanged")
 	self.db.RegisterCallback(self, "OnProfileDeleted", "OnProfileChanged")
-	
-	RBP.dbp = self.db.profile -- Replace default profile with AceDB profile
+	self.dbp = self.db.profile -- Replace default profile with AceDB profile
 
-	RBP:BuildBlacklistUI()
-	RBP:UpdateNonTargetAlphaDriver()
-	RBP:OverrideNameplateSize()
+	self:BuildBlacklistUI()
+	self:UpdateNonTargetAlphaDriver()
+	self:OverrideNameplateSize()
+	self:UpdateClickboxesDriver()
 	ClickboxAttributeUpdater()
 	SetUIVisibility(true)
 
@@ -363,7 +360,7 @@ function EventHandler:PLAYER_REGEN_ENABLED()
 		RBP.delayedClickboxUpdate = false
 		ClickboxAttributeUpdater()
 	end
-    if hasModernAPI and RBP.dbp.depthScaling then
+    if RBP.dbp.depthScaling then
         for _, Virtual in pairs(PlatesVisible) do
         	UpdateClickboxOutOfCombat(Virtual)
         end
@@ -378,6 +375,9 @@ end
 
 function EventHandler:PLAYER_TARGET_CHANGED()
 	RBP.hasTarget = UnitExists("target") == 1
+	if hasModernEngine then
+		RBP.targetedPlate = C_NamePlate.GetNamePlateForUnit("target")
+	end
 	RBP.GlobalDelayedUpdater:Show()
 end
 
@@ -482,7 +482,7 @@ EventHandler:RegisterEvent("ARENA_OPPONENT_UPDATE")
 EventHandler:RegisterEvent("ZONE_CHANGED_INDOORS")
 EventHandler:RegisterEvent("UNIT_AURA")
 EventHandler:RegisterEvent("RAID_TARGET_UPDATE")
-if hasModernAPI then
+if hasModernEngine then
 	EventHandler:RegisterEvent("NAME_PLATE_CREATED")
 	EventHandler:RegisterEvent("NAME_PLATE_UNIT_ADDED")
 end
