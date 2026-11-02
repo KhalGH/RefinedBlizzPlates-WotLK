@@ -6,16 +6,15 @@
 local AddonFile, RBP = ...
 
 -- API
-local select, next, pairs, unpack, string_format, GetAddOnMetadata, CreateFrame, UnitLevel, IsInInstance, SetUIVisibility, C_NamePlate =
-      select, next, pairs, unpack, string.format, GetAddOnMetadata, CreateFrame, UnitLevel, IsInInstance, SetUIVisibility, C_NamePlate
+local select, pairs, unpack, string_format, WorldFrame, GetAddOnMetadata, CreateFrame, UnitExists, IsInInstance, SetUIVisibility, C_NamePlate =
+      select, pairs, unpack, string.format, WorldFrame, GetAddOnMetadata, CreateFrame, UnitExists, IsInInstance, SetUIVisibility, C_NamePlate
 
 -- Localized namespace definitions
 local hasModernEngine = RBP.hasModernEngine
-local hasModernStacking = RBP.hasModernStacking
 local EventHandler = RBP.EventHandler
 local VirtualPlates = RBP.VirtualPlates
 local PlatesVisible = RBP.PlatesVisible
-local UpdateRefinedPlateDelayed = RBP.UpdateRefinedPlateDelayed
+local PlateOverrides = RBP.PlateOverrides
 local SetupRefinedPlate = RBP.SetupRefinedPlate
 local ForceLevelHide = RBP.ForceLevelHide
 local CheckLDWZoneIndoors = RBP.CheckLDWZoneIndoors
@@ -26,73 +25,15 @@ local ExecuteClickboxSecureScript = RBP.ExecuteClickboxSecureScript
 local InitPlatesClickboxes = RBP.InitPlatesClickboxes
 local ClickboxAttributeUpdater = RBP.ClickboxAttributeUpdater
 local UpdateClickboxOutOfCombat = RBP.UpdateClickboxOutOfCombat
-local UpdateClickbox = RBP.UpdateClickbox
-local UpdatePlateFlags = RBP.UpdatePlateFlags
-local ResetPlateFlags = RBP.ResetPlateFlags
-local PlatesUpdate = RBP.PlatesUpdate 
-local PlatesSecUpdate = RBP.PlatesSecUpdate
+local CheckNameplateSize = RBP.CheckNameplateSize
 local RefreshGroupVisuals = RBP.RefreshGroupVisuals
 local UpdateRaidIcon = RBP.UpdateRaidIcon
-local UpdateRefinedPlate = RBP.UpdateRefinedPlate
-local ResetRefinedPlate = RBP.ResetRefinedPlate
-local UpdateStacking = RBP.UpdateStacking
-
--- Local definitions
-local PlateOverrides = {}	 -- Storage table: [MethodName] = override function for virtual plates
-local NextUpdate = 0.05		 -- Time controller for PlatesUpdate
-local UpdateRate = 0.05	     -- Minimum time between PlatesUpdate.
-local NextSecUpdate = 0.2    -- Time controller for PlatesSecUpdate
-local SecUpdateRate = 0.2	 -- Minimum time between PlatesSecUpdate.
+local PlateOnShow = RBP.PlateOnShow
+local PlateOnHide = RBP.PlateOnHide
 
 -- Backup of native frame methods
 local WorldFrame_GetChildren = WorldFrame.GetChildren
 local GetParent = EventHandler.GetParent
-
--- Status Flags
-local ExistsVisiblePlates = false
-local nameplateSizeCheck = true
-RBP.hasTarget = false
-RBP.inCombat = false
-RBP.inInstance = false
-RBP.inOpenWorld = false
-RBP.inPvEInstance = false
-RBP.inPvPInstance = false
-RBP.inBG = false
-RBP.inArena = false
-RBP.inICC = false
-RBP.inLDWZone = false
-RBP.playerLevel = UnitLevel("player")
-RBP.NP_WIDTH = 128
-RBP.NP_HEIGHT = 32
-RBP.NP_SCALE = 1
-RBP.HB_CENTER_X = -8.5759733829502
-RBP.HB_CENTER_Y = -7.5040053203105
-RBP.HB_BOTTOMLEFT_X = 3.9680000548363
-RBP.HB_BOTTOMLEFT_Y = 4
-RBP.TG_TOP_X = -1.28
-RBP.TG_TOP_Y = -8.32
-
-local function PlateOnShow(Plate)
-	local Virtual = Plate.VirtualPlate
-	PlatesVisible[Plate] = Virtual
-	ExistsVisiblePlates = true
-	UpdatePlateFlags(Virtual)
-	UpdateRefinedPlate(Virtual)
-	UpdateRefinedPlateDelayed(Virtual)
-	UpdateClickbox(Virtual)
-	NextUpdate = 0
-end
-
-local function PlateOnHide(Plate)
-	local Virtual = Plate.VirtualPlate
-	PlatesVisible[Plate] = nil
-	ExistsVisiblePlates = next(PlatesVisible) ~= nil
-	ResetPlateFlags(Virtual)
-	ResetRefinedPlate(Virtual)
-	if RBP.inCombat then
-		ExecuteClickboxSecureScript()
-	end
-end
 
 --- Parents all plate children to the Virtual, and saves references to them in the plate.
 -- @ param Plate  Original nameplate children are being removed from.
@@ -123,30 +64,14 @@ end
 
 --- Adds and skins a new nameplate.
 -- @ param Plate  Newly found default nameplate to be hooked.
+
 local function PlateAdd(Plate)
 	local Virtual = CreateFrame("Frame", nil, Plate)
 	Plate.VirtualPlate = Virtual
 	Virtual.RealPlate = Plate
 	VirtualPlates[Plate] = Virtual
 	
-	if nameplateSizeCheck then
-		nameplateSizeCheck = false
-		RBP.NP_WIDTH, RBP.NP_HEIGHT = Plate:GetSize()
-		RBP.NP_SCALE = RBP.NP_WIDTH/128
-		local healthBar = Plate:GetChildren()
-		local NPx, NPy = Plate:GetCenter()
-		local HBx, HBy = healthBar:GetCenter()
-		if NPy and HBy then
-			RBP.HB_CENTER_X, RBP.HB_CENTER_Y = HBx - NPx, HBy - NPy
-			RBP.HB_BOTTOMLEFT_X, RBP.HB_BOTTOMLEFT_Y = select(4, healthBar:GetPoint(1))
-			RBP.TG_TOP_X, RBP.TG_TOP_Y = select(4,Plate:GetRegions():GetPoint(1))
-		else
-			RBP.HB_CENTER_X, RBP.HB_CENTER_Y = RBP.HB_CENTER_X * RBP.NP_SCALE, RBP.HB_CENTER_Y * RBP.NP_SCALE
-			RBP.HB_BOTTOMLEFT_X, RBP.HB_BOTTOMLEFT_Y = RBP.HB_BOTTOMLEFT_X * RBP.NP_SCALE, RBP.HB_BOTTOMLEFT_Y * RBP.NP_SCALE
-			RBP.TG_TOP_X, RBP.TG_TOP_Y = RBP.TG_TOP_X * RBP.NP_SCALE, RBP.TG_TOP_Y * RBP.NP_SCALE
-		end
-		RBP:UpdateClickboxAttributes()
-	end
+	CheckNameplateSize(Plate)
 
 	Virtual:SetFrameLevel(Plate:GetFrameLevel())
 	Virtual:Hide() -- Gets explicitly shown on plate show
@@ -183,7 +108,7 @@ local function IsNamePlate(frame)
 end
 
 local ChildCount, NewChildCount = 0
-local function WorldFrameOnUpdate(self, elapsed)
+local function WorldFrameOnUpdate(self)
 	NewChildCount = self:GetNumChildren()
 	if ChildCount ~= NewChildCount then
 		for i = ChildCount + 1, NewChildCount do
@@ -193,20 +118,6 @@ local function WorldFrameOnUpdate(self, elapsed)
 			end
 		end
 		ChildCount = NewChildCount
-	end
-	if not ExistsVisiblePlates then return end
-	if not hasModernStacking and RBP.dbp.stackingEnabled then
-		UpdateStacking(elapsed)
-	end
-	NextUpdate = NextUpdate - elapsed
-	if NextUpdate <= 0 then
-		NextUpdate = UpdateRate
-		PlatesUpdate()
-	end
-	NextSecUpdate = NextSecUpdate - elapsed
-	if NextSecUpdate <= 0 then
-		NextSecUpdate = SecUpdateRate
-		PlatesSecUpdate()
 	end
 end
 
@@ -314,7 +225,6 @@ function RBP:Initialize()
 	self.dbp = self.db.profile -- Replace default profile with AceDB profile
 
 	self:BuildBlacklistUI()
-	self:UpdateNonTargetAlphaDriver()
 	self:OverrideNameplateSize()
 	self:UpdateClickboxesDriver()
 	ClickboxAttributeUpdater()

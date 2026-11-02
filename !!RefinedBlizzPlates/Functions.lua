@@ -8,12 +8,13 @@ local hasAlphaOverride = RBP.hasAlphaOverride
 local hasClickboxModifier = RBP.hasClickboxModifier
 
 ----------------------------- API -----------------------------
-local pairs, ipairs, unpack, tonumber, tostring, select, math_exp, math_floor, math_abs, string_format, string_char, string_sub, table_insert, GetCVar, SetCVar, sort, wipe, WorldFrame, CreateFrame, UnitCastingInfo, UnitChannelInfo, UnitName, UnitClass, UnitIsUnit, UnitIsFriend, UnitCanAttack, UnitDebuff, GetNumArenaOpponents, GetNumPartyMembers, GetNumRaidMembers, GetRaidRosterInfo, RAID_CLASS_COLORS, SetMapToCurrentZone, GetCurrentMapAreaID, GetSubZoneText, SecureHandlerWrapScript, ToggleFrame, UIPanelWindows, SetUIVisibility, C_NamePlate =
-      pairs, ipairs, unpack, tonumber, tostring, select, math.exp, math.floor, math.abs, string.format, string.char, string.sub, table.insert, GetCVar, SetCVar, sort, wipe, WorldFrame, CreateFrame, UnitCastingInfo, UnitChannelInfo, UnitName, UnitClass, UnitIsUnit, UnitIsFriend, UnitCanAttack, UnitDebuff, GetNumArenaOpponents, GetNumPartyMembers, GetNumRaidMembers, GetRaidRosterInfo, RAID_CLASS_COLORS, SetMapToCurrentZone, GetCurrentMapAreaID, GetSubZoneText, SecureHandlerWrapScript, ToggleFrame, UIPanelWindows, SetUIVisibility, C_NamePlate
+local pairs, ipairs, unpack, tonumber, tostring, select, next, math_exp, math_floor, math_abs, string_format, string_char, string_sub, table_insert, GetCVar, SetCVar, sort, wipe, WorldFrame, CreateFrame, UnitCastingInfo, UnitChannelInfo, UnitName, UnitClass, UnitIsUnit, UnitIsFriend, UnitCanAttack, UnitDebuff, GetNumArenaOpponents, GetNumPartyMembers, GetNumRaidMembers, GetRaidRosterInfo, RAID_CLASS_COLORS, SetMapToCurrentZone, GetCurrentMapAreaID, GetSubZoneText, SecureHandlerWrapScript, ToggleFrame, UIPanelWindows, SetUIVisibility, C_NamePlate =
+      pairs, ipairs, unpack, tonumber, tostring, select, next, math.exp, math.floor, math.abs, string.format, string.char, string.sub, table.insert, GetCVar, SetCVar, sort, wipe, WorldFrame, CreateFrame, UnitCastingInfo, UnitChannelInfo, UnitName, UnitClass, UnitIsUnit, UnitIsFriend, UnitCanAttack, UnitDebuff, GetNumArenaOpponents, GetNumPartyMembers, GetNumRaidMembers, GetRaidRosterInfo, RAID_CLASS_COLORS, SetMapToCurrentZone, GetCurrentMapAreaID, GetSubZoneText, SecureHandlerWrapScript, ToggleFrame, UIPanelWindows, SetUIVisibility, C_NamePlate
 
 ------------------------- Core Variables -------------------------
 local VirtualPlates = {}      	-- Storage table: Virtual nameplate frames
 local PlatesVisible = {}      	-- Storage table: currently active nameplates
+local PlateOverrides = {}	 	-- Storage table: [MethodName] = override function for virtual plates
 local ClassByFriendName = {}  	-- Storage table: maps friendly player names (party/raid) to their class
 local ArenaID = {}            	-- Storage table: maps arena names to their ID number
 local PartyID = {}           	-- Storage table: maps party names to their ID number
@@ -21,11 +22,39 @@ local StackablePlates = {}    	-- Storage table: Plates filtered for improved st
 local StackableList = {}		-- Storage table: StackablePlates entries packed in a dense array for fast iteration
 local StackableCount = 0		-- Number of entries in StackableList
 local PlateLevels = 3			-- Frame level difference between plates so one plate's children don't overlap the next closest plate
+local NextUpdate = 0.05		 	-- Time controller for PlatesUpdate
+local UpdateRate = 0.05	     	-- Minimum time between PlatesUpdate
+local NextSecUpdate = 0.2    	-- Time controller for PlatesSecUpdate
+local SecUpdateRate = 0.2	 	-- Minimum time between PlatesSecUpdate
+local ExistsVisiblePlates = false
+local nameplateSizeChecked = false
 local ASSETS = "Interface\\AddOns\\" .. AddonFile .. "\\Assets\\"
 local EventHandler = CreateFrame("Frame", nil, WorldFrame)
 local SetFrameLevel = EventHandler.SetFrameLevel	-- Backup of native frame methods
 local SetScale = EventHandler.SetScale 				-- Backup of native frame methods
 local SetAlpha = EventHandler.SetAlpha 				-- Backup of native frame methods
+
+-- Status Flags
+RBP.hasTarget = false
+RBP.inCombat = false
+RBP.inInstance = false
+RBP.inOpenWorld = false
+RBP.inPvEInstance = false
+RBP.inPvPInstance = false
+RBP.inBG = false
+RBP.inArena = false
+RBP.inICC = false
+RBP.inLDWZone = false
+RBP.playerLevel = UnitLevel("player")
+RBP.NP_WIDTH = 128
+RBP.NP_HEIGHT = 32
+RBP.NP_SCALE = 1
+RBP.HB_CENTER_X = -8.5759733829502
+RBP.HB_CENTER_Y = -7.5040053203105
+RBP.HB_BOTTOMLEFT_X = 3.9680000548363
+RBP.HB_BOTTOMLEFT_Y = 4
+RBP.TG_TOP_X = -1.28
+RBP.TG_TOP_Y = -8.32
 
 ------------------------- Customization Functions -------------------------
 local function InitBarTextures(Virtual)
@@ -1448,21 +1477,11 @@ RBP.GlobalDelayedUpdater:SetScript("OnUpdate", function(self)
 	end
 end)
 
-local function UpdateNonTargetAlpha()
-	if not RBP.hasTarget then return end
+local function UpdateNonTargetAlpha(dbp)
 	for Plate in pairs(PlatesVisible) do
 		if Plate:GetAlpha() ~= 1 then
-			Plate:SetAlpha(RBP.dbp.nonTargetAlpha)
+			Plate:SetAlpha(dbp.nonTargetAlpha)
 		end
-	end
-end
-
-local NonTargetAlphaDriver = CreateFrame("Frame")
-function RBP:UpdateNonTargetAlphaDriver()
-	if not hasAlphaOverride and RBP.dbp.modNonTargetAlpha then
-		NonTargetAlphaDriver:SetScript("OnUpdate", UpdateNonTargetAlpha)
-	else
-		NonTargetAlphaDriver:SetScript("OnUpdate", nil)
 	end
 end
 
@@ -1872,6 +1891,26 @@ local function UpdateClickbox(Virtual)
 	end
 end
 
+local function CheckNameplateSize(Plate)
+	if nameplateSizeChecked then return end
+	nameplateSizeChecked = true
+	RBP.NP_WIDTH, RBP.NP_HEIGHT = Plate:GetSize()
+	RBP.NP_SCALE = RBP.NP_WIDTH/128
+	local healthBar = Plate:GetChildren()
+	local NPx, NPy = Plate:GetCenter()
+	local HBx, HBy = healthBar:GetCenter()
+	if NPy and HBy then
+		RBP.HB_CENTER_X, RBP.HB_CENTER_Y = HBx - NPx, HBy - NPy
+		RBP.HB_BOTTOMLEFT_X, RBP.HB_BOTTOMLEFT_Y = select(4, healthBar:GetPoint(1))
+		RBP.TG_TOP_X, RBP.TG_TOP_Y = select(4,Plate:GetRegions():GetPoint(1))
+	else
+		RBP.HB_CENTER_X, RBP.HB_CENTER_Y = RBP.HB_CENTER_X * RBP.NP_SCALE, RBP.HB_CENTER_Y * RBP.NP_SCALE
+		RBP.HB_BOTTOMLEFT_X, RBP.HB_BOTTOMLEFT_Y = RBP.HB_BOTTOMLEFT_X * RBP.NP_SCALE, RBP.HB_BOTTOMLEFT_Y * RBP.NP_SCALE
+		RBP.TG_TOP_X, RBP.TG_TOP_Y = RBP.TG_TOP_X * RBP.NP_SCALE, RBP.TG_TOP_Y * RBP.NP_SCALE
+	end
+	RBP:UpdateClickboxAttributes()
+end
+
 local function ReactionByPlateColor(r, g, b)
 	if r > .99 and g > .99 and b < .01 then
 		return 4 -- Neutral
@@ -2227,8 +2266,7 @@ do
 	local depthScaling, depthFading, modifyPerspective, fadePlateBuffs, fadeNPCs, depthPivot
 	local minScaleFactor, depthFadeStart, depthFadeRange, depthScaleEnd, depthFadeEnd, depthHideEnd
 	local dynamicScale, alpha, virtualAlpha, regionsAlpha, pbAlpha
-	function PlatesUpdate()
-		local dbp = RBP.dbp
+	function PlatesUpdate(dbp)
 		depthScaling = dbp.depthScaling
 		depthFading = dbp.depthFading
 		modifyPerspective = depthScaling or depthFading
@@ -2440,8 +2478,7 @@ end
 -- If there is no other nameplate in the immediate vicinity of the original position, the position is reset (to prevent the nameplates from rising higher and higher).
 -- Depending on whether the position is to be reset or the nameplate is above or below the closest one different functions are used for a smooth movement.
 local delta = 3
-local function UpdateStacking(elapsed)
-	local dbp = RBP.dbp
+local function UpdateStacking(dbp, elapsed)
 	if dbp.stackingInInstance and not RBP.inInstance and not hasLegacyStacking then return end
 	if hasLegacyStacking and not (dbp.clampTarget or dbp.clampBoss) then return end
 	local originY = hasLegacyStacking and (tonumber(GetCVar("nameplateOriginPos")) or 0) or dbp.originpos
@@ -2538,6 +2575,50 @@ local function UpdateStacking(elapsed)
 		end
 	end
 end
+
+local function PlateOnShow(Plate)
+	local Virtual = Plate.VirtualPlate
+	PlatesVisible[Plate] = Virtual
+	ExistsVisiblePlates = true
+	UpdatePlateFlags(Virtual)
+	UpdateRefinedPlate(Virtual)
+	UpdateRefinedPlateDelayed(Virtual)
+	UpdateClickbox(Virtual)
+	NextUpdate = 0
+end
+
+local function PlateOnHide(Plate)
+	local Virtual = Plate.VirtualPlate
+	PlatesVisible[Plate] = nil
+	ExistsVisiblePlates = next(PlatesVisible) ~= nil
+	ResetPlateFlags(Virtual)
+	ResetRefinedPlate(Virtual)
+	if RBP.inCombat then
+		ExecuteClickboxSecureScript()
+	end
+end
+
+local MainUpdater = CreateFrame("Frame")
+MainUpdater:SetScript("OnUpdate", function(self, elapsed)
+	if not ExistsVisiblePlates then return end
+	local dbp = RBP.dbp
+	if dbp.modNonTargetAlpha and not hasAlphaOverride and RBP.hasTarget then
+		UpdateNonTargetAlpha(dbp)
+	end
+	if dbp.stackingEnabled and not hasModernStacking then
+		UpdateStacking(dbp, elapsed)
+	end
+	NextUpdate = NextUpdate - elapsed
+	if NextUpdate <= 0 then
+		NextUpdate = UpdateRate
+		PlatesUpdate(dbp)
+	end
+	NextSecUpdate = NextSecUpdate - elapsed
+	if NextSecUpdate <= 0 then
+		NextSecUpdate = SecUpdateRate
+		PlatesSecUpdate()
+	end
+end)
 
 ---------------------------------------- Settings Update Functions ----------------------------------------
 function RBP:UpdateAllVirtualsScale()
@@ -2860,7 +2941,6 @@ function RBP:UpdateProfile()
 	self:UpdateClickboxesDriver()
 	self:UpdateWorldFrameHeight()
 	self:UpdateAllShownPlates()
-	self:UpdateNonTargetAlphaDriver()
 	self:UpdateClickboxAttributes()
 end
 
@@ -2868,27 +2948,19 @@ end
 RBP.EventHandler = EventHandler
 RBP.VirtualPlates = VirtualPlates
 RBP.PlatesVisible = PlatesVisible
-RBP.UpdateRefinedPlateDelayed = UpdateRefinedPlateDelayed
+RBP.PlateOverrides = PlateOverrides
 RBP.SetupRefinedPlate = SetupRefinedPlate
 RBP.ForceLevelHide = ForceLevelHide
 RBP.CheckLDWZoneIndoors = CheckLDWZoneIndoors
 RBP.CheckDominateMind = CheckDominateMind
 RBP.UpdateGroupInfo = UpdateGroupInfo
 RBP.UpdateArenaInfo = UpdateArenaInfo
-RBP.UpdateClassColor = UpdateClassColor
-RBP.UpdateHealthBarColor = UpdateHealthBarColor
 RBP.ExecuteClickboxSecureScript = ExecuteClickboxSecureScript
 RBP.InitPlatesClickboxes = InitPlatesClickboxes
 RBP.ClickboxAttributeUpdater = ClickboxAttributeUpdater
 RBP.UpdateClickboxOutOfCombat = UpdateClickboxOutOfCombat
-RBP.UpdateClickbox = UpdateClickbox
-RBP.UpdatePlateFlags = UpdatePlateFlags
-RBP.ResetPlateFlags = ResetPlateFlags
-RBP.PlatesUpdate = PlatesUpdate
-RBP.PlatesSecUpdate = PlatesSecUpdate
+RBP.CheckNameplateSize = CheckNameplateSize
 RBP.RefreshGroupVisuals = RefreshGroupVisuals
 RBP.UpdateRaidIcon = UpdateRaidIcon
-RBP.UpdateRefinedPlate = UpdateRefinedPlate
-RBP.ResetRefinedPlate = ResetRefinedPlate
-RBP.UpdateStacking = UpdateStacking
-RBP.UpdateBarlessPlate = UpdateBarlessPlate
+RBP.PlateOnShow = PlateOnShow
+RBP.PlateOnHide = PlateOnHide

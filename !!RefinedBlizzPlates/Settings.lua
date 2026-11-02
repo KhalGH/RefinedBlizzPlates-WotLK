@@ -412,10 +412,6 @@ RBP.MainOptionTable = {
 					type = "toggle",
 					name = L["Non-target Alpha Mod"],
 					desc = L["Overrides non-target nameplate opacity. May increase CPU usage depending on the number of visible nameplates."],
-					set = function(info, val)
-						RBP.dbp[info[#info]] = val
-						RBP:UpdateNonTargetAlphaDriver()
-					end,
 					hidden = function()
 						return RBP.hasAlphaOverride
 					end,
