@@ -760,6 +760,7 @@ local function HookCastBarScripts(Virtual)
 			castingFailed = nil
 			castBarBorder:Hide()
 			shieldCastBarBorder:Hide()
+			spellIcon:SetAlpha(1)
 			spellIcon:Hide()
 			castBarTexFull:Hide()
 			castBarTexFull:SetAlpha(1)
@@ -804,6 +805,7 @@ local function HookCastBarScripts(Virtual)
 			castingFailed = nil
 			castBarTexFull:Hide()
 			castBarTexFull:SetAlpha(1)
+			spellIcon:SetAlpha(1)
 		end
 		Virtual.RBP_ogShieldCastBarBorderIsShown = Virtual.RBP_ogShieldCastBarBorder:IsShown()
 		delayedCastBarOnShow:Show()
