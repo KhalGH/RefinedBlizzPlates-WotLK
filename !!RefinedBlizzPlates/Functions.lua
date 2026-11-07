@@ -5,11 +5,10 @@ local hasModernEngine = RBP.hasModernEngine
 local hasLegacyStacking = RBP.hasLegacyStacking
 local hasModernStacking = RBP.hasModernStacking
 local hasAlphaOverride = RBP.hasAlphaOverride
-local hasClickboxModifier = RBP.hasClickboxModifier
 
 ----------------------------- API -----------------------------
-local pairs, ipairs, unpack, tonumber, tostring, select, next, math_exp, math_floor, math_abs, string_format, string_char, string_sub, table_insert, GetCVar, SetCVar, sort, wipe, WorldFrame, CreateFrame, UnitCastingInfo, UnitChannelInfo, UnitName, UnitClass, UnitIsUnit, UnitIsFriend, UnitCanAttack, UnitDebuff, GetNumArenaOpponents, GetNumPartyMembers, GetNumRaidMembers, GetRaidRosterInfo, RAID_CLASS_COLORS, SetMapToCurrentZone, GetCurrentMapAreaID, GetSubZoneText, SecureHandlerWrapScript, ToggleFrame, UIPanelWindows, SetUIVisibility, C_NamePlate =
-      pairs, ipairs, unpack, tonumber, tostring, select, next, math.exp, math.floor, math.abs, string.format, string.char, string.sub, table.insert, GetCVar, SetCVar, sort, wipe, WorldFrame, CreateFrame, UnitCastingInfo, UnitChannelInfo, UnitName, UnitClass, UnitIsUnit, UnitIsFriend, UnitCanAttack, UnitDebuff, GetNumArenaOpponents, GetNumPartyMembers, GetNumRaidMembers, GetRaidRosterInfo, RAID_CLASS_COLORS, SetMapToCurrentZone, GetCurrentMapAreaID, GetSubZoneText, SecureHandlerWrapScript, ToggleFrame, UIPanelWindows, SetUIVisibility, C_NamePlate
+local pairs, ipairs, unpack, tonumber, tostring, select, next, math_exp, math_floor, math_abs, string_format, string_char, string_sub, table_insert, GetCVar, sort, wipe, WorldFrame, CreateFrame, UnitCastingInfo, UnitChannelInfo, UnitName, UnitClass, UnitIsUnit, UnitCanAttack, GetNumArenaOpponents, GetNumPartyMembers, GetNumRaidMembers, GetRaidRosterInfo, RAID_CLASS_COLORS, ToggleFrame, C_NamePlate =
+      pairs, ipairs, unpack, tonumber, tostring, select, next, math.exp, math.floor, math.abs, string.format, string.char, string.sub, table.insert, GetCVar, sort, wipe, WorldFrame, CreateFrame, UnitCastingInfo, UnitChannelInfo, UnitName, UnitClass, UnitIsUnit, UnitCanAttack, GetNumArenaOpponents, GetNumPartyMembers, GetNumRaidMembers, GetRaidRosterInfo, RAID_CLASS_COLORS, ToggleFrame, C_NamePlate
 
 ------------------------- Core Variables -------------------------
 local VirtualPlates = {}      	-- Storage table: Virtual nameplate frames
@@ -94,11 +93,11 @@ local function UpdateHealthBorder(Virtual)
 	local dbp = RBP.dbp
 	Virtual.RBP_healthBarBorder:SetPoint("CENTER", Virtual.RBP_healthBar, -RBP.HB_CENTER_X, -RBP.HB_CENTER_Y)
 	if dbp.healthBar_border == "Blizzard" then
-		Virtual.RBP_healthBarBorder:SetTexture("Interface\\Tooltips\\Nameplate-Border")
+		Virtual.RBP_healthBarBorder:SetTexture(ASSETS .. "PlateRegions\\HealthBar-BorderBlizz")	
 	else
 		Virtual.RBP_healthBarBorder:SetTexture(ASSETS .. "PlateRegions\\HealthBar-Border")		
 	end
-	Virtual.RBP_healthBarBorder:SetVertexColor(unpack(dbp.healthBar_borderTint))
+	Virtual.RBP_healthBarBorder:SetVertexColor(unpack(dbp.healthBar_borderColor))
 end
 
 local function SetupHealthBorder(Virtual)
@@ -458,13 +457,13 @@ local function SetupCastBarBorder(Virtual)
 	Virtual.RBP_castBarBorder:SetTexture(ASSETS .. "PlateRegions\\CastBar-Border")
 	Virtual.RBP_castBarBorder:SetAllPoints(Virtual.RBP_ogCastBarBorder)
 	Virtual.RBP_castBarBorder:SetTexCoord(1, 0, 0, 1)
-	Virtual.RBP_castBarBorder:SetVertexColor(unpack(RBP.dbp.castBar_borderTint))
+	Virtual.RBP_castBarBorder:SetVertexColor(unpack(RBP.dbp.castBar_borderColor))
 	Virtual.RBP_castBarBorder:Hide()
 end
 
 local function UpdateShieldCastBarBorder(Virtual)
 	local dbp = RBP.dbp
-	Virtual.RBP_shieldCastBarBorder:SetVertexColor(unpack(dbp.castBar_protectedBorderTint))
+	Virtual.RBP_shieldCastBarBorder:SetVertexColor(unpack(dbp.castBar_protectedBorderColor))
 	Virtual.RBP_shieldCastBarBorder:SetPoint("CENTER", Virtual.RBP_ogCastBarBorder, 0.572 * RBP.NP_SCALE, - 11.439 * RBP.NP_SCALE)
 	Virtual.RBP_shieldCastBarBorder:SetSize(RBP.NP_WIDTH * (dbp.healthBar_border == "Blizzard" and 1.017 or 0.926), RBP.NP_HEIGHT)
 end
@@ -955,7 +954,7 @@ end
 
 local function SetupEliteIcon(Virtual)
 	local dbp = RBP.dbp
-	Virtual.RBP_eliteIcon:SetVertexColor(unpack(dbp.eliteIcon_Tint))
+	Virtual.RBP_eliteIcon:SetVertexColor(unpack(dbp.eliteIcon_color))
 	Virtual.RBP_eliteIcon:ClearAllPoints()
 	if dbp.eliteIcon_style == "Modern" then
 		Virtual.RBP_eliteIcon:SetTexture(ASSETS .. "PlateRegions\\ModernEliteIcon")
@@ -986,7 +985,7 @@ local function SetupEliteIcon(Virtual)
 			end
 		end
 	else
-		Virtual.RBP_eliteIcon:SetTexture("Interface\\Tooltips\\elitenameplateicon")
+		Virtual.RBP_eliteIcon:SetTexture(ASSETS .. "PlateRegions\\EliteIcon")
 		Virtual.RBP_eliteIcon:SetSize(37.63 * dbp.eliteIcon_widthScale * RBP.NP_SCALE, 27.52 * dbp.eliteIcon_heightScale * RBP.NP_SCALE)
 		if dbp.eliteIcon_anchor == "Left" then
 			Virtual.RBP_eliteIcon:SetTexCoord(0.578125, 0, 0.578125, 0.84375, 0, 0, 0, 0.84375)
@@ -1195,7 +1194,7 @@ local function SetupBarlessPlate(Virtual)
 	Virtual.RBP_barlessPlate:SetSize(1, 1)
 	Virtual.RBP_barlessPlate:SetPoint("TOP", Virtual.RealPlate)
 	Virtual.RBP_barlessPlate:Hide()
-	Virtual.RBP_barlessPlate:SetFrameLevel(Virtual:GetFrameLevel()+1)
+	Virtual.RBP_barlessPlate:SetFrameLevel(Virtual:GetFrameLevel() + 1)
 	Virtual.RBP_barlessPlate_nameText = Virtual.RBP_barlessPlate:CreateFontString(nil, "OVERLAY")
 	Virtual.RBP_barlessPlate_nameText:SetShadowOffset(0.5, -0.5)
 	Virtual.RBP_barlessPlate_healthText = Virtual.RBP_barlessPlate:CreateFontString(nil, "OVERLAY")
@@ -1354,7 +1353,7 @@ end
 local clickboxesTimer = 0
 local function UpdateClickboxesVisualizer(self, elapsed)
 	clickboxesTimer = clickboxesTimer + elapsed
-	if clickboxesTimer < 0.1 then return end
+	if clickboxesTimer < 0.03 then return end
 	clickboxesTimer = 0
 	local nameplateHitboxWidthF = tonumber(GetCVar("nameplateHitboxWidthF")) or 1
 	local nameplateHitboxWidthE = tonumber(GetCVar("nameplateHitboxWidthE")) or 1
@@ -1385,8 +1384,8 @@ end
 
 local ClickboxesDriver = CreateFrame("Frame")
 function RBP:UpdateClickboxesDriver()
-	if not hasClickboxModifier then return end
-	clickboxesTimer = 0.1
+	if not RBP.hasClickboxModifier then return end
+	clickboxesTimer = 0.03
 	if RBP.dbp.showClickbox then
 		ClickboxesDriver:SetScript("OnUpdate", UpdateClickboxesVisualizer)
 	else
@@ -1521,28 +1520,36 @@ local function SetupRefinedPlate(Virtual)
 	SetupClickboxTexture(Virtual.RealPlate)
 end
 
-local firstChecked
-local ForceLevelHideHandler = CreateFrame("Frame")
-ForceLevelHideHandler:Hide()
-ForceLevelHideHandler:SetScript("OnUpdate", function(self)
-	firstChecked = false
-	for _, Virtual in pairs(PlatesVisible) do
-		if not firstChecked then
-			firstChecked = true
-			if not Virtual.RBP_levelText:IsShown() then
-				break
-			else
-				self:Hide()
+local ForceLevelHide
+do
+	local levelHideFrames = 0
+	local firstChecked
+	local ForceLevelHideHandler = CreateFrame("Frame")
+	ForceLevelHideHandler:Hide()
+	ForceLevelHideHandler:SetScript("OnUpdate", function(self)
+		levelHideFrames = levelHideFrames + 1
+		firstChecked = false
+		for _, Virtual in pairs(PlatesVisible) do
+			if not Virtual.RBP_hasBossIcon then
+				if not firstChecked then
+					firstChecked = true
+					if not Virtual.RBP_levelText:IsShown() then
+						break
+					else
+						self:Hide()
+					end
+				end
+				Virtual.RBP_levelText:Hide()
 			end
 		end
-		Virtual.RBP_levelText:Hide()
+		if not firstChecked or levelHideFrames >= 5 then
+			self:Hide()
+		end
+	end)
+	function ForceLevelHide()
+		levelHideFrames = 0
+		ForceLevelHideHandler:Show()
 	end
-	if not firstChecked then
-		self:Hide()
-	end
-end)
-local function ForceLevelHide()
-	ForceLevelHideHandler:Show()
 end
 
 function RBP:CheckLDWZone()
@@ -1911,6 +1918,21 @@ local function CheckNameplateSize(Plate)
 	RBP:UpdateClickboxAttributes()
 end
 
+local function SyncFrameLevel(frame, level)
+	if frame and frame:GetFrameLevel() ~= level then
+		frame:SetFrameLevel(level)
+	end
+end
+
+local function RefreshFrameLevels(Virtual)
+	local base = Virtual:GetFrameLevel()
+	SyncFrameLevel(Virtual.RBP_healthBar, base)
+	SyncFrameLevel(Virtual.RBP_castBar, base)
+	SyncFrameLevel(Virtual.RBP_regionsWrapper, base)
+	SyncFrameLevel(Virtual.RBP_totemPlate, base)
+	SyncFrameLevel(Virtual.RBP_barlessPlate, base + 1)
+end
+
 local function ReactionByPlateColor(r, g, b)
 	if r > .99 and g > .99 and b < .01 then
 		return 4 -- Neutral
@@ -2185,13 +2207,22 @@ local function UpdateRefinedPlate(Virtual)
 			UpdateHealthBarColor(Virtual)
 			CheckBarlessPlate(Virtual)
 			----------------- Init Enhanced Plate Stacking -----------------
-			if not hasModernStacking and not Virtual.RBP_isFriendly then
+			if not hasModernStacking then
 				local Plate = Virtual.RealPlate
+				local isFriendly = Virtual.RBP_isFriendly
 				if dbp.stackingEnabled and (not dbp.stackingInInstance or RBP.inInstance) then
-					if not dbp.disableCollisions and not hasLegacyStacking then
-						AddStackablePlate(Plate)
+					if not hasLegacyStacking then
+						if isFriendly then -- allies never collide: the only thing they can get is the offset
+							if dbp.friendlyStackOffset and not Virtual.RBP_isBarlessPlate then
+								Virtual.RBP_offsetOnly = true
+							end
+						elseif dbp.disableCollisions then
+							Virtual.RBP_offsetOnly = true
+						else
+							AddStackablePlate(Plate)
+						end
 					end
-				elseif not hasLegacyStacking and Virtual.RBP_hasBossIcon and dbp.clampBoss and RBP.inPvEInstance then
+				elseif not isFriendly and not hasLegacyStacking and Virtual.RBP_hasBossIcon and dbp.clampBoss and RBP.inPvEInstance then
 					Plate:SetClampedToScreen(true)
 					Plate:SetClampRectInsets(80 * dbp.globalScale, -80 * dbp.globalScale, dbp.upperborder, 0)
 				end
@@ -2242,6 +2273,7 @@ local function ResetRefinedPlate(Virtual)
 	Virtual.RBP_BarlessHealthTextIsShown = nil
 	Virtual.RBP_barlessNameTextRGB = nil
 	Virtual.RBP_barlessNameTextGrayOut = nil
+	Virtual.RBP_offsetOnly = nil
 	Virtual.RBP_castBarBorder:Hide()
 	Virtual.RBP_shieldCastBarBorder:Hide()
 	if not hasModernStacking then
@@ -2473,7 +2505,7 @@ local function ExtendWorldFrameHeight(shouldExtend)
 	end
 end
 
--- Retail-like Nameplate Stacking
+-- Retail-like Nameplate Stacking (Adapted from Cheeta's WeakAura)
 -- All visible enemy nameplates are iterated and the minimum distance to the next nameplate is determined.
 -- If there is no other nameplate in the immediate vicinity of the original position, the position is reset (to prevent the nameplates from rising higher and higher).
 -- Depending on whether the position is to be reset or the nameplate is above or below the closest one different functions are used for a smooth movement.
@@ -2481,20 +2513,20 @@ local delta = 3
 local function UpdateStacking(dbp, elapsed)
 	if dbp.stackingInInstance and not RBP.inInstance and not hasLegacyStacking then return end
 	if hasLegacyStacking and not (dbp.clampTarget or dbp.clampBoss) then return end
-	local originY = hasLegacyStacking and (tonumber(GetCVar("nameplateOriginPos")) or 0) or dbp.originpos
+	local originY = dbp.originpos
 	local clampTop = dbp.upperborder
 	local clampTarget = dbp.clampTarget
 	local clampBoss = dbp.clampBoss
 	local inPvEInstance = RBP.inPvEInstance
 	local globalScale = dbp.globalScale
 	local hideInset = -1.5 * RBP.NP_HEIGHT * globalScale * dbp.targetScale
-	if dbp.disableCollisions or hasLegacyStacking then
+	if hasLegacyStacking then
+		originY = tonumber(GetCVar("nameplateOriginPos")) or 0
 		for Plate, Virtual in pairs(PlatesVisible) do
+			local _, _, _, _, y = Plate:GetPoint(1)
 			local width, height = Plate:GetSize()
 			local halfW = width * 0.5
-			local _, _, _, _, y = Plate:GetPoint(1)
-			local plateH = hasLegacyStacking and (height * 0.5) or height
-			local bottomInset = -y - originY + plateH
+			local bottomInset = -y - originY + height * 0.5
 			Plate:SetClampedToScreen(true)
 			if (Virtual.RBP_isTarget and clampTarget) or (Virtual.RBP_hasBossIcon and clampBoss and inPvEInstance) then
 				Plate:SetClampRectInsets(halfW, -halfW, clampTop, bottomInset)
@@ -2504,6 +2536,24 @@ local function UpdateStacking(dbp, elapsed)
 		end
 		return
 	end
+	local disableCollisions = dbp.disableCollisions
+	if disableCollisions or dbp.friendlyStackOffset then
+		for Plate, Virtual in pairs(PlatesVisible) do
+			if Virtual.RBP_offsetOnly then
+				local _, _, _, _, y = Plate:GetPoint(1)
+				local width, height = Plate:GetSize()
+				local halfW = width * 0.5
+				local bottomInset = -y - originY + height
+				Plate:SetClampedToScreen(true)
+				if (Virtual.RBP_isTarget and clampTarget) or (Virtual.RBP_hasBossIcon and clampBoss and inPvEInstance) then
+					Plate:SetClampRectInsets(halfW, -halfW, clampTop, bottomInset)
+				else
+					Plate:SetClampRectInsets(halfW, -halfW, hideInset, bottomInset)
+				end
+			end
+		end
+	end
+	if disableCollisions then return end
 	if StackableCount == 0 then return end
 	local dt = elapsed or 0.016
 	if dt > 0.05 then dt = 0.05 end
@@ -2513,23 +2563,21 @@ local function UpdateStacking(dbp, elapsed)
 	local freeze = dbp.FreezeMouseover
 	local worldWidth = RBP.WorldFrameWidth
 	local negWorldWidth = -2 * worldWidth
-	local plateWidth = RBP.NP_WIDTH * globalScale * dbp.clickboxWidthFactor
-	local plateHeight = RBP.NP_HEIGHT * globalScale * dbp.clickboxHeightFactor
-	local plateH = hasLegacyStacking and (plateHeight * 0.5) or plateHeight
-	local halfWidth = plateWidth * 0.5
-	local negHalfWidth = -halfWidth
-	local halfPlateHeight = plateHeight * 0.5
 	local hasCollisions = StackableCount > 1
 	for i = 1, StackableCount do
 		local Data1 = StackableList[i]
 		local Plate1 = Data1.Plate
 		local Virtual1 = Plate1.VirtualPlate
 		local _, _, _, x, y = Plate1:GetPoint(1)
+		local width, height = Plate1:GetSize()
+		local halfWidth = width * 0.5
+		local negHalfWidth = -halfWidth
 		Data1.xpos = x
 		Data1.ypos = y
 		Plate1:SetClampedToScreen(true)
-		if freeze and not hasLegacyStacking and Virtual1.RBP_healthBarHighlight:IsShown() then -- Freeze Mouseover Nameplate
+		if freeze and Virtual1.RBP_healthBarHighlight:IsShown() then -- Freeze Mouseover Nameplate
 			local cx, cy = Plate1:GetCenter() -- actual visual center (GetPoint returns the anchor)
+			local halfPlateHeight = height * 0.5
 			Data1.position = cy - y - originY + halfPlateHeight
 			Data1.xpos = cx
 			Plate1:SetClampRectInsets(negWorldWidth, worldWidth - cx - halfWidth, 768 - cy - halfPlateHeight, -1536)
@@ -2537,6 +2585,7 @@ local function UpdateStacking(dbp, elapsed)
 			local gapAbove = 1000
 			local isolated = true
 			local offset = Data1.position or 0
+			if offset < 0 then offset = 0 end
 			local effY = y + offset
 			if hasCollisions then
 				for j = 1, StackableCount do
@@ -2566,7 +2615,7 @@ local function UpdateStacking(dbp, elapsed)
 				newOffset = offset - math_exp(-colliderH / gapAbove) * step
 			end
 			Data1.position = newOffset
-			local bottomInset = -y - newOffset - originY + plateH
+			local bottomInset = -y - newOffset - originY + height
 			if (Virtual1.RBP_isTarget and clampTarget) or (Virtual1.RBP_hasBossIcon and clampBoss and inPvEInstance) then
 				Plate1:SetClampRectInsets(halfWidth, negHalfWidth, clampTop, bottomInset)
 			else
@@ -2580,6 +2629,7 @@ local function PlateOnShow(Plate)
 	local Virtual = Plate.VirtualPlate
 	PlatesVisible[Plate] = Virtual
 	ExistsVisiblePlates = true
+	RefreshFrameLevels(Virtual)
 	UpdatePlateFlags(Virtual)
 	UpdateRefinedPlate(Virtual)
 	UpdateRefinedPlateDelayed(Virtual)
@@ -2593,6 +2643,8 @@ local function PlateOnHide(Plate)
 	ExistsVisiblePlates = next(PlatesVisible) ~= nil
 	ResetPlateFlags(Virtual)
 	ResetRefinedPlate(Virtual)
+	Plate.namePlateUnitToken = nil
+	Virtual.namePlateUnitToken = nil
 	if RBP.inCombat then
 		ExecuteClickboxSecureScript()
 	end
@@ -2669,7 +2721,7 @@ function RBP:UpdateAllCastBars()
 		end
 		Virtual.RBP_castBarTex:SetTexture(RBP.LSM:Fetch("statusbar", dbp.castBar_Tex))
 		Virtual.RBP_castBarTexFull:SetTexture(RBP.LSM:Fetch("statusbar", dbp.castBar_Tex))
-		Virtual.RBP_castBarBorder:SetVertexColor(unpack(dbp.castBar_borderTint))
+		Virtual.RBP_castBarBorder:SetVertexColor(unpack(dbp.castBar_borderColor))
 		UpdateShieldCastBarBorder(Virtual)
 		UpdateCastBarBg(Virtual)
 		UpdateCastText(Virtual)
@@ -2706,7 +2758,7 @@ end
 
 function RBP:UpdateAllCastBarBorders()
 	for _, Virtual in pairs(VirtualPlates) do
-		Virtual.RBP_castBarBorder:SetVertexColor(unpack(RBP.dbp.castBar_borderTint))
+		Virtual.RBP_castBarBorder:SetVertexColor(unpack(RBP.dbp.castBar_borderColor))
 		UpdateShieldCastBarBorder(Virtual)
 	end
 end

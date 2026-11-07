@@ -10,7 +10,6 @@ local select, pairs, unpack, string_format, WorldFrame, GetAddOnMetadata, Create
       select, pairs, unpack, string.format, WorldFrame, GetAddOnMetadata, CreateFrame, UnitExists, IsInInstance, SetUIVisibility, C_NamePlate
 
 -- Localized namespace definitions
-local hasModernEngine = RBP.hasModernEngine
 local EventHandler = RBP.EventHandler
 local VirtualPlates = RBP.VirtualPlates
 local PlatesVisible = RBP.PlatesVisible
@@ -43,9 +42,7 @@ local function ReparentChildren(Plate, ...)
 	for Index = 1, select("#", ...) do
 		local Child = select(Index, ...)
 		if Child ~= Virtual then
-			local LevelOffset = Child:GetFrameLevel() - Plate:GetFrameLevel()
 			Child:SetParent(Virtual)
-			Child:SetFrameLevel(Virtual:GetFrameLevel() + LevelOffset) -- Maintain relative frame levels
 			Plate[#Plate + 1] = Child;
 		end
 	end
@@ -92,7 +89,7 @@ local function PlateAdd(Plate)
 
 	SetupRefinedPlate(Virtual)
 
-	if not hasModernEngine and Plate:IsVisible() then
+	if Plate:IsVisible() then
 		PlateOnShow(Plate)
 	end
 
@@ -270,11 +267,9 @@ function EventHandler:PLAYER_REGEN_ENABLED()
 		RBP.delayedClickboxUpdate = false
 		ClickboxAttributeUpdater()
 	end
-    if RBP.dbp.depthScaling then
-        for _, Virtual in pairs(PlatesVisible) do
-        	UpdateClickboxOutOfCombat(Virtual)
-        end
-    end
+	for _, Virtual in pairs(PlatesVisible) do
+		UpdateClickboxOutOfCombat(Virtual)
+	end
 end
 
 function EventHandler:PLAYER_REGEN_DISABLED()
@@ -285,7 +280,7 @@ end
 
 function EventHandler:PLAYER_TARGET_CHANGED()
 	RBP.hasTarget = UnitExists("target") == 1
-	if hasModernEngine then
+	if RBP.hasModernEngine then
 		RBP.targetedPlate = C_NamePlate.GetNamePlateForUnit("target")
 	end
 	RBP.GlobalDelayedUpdater:Show()
@@ -359,19 +354,24 @@ end
 function EventHandler:NAME_PLATE_UNIT_ADDED(event, nameplateID)
 	local Plate = C_NamePlate.GetNamePlateForUnit(nameplateID)
 	if not Plate then return end
-	if not Plate.namePlateUnitToken then
-		Plate.namePlateUnitToken = nameplateID
-		Plate.VirtualPlate.namePlateUnitToken = nameplateID
-		if Plate:IsVisible() then
-			PlateOnShow(Plate)
-		end
-	else
-		Plate.namePlateUnitToken = nameplateID
-		Plate.VirtualPlate.namePlateUnitToken = nameplateID
-	end
+	Plate.namePlateUnitToken = nameplateID
+	Plate.VirtualPlate.namePlateUnitToken = nameplateID
 end
 
---- Global event handler.
+function EventHandler:NAME_PLATE_UNIT_REMOVED(event, nameplateID)
+	local Plate = C_NamePlate.GetNamePlateForUnit(nameplateID)
+	if not Plate then return end
+	Plate.namePlateUnitToken = nil
+	Plate.VirtualPlate.namePlateUnitToken = nil
+end
+
+function EventHandler:NAME_PLATE_OWNER_CHANGED(event, nameplateID)
+	local Plate = C_NamePlate.GetNamePlateForUnit(nameplateID)
+	if not Plate then return end
+	Plate.namePlateUnitToken = nameplateID
+	Plate.VirtualPlate.namePlateUnitToken = nameplateID
+end
+
 function EventHandler:OnEvent(event, ...)
 	if self[event] then
 		return self[event](self, event, ...)
@@ -392,7 +392,11 @@ EventHandler:RegisterEvent("ARENA_OPPONENT_UPDATE")
 EventHandler:RegisterEvent("ZONE_CHANGED_INDOORS")
 EventHandler:RegisterEvent("UNIT_AURA")
 EventHandler:RegisterEvent("RAID_TARGET_UPDATE")
-if hasModernEngine then
+if RBP.hasModernEngine then
 	EventHandler:RegisterEvent("NAME_PLATE_CREATED")
 	EventHandler:RegisterEvent("NAME_PLATE_UNIT_ADDED")
+	EventHandler:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
+	if RBP.hasLegacyStacking then
+		EventHandler:RegisterEvent("NAME_PLATE_OWNER_CHANGED")
+	end
 end

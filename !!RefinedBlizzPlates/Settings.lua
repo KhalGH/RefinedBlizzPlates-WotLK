@@ -40,8 +40,9 @@ RBP.dbp.stackingEnabled = false
 RBP.dbp.disableCollisions = false
 RBP.dbp.xspace = 130
 RBP.dbp.yspace = 15
-RBP.dbp.originpos = 0
 RBP.dbp.yspeed = 210
+RBP.dbp.originpos = 0
+RBP.dbp.friendlyStackOffset = false
 RBP.dbp.FreezeMouseover = false
 RBP.dbp.stackingInInstance = false
 -- Depth Perspective
@@ -94,7 +95,7 @@ RBP.dbp.healthBar_border = "Refined"
 RBP.dbp.healthBar_friendlyPlayerTex = "KhalBar"
 RBP.dbp.healthBar_hostilePlayerTex = "KhalBar"
 RBP.dbp.healthBar_npcTex = "KhalBar"
-RBP.dbp.healthBar_borderTint = {1, 1, 1} -- This a tint overlay, not a regular color
+RBP.dbp.healthBar_borderColor = {0.816, 0.675, 0, 1}
 RBP.dbp.healthBar_progressiveTexCrop = true
 RBP.dbp.healthBar_friendColor = {0, 0, 1}
 RBP.dbp.healthBar_friendClassColor = false
@@ -107,7 +108,7 @@ RBP.dbp.targetGlow_Color = {1, 1, 0}
 RBP.dbp.targetGlow_Gradient = true
 RBP.dbp.showMouseoverGlowBorder = true
 RBP.dbp.mouseoverGlow_Alpha = 1
-RBP.dbp.mouseoverGlow_Color = {1, 1, 1} -- This a tint overlay, not a regular color
+RBP.dbp.mouseoverGlow_Color = {1, 1, 1}
 -- Health Text
 RBP.dbp.healthText_hide = false
 RBP.dbp.healthText_font = RBP.RefinedFontKey
@@ -138,8 +139,8 @@ RBP.dbp.castBar_progressiveTexCrop = false
 RBP.dbp.castBar_color = {1, 0.7, 0}
 RBP.dbp.castBar_channelingColor = {1, 0.7, 0}
 RBP.dbp.castBar_showSpark = true
-RBP.dbp.castBar_borderTint = {1, 1, 1} -- This a tint overlay, not a regular color
-RBP.dbp.castBar_protectedBorderTint = {1, 1, 1} -- This a tint overlay, not a regular color
+RBP.dbp.castBar_borderColor = {0.816, 0.675, 0}
+RBP.dbp.castBar_protectedBorderColor = {0.69, 0.722, 0.753}
 RBP.dbp.castBar_bgTex = "KhalBar"
 RBP.dbp.castBar_bgColor = {0, 0, 0}
 RBP.dbp.castBar_bgAlpha = 0.5
@@ -173,7 +174,7 @@ RBP.dbp.eliteIcon_heightScale = 1
 RBP.dbp.eliteIcon_anchor = "Left"
 RBP.dbp.eliteIcon_offsetX = 0
 RBP.dbp.eliteIcon_offsetY = 0
-RBP.dbp.eliteIcon_Tint = {1, 1, 1}
+RBP.dbp.eliteIcon_color = {0.973, 0.910, 0.188}
 -- Boss Icon
 RBP.dbp.bossIcon_anchor = "Right"
 RBP.dbp.bossIcon_offsetX = 0
@@ -539,7 +540,12 @@ RBP.MainOptionTable = {
 					order = 38,
 					type = "toggle",
 					name = L["Clamp Target"],
-					desc = L["Prevents targeted enemy nameplate from going above the top of the screen."],
+					desc = function()
+						if RBP.hasLegacyStacking then
+							return L["Prevents targeted nameplate from going above the top of the screen."]
+						end
+						return L["Prevents targeted enemy nameplate from going above the top of the screen."]
+					end,
 					set = function(info, val)
 						RBP.dbp[info[#info]] = val
 						RBP:UpdateWorldFrameHeight()
@@ -607,7 +613,7 @@ RBP.MainOptionTable = {
 						if RBP.hasLegacyStacking then
 							return L["Your client uses AwesomeWotLK's persistent stacking/clamping system. Enabling RBP's clamping will override the client's stacking."]
 						end
-						return L["Simulates Retail's nameplate stacking for enemies. This feature has a high CPU cost, use it with discretion."]
+						return L["Simulates Retail's stacking on enemy nameplates with a visible health bar. This feature has a high CPU cost, so use it with discretion."]
 					end,
 					set = function(info, val)
 						RBP.dbp[info[#info]] = val
@@ -622,7 +628,7 @@ RBP.MainOptionTable = {
 					order = 46,
 					type = "toggle",
 					name = L["Disable Collisions"],
-					desc = L["Disables nameplate overlap resolution while preserving Vertical Offset and Clamping. In this mode, friendly and enemy nameplates are treated equally. Reduces CPU usage."],
+					desc = L["Disables nameplate overlap resolution while preserving Vertical Offset and Clamping. Reduces CPU usage."],
 					set = function(info, val)
 						RBP.dbp[info[#info]] = val
 						RBP:UpdateAllShownPlates()
@@ -687,7 +693,7 @@ RBP.MainOptionTable = {
 					name = L["Vertical Offset"],
 					desc = L["Vertically offsets the entire nameplate, including its clickbox."],
 					min = 0,
-					max = 50,
+					max = 100,
 					step = 1,
 					disabled = function()
 						return not RBP.dbp.stackingEnabled
@@ -696,8 +702,24 @@ RBP.MainOptionTable = {
 						return RBP.hasModernStacking or RBP.hasLegacyStacking
 					end,
 				},
-				FreezeMouseover = {
+				friendlyStackOffset = {
 					order = 53,
+					type = "toggle",
+					name = L["Offset Friendly Nameplates"],
+					desc = L["Applies the Vertical Offset and Clamping to friendly nameplates as well. They do not take part in collision calculations, but may add some extra overhead."],
+					set = function(info, val)
+						RBP.dbp[info[#info]] = val
+						RBP:UpdateAllShownPlates()
+					end,
+					disabled = function()
+						return not RBP.dbp.stackingEnabled
+					end,
+					hidden = function()
+						return RBP.hasModernStacking or RBP.hasLegacyStacking
+					end,
+				},
+				FreezeMouseover = {
+					order = 54,
 					type = "toggle",
 					name = L["Freeze Mouseover"],
 					desc = L["Stops the nameplate you're mousing over from moving for better selection."],
@@ -709,7 +731,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				stackingInInstance = {
-					order = 54,
+					order = 55,
 					type = "toggle",
 					name = L["Disable in Open World"],
 					desc = L["Only process stacking inside PvE and PvP instances. This will reduce CPU usage in the open world."],
@@ -724,23 +746,23 @@ RBP.MainOptionTable = {
 						return RBP.hasModernStacking or RBP.hasLegacyStacking
 					end,
 				},
-				lineBreak25 = {order = 55, type = "description", name = "", hidden = function() return RBP.hasModernStacking end},
-				lineBreak26 = {order = 56, type = "description", name = "", hidden = function() return RBP.hasModernStacking end},
+				lineBreak25 = {order = 56, type = "description", name = "", hidden = function() return RBP.hasModernStacking end},
+				lineBreak26 = {order = 57, type = "description", name = "", hidden = function() return RBP.hasModernStacking end},
 				depth_header = {
-					order = 57,
+					order = 58,
 					type = "header",
 					name = L["Depth Perception"],
 				},
-				lineBreak27 = {order = 58, type = "description", name = ""},
+				lineBreak27 = {order = 59, type = "description", name = ""},
 				depthScaling = {
-					order = 59,
+					order = 60,
 					type = "toggle",
 					name = L["Distance Shrinking"],
 					desc = function()
 						if RBP.hasModernStacking then
-							return L["Shrinks nameplates by camera distance. This feature has a high CPU cost, use it with discretion."]
+							return L["Shrinks nameplates by camera distance. This feature has a high CPU cost, so use it with discretion."]
 						end
-						return L["Shrinks nameplates by camera distance. This feature has a high CPU cost, use it with discretion. Not recommended to use together with Retail-like Stacking."]
+						return L["Shrinks nameplates by camera distance. This feature has a high CPU cost, so use it with discretion. Not recommended to use together with Retail-like Stacking."]
 					end,
 					set = function(info, val)
 						RBP.dbp[info[#info]] = val
@@ -751,7 +773,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				depthPivot = {
-					order = 60,
+					order = 61,
 					type = "range",
 					name = L["Shrink Start Distance"],
 					desc = L["Camera distance where shrinking begins. Closer plates keep their normal size."],
@@ -761,7 +783,7 @@ RBP.MainOptionTable = {
 					disabled = function() return not RBP.dbp.depthScaling end,
 				},
 				minScaleFactor = {
-					order = 61,
+					order = 62,
 					type = "range",
 					name = L["Minimum Scale"],
 					desc = L["The smallest scale a distant nameplate can reach."],
@@ -770,16 +792,16 @@ RBP.MainOptionTable = {
 					step = 0.01,
 					disabled = function() return not RBP.dbp.depthScaling end,
 				},
-				lineBreak28 = {order = 62, type = "description", name = ""},
+				lineBreak28 = {order = 63, type = "description", name = ""},
 				depthFading = {
-					order = 63,
+					order = 64,
 					type = "toggle",
 					name = L["Distance Fading"],
 					desc = function()
 						if RBP.hasModernStacking then
-							return L["Fades nameplates by camera distance. This feature has a high CPU cost, use it with discretion."]
+							return L["Fades nameplates by camera distance. This feature has a high CPU cost, so use it with discretion."]
 						end
-						return L["Fades nameplates by camera distance. This feature has a high CPU cost, use it with discretion. Not recommended to use together with Retail-like Stacking."]
+						return L["Fades nameplates by camera distance. This feature has a high CPU cost, so use it with discretion. Not recommended to use together with Retail-like Stacking."]
 					end,
 					set = function(info, val)
 						RBP.dbp[info[#info]] = val
@@ -790,7 +812,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				depthFadeStart = {
-					order = 64,
+					order = 65,
 					type = "range",
 					name = L["Fade Start Distance"],
 					desc = L["Camera distance where fading begins. Closer plates stay fully visible."],
@@ -800,7 +822,7 @@ RBP.MainOptionTable = {
 					disabled = function() return not RBP.dbp.depthFading end,
 				},
 				depthFadeRange = {
-					order = 65,
+					order = 66,
 					type = "range",
 					name = L["Fade Range"],
 					desc = L["Distance between fading stages. Higher values make nameplates disappear farther away."],
@@ -810,17 +832,17 @@ RBP.MainOptionTable = {
 					disabled = function() return not RBP.dbp.depthFading end,
 				},
 				fadeNPCs = {
-					order = 66,
+					order = 67,
 					type = "toggle",
 					name = L["Hide Distant NPCs"],
 					desc = L["Hides NPC nameplates at very long distances."],
 					disabled = function() return not RBP.dbp.depthFading end,					
 				},
 				fadePlateBuffs = {
-					order = 67,
+					order = 68,
 					type = "toggle",
-					name = L["Fade PlateBuffs"],
-					desc = L["Fades PlateBuffs icons on distant nameplates. Improves performance."],
+					name = L["Hide Distant PlateBuffs"],
+					desc = L["Fades out and hides PlateBuffs icons on distant nameplates. Icons are not updated while hidden, slightly reducing overhead."],
 					set = function(info, val)
 						RBP.dbp[info[#info]] = val
 						if not val then
@@ -830,7 +852,7 @@ RBP.MainOptionTable = {
 					disabled = function() return not RBP.dbp.depthFading end,					
 				},
 				nameplateDistance = {
-					order = 68,
+					order = 69,
 					type = "range",
 					name = L["Extended Draw Distance"],
 					desc = L["Extends the distance at which nameplates are drawn."],
@@ -851,7 +873,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				cameraFov = {
-					order = 69,
+					order = 70,
 					type = "range",
 					name = L["Field of View"],
 					desc = L["Adjusts the camera field of view."],
@@ -869,8 +891,8 @@ RBP.MainOptionTable = {
 						return not RBP.hasModernEngine or RBP.hasLegacyStacking or RBP.hasModernStacking
 					end,
 				},
-				lineBreak29 = {order = 70, type = "description", name = ""},
-				lineBreak30 = {order = 71, type = "description", name = ""},
+				lineBreak29 = {order = 71, type = "description", name = ""},
+				lineBreak30 = {order = 72, type = "description", name = ""},
 			},
 		},
 		Text = {
@@ -1351,17 +1373,17 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllShownPlates()
 					end,
 				},
-				healthBar_borderTint = {
+				healthBar_borderColor = {
 					order = 7,
 					type = "color",
-					name = L["Border Tint"],
-					desc = L["This is a tint overlay, not a regular color. 'White' keeps the original look."],
+					hasAlpha = true,
+					name = L["Border Color"],
 					get = function(info)
 						local c = RBP.dbp[info[#info]]
-						return c[1], c[2], c[3]
+						return c[1], c[2], c[3], c[4] or 1
 					end,
-					set = function(info, r, g, b)
-						RBP.dbp[info[#info]] = {r, g, b}
+					set = function(info, r, g, b, a)
+						RBP.dbp[info[#info]] = {r, g, b, a}
 						RBP:UpdateAllHealthBars()
 					end,
 				},
@@ -1891,11 +1913,10 @@ RBP.MainOptionTable = {
 					name = L["Show Spark"],
 					desc = L["Shows a spark that follows the current cast progress."],
 				},
-				castBar_borderTint = {
+				castBar_borderColor = {
 					order = 9,
 					type = "color",
-					name = L["Border Tint"],
-					desc = L["This is a tint overlay, not a regular color. 'White' keeps the original look."],
+					name = L["Border Color"],
 					get = function(info)
 						local c = RBP.dbp[info[#info]]
 						return c[1], c[2], c[3]
@@ -1905,11 +1926,10 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllCastBars()
 					end,
 				},
-				castBar_protectedBorderTint = {
+				castBar_protectedBorderColor = {
 					order = 10,
 					type = "color",
-					name = L["Protected Border Tint"],
-					desc = L["This is a tint overlay, not a regular color. 'White' keeps the original look."],
+					name = L["Protected Border Color"],
 					get = function(info)
 						local c = RBP.dbp[info[#info]]
 						return c[1], c[2], c[3]
@@ -2288,11 +2308,10 @@ RBP.MainOptionTable = {
 					max = 50,
 					step = 0.1,
 				},
-				eliteIcon_Tint = {
+				eliteIcon_color = {
 					order = 10,
 					type = "color",
-					name = L["Tint"],
-					desc = L["This is a tint overlay, not a regular color. 'White' keeps the original look."],
+					name = L["Color"],
 					get = function(info)
 						local c = RBP.dbp[info[#info]]
 						return c[1], c[2], c[3]
