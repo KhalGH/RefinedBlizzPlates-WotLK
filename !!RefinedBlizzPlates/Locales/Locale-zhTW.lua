@@ -356,7 +356,9 @@ L["Hide Icon"] = "隱藏圖標"
 L["Class Icon"] = "職業圖標"
 L["Show on Friends"] = "友方顯示"
 L["Show on Enemies"] = "敵方顯示"
-L["Class icons will only be shown inside PvE or PvP instances."] = "職業圖標僅在 PvP 或 PvE 副本中顯示。"   
+L["Class icons will only be shown inside PvE or PvP instances."] = "職業圖標僅在 PvP 或 PvE 副本中顯示。"
+L["Combo Points"] = "連擊點數"
+L["Shows your combo points on the nameplate of the unit that holds them."] = "在持有連擊點數的單位的名條上顯示你的連擊點數。"
 
 -- Barless Plate --
 L["Barless Plate"] = "無血條模式"

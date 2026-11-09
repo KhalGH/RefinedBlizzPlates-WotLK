@@ -355,6 +355,8 @@ L["Class Icon"] = true
 L["Show on Friends"] = true
 L["Show on Enemies"] = true
 L["Class icons will only be shown inside PvE or PvP instances."] = true
+L["Combo Points"] = true
+L["Shows your combo points on the nameplate of the unit that holds them."] = true
 
 -- Barless Plate --
 L["Barless Plate"] = true

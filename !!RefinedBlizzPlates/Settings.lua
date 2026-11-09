@@ -193,6 +193,11 @@ RBP.dbp.classIcon_offsetY = 0
 RBP.dbp.classIcon_size = 21
 RBP.dbp.showClassOnFriends = true
 RBP.dbp.showClassOnEnemies = true
+-- Combo Points
+RBP.dbp.comboPoints_enable = false
+RBP.dbp.comboPoints_size = 13
+RBP.dbp.comboPoints_offsetX = 0
+RBP.dbp.comboPoints_offsetY = 0
 -- Barless Plate: Enable Filters
 RBP.dbp.barlessPlate_filterBG = 3
 RBP.dbp.barlessPlate_filterArena = 0
@@ -2512,6 +2517,48 @@ RBP.MainOptionTable = {
 				},
 				lineBreak12 = {order = 38, type = "description", name = ""},
 				lineBreak13 = {order = 39, type = "description", name = ""},
+				comboPoints_header = {
+					order = 40,
+					type = "header",
+					name = L["Combo Points"],
+				},
+				lineBreak14 = {order = 41, type = "description", name = ""},
+				comboPoints_enable = {
+					order = 42,
+					type = "toggle",
+					name = L["Enable"],
+					desc = L["Shows your combo points on the nameplate of the unit that holds them."],
+					disabled = function() return not RBP.hasComboPoints end,
+				},
+				comboPoints_offsetX = {
+					order = 43,
+					type = "range",
+					name = L["Offset X"],
+					min = -100,
+					max = 100,
+					step = 0.1,
+					disabled = function() return not (RBP.hasComboPoints and RBP.dbp.comboPoints_enable) end,
+				},
+				comboPoints_offsetY = {
+					order = 44,
+					type = "range",
+					name = L["Offset Y"],
+					min = -50,
+					max = 50,
+					step = 0.1,
+					disabled = function() return not (RBP.hasComboPoints and RBP.dbp.comboPoints_enable) end,
+				},
+				comboPoints_size = {
+					order = 45,
+					type = "range",
+					name = L["Icon Size"],
+					min = 5,
+					max = 25,
+					step = 0.1,
+					disabled = function() return not (RBP.hasComboPoints and RBP.dbp.comboPoints_enable) end,
+				},
+				lineBreak15 = {order = 46, type = "description", name = ""},
+				lineBreak16 = {order = 47, type = "description", name = ""},
 			},
 		},
 		BarlessPlate = {

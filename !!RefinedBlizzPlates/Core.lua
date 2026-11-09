@@ -27,6 +27,7 @@ local UpdateClickboxOutOfCombat = RBP.UpdateClickboxOutOfCombat
 local CheckNameplateSize = RBP.CheckNameplateSize
 local RefreshGroupVisuals = RBP.RefreshGroupVisuals
 local UpdateRaidIcon = RBP.UpdateRaidIcon
+local UpdateComboPoints = RBP.UpdateComboPoints
 local PlateOnShow = RBP.PlateOnShow
 local PlateOnHide = RBP.PlateOnHide
 
@@ -345,6 +346,12 @@ function EventHandler:RAID_TARGET_UPDATE()
 	end
 end
 
+function EventHandler:UNIT_COMBO_POINTS(event, unit)
+	if unit == "player" and RBP.dbp.comboPoints_enable then
+		UpdateComboPoints()
+	end
+end
+
 function EventHandler:NAME_PLATE_CREATED(event, Plate)
 	if not VirtualPlates[Plate] then
 		PlateAdd(Plate)
@@ -358,18 +365,13 @@ function EventHandler:NAME_PLATE_UNIT_ADDED(event, nameplateID)
 	Plate.VirtualPlate.namePlateUnitToken = nameplateID
 end
 
+EventHandler.NAME_PLATE_OWNER_CHANGED = EventHandler.NAME_PLATE_UNIT_ADDED
+
 function EventHandler:NAME_PLATE_UNIT_REMOVED(event, nameplateID)
 	local Plate = C_NamePlate.GetNamePlateForUnit(nameplateID)
 	if not Plate then return end
 	Plate.namePlateUnitToken = nil
 	Plate.VirtualPlate.namePlateUnitToken = nil
-end
-
-function EventHandler:NAME_PLATE_OWNER_CHANGED(event, nameplateID)
-	local Plate = C_NamePlate.GetNamePlateForUnit(nameplateID)
-	if not Plate then return end
-	Plate.namePlateUnitToken = nameplateID
-	Plate.VirtualPlate.namePlateUnitToken = nameplateID
 end
 
 function EventHandler:OnEvent(event, ...)
@@ -392,6 +394,9 @@ EventHandler:RegisterEvent("ARENA_OPPONENT_UPDATE")
 EventHandler:RegisterEvent("ZONE_CHANGED_INDOORS")
 EventHandler:RegisterEvent("UNIT_AURA")
 EventHandler:RegisterEvent("RAID_TARGET_UPDATE")
+if RBP.hasComboPoints then
+	EventHandler:RegisterEvent("UNIT_COMBO_POINTS")
+end
 if RBP.hasModernEngine then
 	EventHandler:RegisterEvent("NAME_PLATE_CREATED")
 	EventHandler:RegisterEvent("NAME_PLATE_UNIT_ADDED")

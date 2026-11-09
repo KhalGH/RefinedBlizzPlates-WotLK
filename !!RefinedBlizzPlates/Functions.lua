@@ -45,6 +45,8 @@ RBP.inArena = false
 RBP.inICC = false
 RBP.inLDWZone = false
 RBP.playerLevel = UnitLevel("player")
+RBP.playerClass = select(2, UnitClass("player"))
+RBP.hasComboPoints = ({ROGUE = true, DRUID = true})[RBP.playerClass]
 RBP.NP_WIDTH = 128
 RBP.NP_HEIGHT = 32
 RBP.NP_SCALE = 1
@@ -1409,6 +1411,137 @@ function RBP:UpdateAllClickboxTextures()
 	end
 end
 
+------------------------- Combo Points -------------------------
+local UpdateComboPoints, CheckPlateComboPoints, ClearComboPlate
+do
+	local GetComboPoints = GetComboPoints
+	local comboFrame	-- Single shared widget, created on first use
+	local comboPlate	-- Virtual currently holding the widget
+
+	local function HideComboPoints()
+		if not comboPlate then return end
+		comboPlate = nil
+		comboFrame:Hide()
+	end
+
+	local function CreateComboFrame(Virtual)
+		local healthBar = Virtual.RBP_healthBar
+		comboFrame = CreateFrame("Frame", nil, healthBar)
+		comboFrame.icon = comboFrame:CreateTexture(nil, "OVERLAY")
+		comboFrame.icon:SetTexture(ASSETS .. "PlateRegions\\ComboPoints")
+		comboFrame.icon:SetAllPoints(comboFrame)
+		local size = RBP.dbp.comboPoints_size * RBP.NP_SCALE
+		comboFrame:SetSize(size * 5, size)
+	end
+
+	local function ReparentComboFrame(Virtual)
+		local dbp = RBP.dbp
+		local healthBar = Virtual.RBP_healthBar
+		comboPlate = Virtual
+		comboFrame:SetParent(healthBar)
+		comboFrame:SetFrameLevel(healthBar:GetFrameLevel() + 1)
+		comboFrame:ClearAllPoints()
+		comboFrame:SetPoint("CENTER", comboPlate.RBP_healthBar, "TOP", dbp.comboPoints_offsetX, dbp.comboPoints_offsetY + 3.5 * RBP.NP_SCALE)
+	end
+
+	local function ShowComboPoints(Virtual, points)
+		if not comboFrame then
+			CreateComboFrame(Virtual)
+		end
+		if comboPlate ~= Virtual then
+			ReparentComboFrame(Virtual)
+		end
+		comboFrame.icon:SetTexCoord(0, 1, (points - 1) * 0.2, points * 0.2)
+		comboFrame:Show()
+	end
+
+	function UpdateComboPoints()
+		if not (RBP.hasComboPoints and RBP.dbp.comboPoints_enable) then
+			HideComboPoints()
+			return
+		end
+		if not hasModernEngine and RBP.GlobalDelayedUpdater:IsShown() then return end
+		local targetedPlate
+		if hasModernEngine then
+			targetedPlate = C_NamePlate.GetNamePlateForUnit("target")
+		else
+			targetedPlate = RBP.targetedPlate
+		end
+		local targetedVirtual = targetedPlate and targetedPlate.VirtualPlate
+		local points = GetComboPoints("player", "target")
+
+		if points > 0 then
+			if targetedVirtual and targetedVirtual.RBP_healthBarIsShown then
+				ShowComboPoints(targetedVirtual, points)
+			else
+				HideComboPoints()
+			end
+			return
+		end
+
+		if hasModernEngine then
+			if comboPlate and comboPlate ~= targetedVirtual then
+				local token = comboPlate.namePlateUnitToken
+				points = token and GetComboPoints("player", token) or 0
+				if points > 0 then
+					ShowComboPoints(comboPlate, points)
+					return
+				end
+			end
+			HideComboPoints()
+			for _, V in pairs(PlatesVisible) do
+				local token = V.namePlateUnitToken
+				if token and V ~= targetedVirtual and V.RBP_healthBarIsShown and not V.RBP_isFriendly then
+					points = GetComboPoints("player", token)
+					if points > 0 then
+						ShowComboPoints(V, points)
+						return
+					end
+				end
+			end
+		else
+			if targetedVirtual == comboPlate then
+				HideComboPoints()
+			end
+		end
+	end
+
+	function CheckPlateComboPoints(Virtual)
+		if not Virtual.RBP_healthBarIsShown or Virtual.RBP_isFriendly then return end
+		local points = 0
+		if hasModernEngine then
+			local token = Virtual.namePlateUnitToken
+			if token then
+				points = GetComboPoints("player", token)
+			end
+		elseif Virtual.RBP_isTarget then
+			points = GetComboPoints("player", "target")
+		end
+		if points > 0 then
+			ShowComboPoints(Virtual, points)
+		end
+	end
+
+	function ClearComboPlate(Virtual)
+		if Virtual == comboPlate then
+			HideComboPoints()
+		end
+	end
+
+	function RBP:UpdateComboPointsSettings()
+		local dbp = RBP.dbp
+		if comboFrame then
+			local size = dbp.comboPoints_size * RBP.NP_SCALE
+			comboFrame:SetSize(size * 5, size)
+		end
+		if comboPlate then
+			comboFrame:ClearAllPoints()
+			comboFrame:SetPoint("CENTER", comboPlate.RBP_healthBar, "TOP", dbp.comboPoints_offsetX, dbp.comboPoints_offsetY + 3.5 * RBP.NP_SCALE)
+		end
+		UpdateComboPoints()
+	end
+end
+
 local function DelayedUpdate(Virtual, fromOnShow)
 	local Plate = Virtual.RealPlate
 	local dbp = RBP.dbp
@@ -1419,6 +1552,9 @@ local function DelayedUpdate(Virtual, fromOnShow)
 		Virtual.RBP_isTarget = Plate == RBP.targetedPlate
 	else
 		Virtual.RBP_isTarget = RBP.hasTarget and Plate:GetAlpha() == 1
+		if Virtual.RBP_isTarget then
+			RBP.targetedPlate = Plate
+		end
 	end
 	if Virtual.RBP_isTarget then
 		Virtual.RBP_targetGlow:Show()		
@@ -1462,6 +1598,9 @@ local function SetupDelayedUpdater(Virtual)
 	Virtual.RBP_delayedUpdater:SetScript("OnUpdate", function(self)
 		self:Hide()
 		DelayedUpdate(Virtual, true)
+		if RBP.hasComboPoints and RBP.dbp.comboPoints_enable then
+			CheckPlateComboPoints(Virtual)
+		end
 	end)
 end
 
@@ -1473,8 +1612,14 @@ RBP.GlobalDelayedUpdater = CreateFrame("Frame")
 RBP.GlobalDelayedUpdater:Hide()
 RBP.GlobalDelayedUpdater:SetScript("OnUpdate", function(self)
 	self:Hide()
+	if not hasModernEngine then
+		RBP.targetedPlate = nil
+	end
 	for _, Virtual in pairs(PlatesVisible) do
 		DelayedUpdate(Virtual)
+	end
+	if not hasModernEngine and RBP.hasComboPoints and RBP.dbp.comboPoints_enable then
+		UpdateComboPoints()
 	end
 end)
 
@@ -1978,6 +2123,9 @@ local function UpdatePlateFlags(Virtual)
 end
 
 local function ResetPlateFlags(Virtual)
+	if RBP.targetedPlate == Virtual.RealPlate then
+		RBP.targetedPlate = nil
+	end
 	Virtual.RBP_isTarget = nil
 	Virtual.RBP_reaction = nil
 	Virtual.RBP_isFriendly = nil
@@ -2645,6 +2793,9 @@ local function PlateOnHide(Plate)
 	ExistsVisiblePlates = next(PlatesVisible) ~= nil
 	ResetPlateFlags(Virtual)
 	ResetRefinedPlate(Virtual)
+	if RBP.hasComboPoints and RBP.dbp.comboPoints_enable then
+		ClearComboPlate(Virtual)
+	end
 	Plate.namePlateUnitToken = nil
 	Virtual.namePlateUnitToken = nil
 	if RBP.inCombat then
@@ -2774,6 +2925,7 @@ function RBP:UpdateAllIcons()
 		SetupTotemIcon(Virtual)
 		UpdateBarlessPlate(Virtual)
 	end
+	self:UpdateComboPointsSettings()
 end
 
 function RBP:UpdateAllBarlessPlates()
@@ -3016,5 +3168,6 @@ RBP.UpdateClickboxOutOfCombat = UpdateClickboxOutOfCombat
 RBP.CheckNameplateSize = CheckNameplateSize
 RBP.RefreshGroupVisuals = RefreshGroupVisuals
 RBP.UpdateRaidIcon = UpdateRaidIcon
+RBP.UpdateComboPoints = UpdateComboPoints
 RBP.PlateOnShow = PlateOnShow
 RBP.PlateOnHide = PlateOnHide

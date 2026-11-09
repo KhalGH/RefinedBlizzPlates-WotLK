@@ -355,6 +355,8 @@ L["Class Icon"] = "Klassen-Symbol"
 L["Show on Friends"] = "Bei Verbündeten anzeigen"
 L["Show on Enemies"] = "Bei Gegnern anzeigen"
 L["Class icons will only be shown inside PvE or PvP instances."] = "Klassen-Symbole werden nur in PvE- oder PvP-Instanzen angezeigt."
+L["Combo Points"] = "Kombopunkte"
+L["Shows your combo points on the nameplate of the unit that holds them."] = "Zeigt deine Kombopunkte auf der Namensplakette der Einheit an, die sie besitzt."
 
 -- Barless Plate --
 L["Barless Plate"] = "Plaketten ohne Leiste"

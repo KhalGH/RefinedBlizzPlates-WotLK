@@ -355,6 +355,8 @@ L["Class Icon"] = "Иконка класса"
 L["Show on Friends"] = "Показывать у союзников"
 L["Show on Enemies"] = "Показывать у врагов"
 L["Class icons will only be shown inside PvE or PvP instances."] = "Иконки классов отображаются только в PvE или PvP подземельях."
+L["Combo Points"] = "Приемы в серии"
+L["Shows your combo points on the nameplate of the unit that holds them."] = "Показывает ваши приемы в серии на индикаторе юнита, у которого они накоплены."
 
 -- Barless Plate --
 L["Barless Plate"] = "Индикатор без полосы"

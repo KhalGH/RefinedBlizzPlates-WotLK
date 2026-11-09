@@ -357,6 +357,8 @@ L["Class Icon"] = "직업 아이콘"
 L["Show on Friends"] = "아군에게 표시"
 L["Show on Enemies"] = "적에게 표시"
 L["Class icons will only be shown inside PvE or PvP instances."] = "직업 아이콘은 PvE 또는 PvP 인스턴스 내에서만 표시됩니다."
+L["Combo Points"] = "연계 점수"
+L["Shows your combo points on the nameplate of the unit that holds them."] = "연계 점수를 보유한 유닛의 이름표에 표시합니다."
 
 -- Barless Plate --
 L["Barless Plate"] = "바 없는 이름표"
