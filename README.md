@@ -9,6 +9,7 @@ It preserves a Blizzlike appearance while adding useful features and visual refi
 - Custom glow for target and mouseover nameplates.
 - Optional class icons in PvE or PvP instances.
 - Optional arenaID and partyID text in arenas.
+- Optional combo points widget for Rogues and Druids.
 - Integrated TotemPlates with settings for each totem type.
 - Blacklist system for hiding specific nameplates or replacing them with icons.
 - Optional "Barless Plates" mode that displays only names and indicators on friendly nameplates.
@@ -20,7 +21,7 @@ It preserves a Blizzlike appearance while adding useful features and visual refi
 
 ## Recommendations
 - Gladdy’s Totem Plates module may conflict with this addon. Disable the module to ensure proper functionality.
-- The Retail-like stacking system was replicated from Cheeta's WeakAura. Delete or disable it to avoid conflicts.
+- The Retail-like stacking system was adapted from Cheeta's WeakAura. Delete or disable it to avoid conflicts.
 - Users of Someweirdhuman's AwesomeWotlk must disable its hitbox CVars and use this addon's clickbox settings.
 
 ## Screenshots
@@ -54,7 +55,7 @@ It preserves a Blizzlike appearance while adding useful features and visual refi
 </p>
 
 ## Installation  
-1. [Download](https://github.com/KhalGH/RefinedBlizzPlates-WotLK/releases/download/v1.12.1/RefinedBlizzPlates-v1.12.1.zip) the addon
+1. [Download](https://github.com/KhalGH/RefinedBlizzPlates-WotLK/releases/download/v1.12.2/RefinedBlizzPlates-v1.12.2.zip) the addon
 2. Extract the **!!RefinedBlizzPlates** folder into `World of Warcraft/Interface/AddOns/`.
 3. Restart the game and enable the addon.  
 
@@ -67,6 +68,6 @@ The addon supports features from certain client modifications that are popular i
 **Disclaimer**: Some servers may have specific rules regarding the use of client modifications. Please check your server's policy to ensure they are allowed before using them.
 
 ## Information  
-- **Addon Version:** 1.12.1  
+- **Addon Version:** 1.12.2  
 - **Game Version:** 3.3.5a (WotLK)  
 - **Author:** Khal  
