@@ -1586,7 +1586,7 @@ local function DelayedUpdate(Virtual, fromOnShow)
 	UpdateLocalScale(Virtual)
 	SetVirtualScale(Virtual)
 	if hasModernStacking and Plate.SetStackingEnabled then
-		Plate:SetStackingEnabled(Virtual.RBP_healthBarIsShown == true and Virtual.RBP_virtualAlpha ~= 0)
+		Plate:SetStackingEnabled(Virtual.RBP_healthBarIsShown == true and not Virtual.RBP_isBarlessPlate and Virtual.RBP_virtualAlpha ~= 0)
 	end
 	Virtual.RBP_firstProcessing = nil
 end
@@ -2494,7 +2494,7 @@ do
 								end
 								if Virtual.RBP_virtualAlpha ~= 1 then
 									if hasModernStacking and Virtual.RBP_virtualAlpha == 0 then
-										Plate:SetStackingEnabled(Virtual.RBP_healthBarIsShown == true)
+										Plate:SetStackingEnabled(Virtual.RBP_healthBarIsShown == true and not Virtual.RBP_isBarlessPlate)
 									end
 									Virtual.RBP_virtualAlpha = 1
 									SetAlpha(Virtual, 1)
@@ -2537,7 +2537,7 @@ do
 								end
 								if Virtual.RBP_virtualAlpha ~= virtualAlpha then
 									if hasModernStacking and (Virtual.RBP_virtualAlpha == 0) ~= (virtualAlpha == 0) then
-										Plate:SetStackingEnabled(Virtual.RBP_healthBarIsShown == true and virtualAlpha ~= 0)
+										Plate:SetStackingEnabled(Virtual.RBP_healthBarIsShown == true and not Virtual.RBP_isBarlessPlate and virtualAlpha ~= 0)
 									end
 									Virtual.RBP_virtualAlpha = virtualAlpha
 									SetAlpha(Virtual, virtualAlpha)
@@ -2957,7 +2957,7 @@ function RBP:ResetAllRegionsAlpha()
 		Virtual.RBP_regionsWrapper:SetAlpha(1)
 		Virtual.RBP_regionsAlpha = nil
 		if hasModernStacking and Virtual.RBP_virtualAlpha == 0 then
-			Virtual.RealPlate:SetStackingEnabled(Virtual.RBP_healthBarIsShown == true)
+			Virtual.RealPlate:SetStackingEnabled(Virtual.RBP_healthBarIsShown == true and not Virtual.RBP_isBarlessPlate)
 		end
 		Virtual.RBP_virtualAlpha = nil
 	end
