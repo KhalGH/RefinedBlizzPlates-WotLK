@@ -32,6 +32,7 @@ local EventHandler = CreateFrame("Frame", nil, WorldFrame)
 local SetFrameLevel = EventHandler.SetFrameLevel	-- Backup of native frame methods
 local SetScale = EventHandler.SetScale 				-- Backup of native frame methods
 local SetAlpha = EventHandler.SetAlpha 				-- Backup of native frame methods
+local GetAlpha = EventHandler.GetAlpha 				-- Backup of native frame methods
 
 -- Status Flags
 RBP.hasTarget = false
@@ -1495,7 +1496,6 @@ do
 		end
 		local targetedVirtual = targetedPlate and targetedPlate.VirtualPlate
 		local points = GetComboPoints("player", "target")
-
 		if points > 0 then
 			if targetedVirtual and targetedVirtual.RBP_healthBarIsShown then
 				ShowComboPoints(targetedVirtual, points)
@@ -1504,7 +1504,6 @@ do
 			end
 			return
 		end
-
 		if hasModernEngine then
 			if comboPlate and comboPlate ~= targetedVirtual then
 				local token = comboPlate.namePlateUnitToken
@@ -1649,10 +1648,32 @@ RBP.GlobalDelayedUpdater:SetScript("OnUpdate", function(self)
 	end
 end)
 
-local function UpdateNonTargetAlpha(dbp)
-	for Plate in pairs(PlatesVisible) do
-		if Plate:GetAlpha() ~= 1 then
-			Plate:SetAlpha(dbp.nonTargetAlpha)
+local function UpdatePlateNonTargetAlpha(Virtual)
+	if not Virtual.RBP_isShown then
+		Virtual.RBP_nonTargetAlpha = nil
+		return
+	end
+	local dbp = RBP.dbp
+	if Virtual.RBP_totemPlateIsShown then
+		Virtual.RBP_nonTargetAlpha = dbp.nonTargetAlpha_totem
+	elseif Virtual.RBP_isBarlessPlate then
+		Virtual.RBP_nonTargetAlpha = dbp.nonTargetAlpha_barless
+	elseif Virtual.RBP_healthBarIsShown then
+		if Virtual.RBP_isFriendly then
+			Virtual.RBP_nonTargetAlpha = dbp.nonTargetAlpha_friendly
+		else
+			Virtual.RBP_nonTargetAlpha = dbp.nonTargetAlpha_enemy
+		end
+	else
+		Virtual.RBP_nonTargetAlpha = nil
+	end
+end
+
+local function UpdateNonTargetAlpha()
+	for Plate, Virtual in pairs(PlatesVisible) do
+		local alpha = Virtual.RBP_nonTargetAlpha
+		if alpha and Virtual.RBP_virtualAlpha ~= 0 and GetAlpha(Plate) ~= 1 then
+			SetAlpha(Plate, alpha)
 		end
 	end
 end
@@ -2380,6 +2401,7 @@ local function UpdateRefinedPlate(Virtual)
 			end
 		end	
 	end
+	UpdatePlateNonTargetAlpha(Virtual)
 end
 
 local function ResetRefinedPlate(Virtual)
@@ -2392,6 +2414,7 @@ local function ResetRefinedPlate(Virtual)
 	Virtual.RBP_regionsAlpha = nil
 	Virtual.RBP_virtualAlpha = nil
 	Virtual.RBP_pbAlpha = nil
+	Virtual.RBP_nonTargetAlpha = nil
 	SetAlpha(Virtual, 1)
     Virtual.RBP_regionsWrapper:SetAlpha(1)
     if Virtual.PB_parentFrame then
@@ -2810,7 +2833,7 @@ MainUpdater:SetScript("OnUpdate", function(self, elapsed)
 	if not ExistsVisiblePlates then return end
 	local dbp = RBP.dbp
 	if dbp.modNonTargetAlpha and not hasAlphaOverride and RBP.hasTarget then
-		UpdateNonTargetAlpha(dbp)
+		UpdateNonTargetAlpha()
 	end
 	if dbp.stackingEnabled and not hasModernStacking then
 		UpdateStacking(dbp, elapsed)
@@ -2933,6 +2956,12 @@ end
 function RBP:UpdateAllBarlessPlates()
 	for _, Virtual in pairs(VirtualPlates) do
 		UpdateBarlessPlate(Virtual)
+	end
+end
+
+function RBP:UpdateAllNonTargetAlpha()
+	for _, Virtual in pairs(PlatesVisible) do
+		UpdatePlateNonTargetAlpha(Virtual)
 	end
 end
 
