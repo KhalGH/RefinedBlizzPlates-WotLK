@@ -55,7 +55,7 @@ It preserves a Blizzlike appearance while adding useful features and visual refi
 </p>
 
 ## Installation  
-1. [Download](https://github.com/KhalGH/RefinedBlizzPlates-WotLK/releases/download/v1.12.2/RefinedBlizzPlates-v1.12.2.zip) the addon
+1. [Download](https://github.com/KhalGH/RefinedBlizzPlates-WotLK/releases/download/v1.12.3/RefinedBlizzPlates-v1.12.3.zip) the addon
 2. Extract the **!!RefinedBlizzPlates** folder into `World of Warcraft/Interface/AddOns/`.
 3. Restart the game and enable the addon.  
 
@@ -68,6 +68,6 @@ The addon supports features from certain client modifications that are popular i
 **Disclaimer**: Some servers may have specific rules regarding the use of client modifications. Please check your server's policy to ensure they are allowed before using them.
 
 ## Information  
-- **Addon Version:** 1.12.2  
+- **Addon Version:** 1.12.3  
 - **Game Version:** 3.3.5a (WotLK)  
 - **Author:** Khal  
