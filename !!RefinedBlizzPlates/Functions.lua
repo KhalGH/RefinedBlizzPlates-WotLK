@@ -7,8 +7,8 @@ local hasModernStacking = RBP.hasModernStacking
 local hasAlphaOverride = RBP.hasAlphaOverride
 
 ----------------------------- API -----------------------------
-local pairs, ipairs, unpack, tonumber, tostring, select, next, math_exp, math_floor, math_abs, string_format, string_char, string_sub, table_insert, GetCVar, sort, wipe, WorldFrame, CreateFrame, UnitCastingInfo, UnitChannelInfo, UnitName, UnitClass, UnitIsUnit, UnitCanAttack, GetNumArenaOpponents, GetNumPartyMembers, GetNumRaidMembers, GetRaidRosterInfo, RAID_CLASS_COLORS, ToggleFrame, C_NamePlate =
-      pairs, ipairs, unpack, tonumber, tostring, select, next, math.exp, math.floor, math.abs, string.format, string.char, string.sub, table.insert, GetCVar, sort, wipe, WorldFrame, CreateFrame, UnitCastingInfo, UnitChannelInfo, UnitName, UnitClass, UnitIsUnit, UnitCanAttack, GetNumArenaOpponents, GetNumPartyMembers, GetNumRaidMembers, GetRaidRosterInfo, RAID_CLASS_COLORS, ToggleFrame, C_NamePlate
+local pairs, ipairs, unpack, tonumber, tostring, select, next, math_exp, math_floor, math_abs, string_format, string_char, string_sub, table_insert, GetCVar, sort, wipe, WorldFrame, CreateFrame, UnitCastingInfo, UnitChannelInfo, UnitName, UnitClass, UnitIsUnit, UnitCanAttack, GetNumArenaOpponents, GetNumPartyMembers, GetNumRaidMembers, GetRaidRosterInfo, ToggleFrame, C_NamePlate =
+      pairs, ipairs, unpack, tonumber, tostring, select, next, math.exp, math.floor, math.abs, string.format, string.char, string.sub, table.insert, GetCVar, sort, wipe, WorldFrame, CreateFrame, UnitCastingInfo, UnitChannelInfo, UnitName, UnitClass, UnitIsUnit, UnitCanAttack, GetNumArenaOpponents, GetNumPartyMembers, GetNumRaidMembers, GetRaidRosterInfo, ToggleFrame, C_NamePlate
 
 ------------------------- Core Variables -------------------------
 local VirtualPlates = {}      	-- Storage table: Virtual nameplate frames
@@ -1032,6 +1032,25 @@ local function SetupClassIcon(Virtual)
 	end
 end
 
+local function UpdateClassIcon(Virtual)
+	local dbp = RBP.dbp
+	local class = Virtual.RBP_classKey
+	local iconClass
+	if class == "FRIENDLY_PLAYER" then
+		if dbp.showClassOnFriends then
+			iconClass = ClassByFriendName[Virtual.RBP_nameString]
+		end
+	elseif class and dbp.showClassOnEnemies then
+		iconClass = class
+	end
+	if iconClass then
+		Virtual.RBP_classIcon:SetTexture(ASSETS .. "Classes\\" .. iconClass)
+		Virtual.RBP_classIcon:Show()
+	else
+		Virtual.RBP_classIcon:Hide()
+	end
+end
+
 local function SetupTotemIcon(Virtual)
 	if not Virtual.RBP_totemPlate then return end
 	local dbp = RBP.dbp
@@ -1060,8 +1079,16 @@ local function SetupTotemPlate(Virtual)
 	SetupTotemIcon(Virtual)
 end
 
+local function GetBarlessUnitClass(Virtual)
+	local class = ClassByFriendName[Virtual.RBP_nameString]
+	if not class and hasModernEngine and Virtual.namePlateUnitToken then
+		class = select(2, UnitClass(Virtual.namePlateUnitToken))
+	end
+	return class
+end
+
 local function UpdateBarlessPlate(Virtual)
-	if not Virtual.RBP_barlessPlate then return end
+	if not Virtual.RBP_isBarlessPlate then return end
 	local dbp = RBP.dbp
 	local barlessPlate_nameText = Virtual.RBP_barlessPlate_nameText
 	local barlessPlate_healthText = Virtual.RBP_barlessPlate_healthText
@@ -1070,9 +1097,10 @@ local function UpdateBarlessPlate(Virtual)
 	local barlessPlate_targetGlow = Virtual.RBP_barlessPlate_targetGlow
 	local healthBarHighlight = Virtual.RBP_healthBarHighlight
 	if Virtual.RBP_classKey then
-		local classColor = Virtual.RBP_classColor
+		local unitClass = GetBarlessUnitClass(Virtual)
+		local classColor = unitClass and dbp.healthBar_classColors[unitClass]
 		if classColor and dbp.barlessPlate_classColors then
-			Virtual.RBP_barlessNameTextRGB = {classColor.r, classColor.g, classColor.b}
+			Virtual.RBP_barlessNameTextRGB = classColor
 		else
 			Virtual.RBP_barlessNameTextRGB = dbp.barlessPlate_textColor
 		end
@@ -1281,14 +1309,12 @@ local function BarlessPlateVisibilityHandler(Virtual)
 	local dbp = RBP.dbp
 	Virtual.RBP_threatGlow:SetTexture(nil)
 	Virtual.RBP_barlessPlate_targetGlow:Hide()
-	if hasModernEngine then
-		if dbp.barlessPlate_classColors and Virtual.RBP_classKey and Virtual.namePlateUnitToken then
-			local _, unitClass = UnitClass(Virtual.namePlateUnitToken)
-			local unitClassColor = RAID_CLASS_COLORS[unitClass]
-			if unitClassColor then
-				Virtual.RBP_barlessNameTextRGB = {unitClassColor.r, unitClassColor.g, unitClassColor.b}
-				Virtual.RBP_barlessPlate_nameText:SetTextColor(unitClassColor.r, unitClassColor.g, unitClassColor.b)
-			end
+	if hasModernEngine and Virtual.RBP_classKey then
+		local unitClass = GetBarlessUnitClass(Virtual)
+		local unitClassColor = unitClass and dbp.healthBar_classColors[unitClass]
+		if unitClassColor and dbp.barlessPlate_classColors then
+			Virtual.RBP_barlessNameTextRGB = unitClassColor
+			Virtual.RBP_barlessPlate_nameText:SetTextColor(unpack(unitClassColor))
 		end
 	end
 	if Virtual.RBP_isTarget and dbp.barlessPlate_excludeTarget then
@@ -1489,12 +1515,12 @@ do
 				end
 			end
 			HideComboPoints()
-			for _, V in pairs(PlatesVisible) do
-				local token = V.namePlateUnitToken
-				if token and V ~= targetedVirtual and V.RBP_healthBarIsShown and not V.RBP_isFriendly then
+			for _, Virtual in pairs(PlatesVisible) do
+				local token = Virtual.namePlateUnitToken
+				if token and Virtual ~= targetedVirtual and Virtual.RBP_healthBarIsShown and not Virtual.RBP_isFriendly then
 					points = GetComboPoints("player", token)
 					if points > 0 then
-						ShowComboPoints(V, points)
+						ShowComboPoints(Virtual, points)
 						return
 					end
 				end
@@ -1768,8 +1794,8 @@ local function UpdateGroupInfo()
 		partyID = "party" .. i
 		name = UnitName(partyID)
 		_, class = UnitClass(partyID)
-		name = name:match("([^%-]+).*") -- remove realm suffix
 		if name and class then
+			name = name:match("([^%-]+).*") -- remove realm suffix
 			PartyID[name] = tostring(i)
 			ClassByFriendName[name] = class
 		end
@@ -1795,42 +1821,35 @@ local function UpdateArenaInfo()
 	end
 end
 
-local NAMEPLATE_CLASS_COLORS = {
-    ["DEATHKNIGHT"] = {0.768625762313600, 0.117646798491480, 0.227450475096700},
-    ["DRUID"]       = {0.999997803010050, 0.486273437738420, 0.039215601980686},
-    ["HUNTER"]      = {0.666665202006700, 0.827449142932890, 0.447057843208310},
-    ["MAGE"]        = {0.407842241227630, 0.799998223781590, 0.937252819538120},
-    ["PALADIN"]     = {0.956860642880200, 0.549018383026120, 0.729410171508790},
-    ["PRIEST"]      = {0.999997803010050, 0.999997794628140, 0.999997794628140},
-    ["ROGUE"]       = {0.999997803010050, 0.956860661506650, 0.407842248678210},
-    ["SHAMAN"]      = {0.000000000000000, 0.439214706420900, 0.866664767265320},
-    ["WARLOCK"]     = {0.576469321735200, 0.509802818298340, 0.788233578205110},
-    ["WARRIOR"]     = {0.776468882337210, 0.607841789722440, 0.427450031042100},
-}
-
 local function UpdateClassColor(Virtual)
 	local class = Virtual.RBP_classKey
 	local dbp = RBP.dbp
-	Virtual.RBP_friendColor = nil
-	Virtual.RBP_classColor = nil
-	if class then
-		if class == "FRIENDLY_PLAYER" then
-			local friendClass = ClassByFriendName[Virtual.RBP_nameString]
-			if friendClass then
-				Virtual.RBP_classColor = RAID_CLASS_COLORS[friendClass]
-				if dbp.healthBar_friendClassColor then
-					Virtual.RBP_friendColor = NAMEPLATE_CLASS_COLORS[friendClass]
-				else
-					Virtual.RBP_friendColor = dbp.healthBar_friendColor
-				end
-			end
+	local classColors = dbp.healthBar_classColors
+	local classColor
+	Virtual.RBP_customColor = nil
+	if class == "FRIENDLY_PLAYER" then
+		local friendClass = ClassByFriendName[Virtual.RBP_nameString]
+		if friendClass then
+			classColor = classColors[friendClass]
+			Virtual.RBP_customColor = dbp.healthBar_friendClassColor and classColor or dbp.healthBar_friendColor
 		else
-			Virtual.RBP_classColor = RAID_CLASS_COLORS[class]
+			Virtual.RBP_customColor = dbp.healthBar_friendlyPlayerColor
+		end
+	elseif class then
+		classColor = classColors[class]
+		Virtual.RBP_customColor = classColor
+	else
+		local reaction = Virtual.RBP_reaction
+		if reaction == 4 then
+			Virtual.RBP_customColor = dbp.healthBar_neutralColor
+		elseif reaction == 5 then
+			Virtual.RBP_customColor = dbp.healthBar_friendlyNPCColor
+		else
+			Virtual.RBP_customColor = dbp.healthBar_hostileColor
 		end
 	end
-	local classColor = Virtual.RBP_classColor
 	if classColor and ((class == "FRIENDLY_PLAYER" and dbp.nameText_classColorFriends) or (class ~= "FRIENDLY_PLAYER" and dbp.nameText_classColorEnemies)) then
-		Virtual.RBP_nameColorR, Virtual.RBP_nameColorG, Virtual.RBP_nameColorB = classColor.r, classColor.g, classColor.b
+		Virtual.RBP_nameColorR, Virtual.RBP_nameColorG, Virtual.RBP_nameColorB = classColor[1], classColor[2], classColor[3]
 	else
 		Virtual.RBP_nameColorR, Virtual.RBP_nameColorG, Virtual.RBP_nameColorB = unpack(dbp.nameText_color)
 	end
@@ -1848,28 +1867,21 @@ local function GetAggroStatus(threatGlow)
 end
 
 local function UpdateHealthBarColor(Virtual)
+	local dbp = RBP.dbp
+	local color = Virtual.RBP_customColor
 	if Virtual.RBP_lowHp then
-		Virtual.RBP_healthBarTex:SetVertexColor(unpack(RBP.dbp.lowHpColor_color))
+		color = dbp.lowHpColor_color
 	elseif Virtual.RBP_aggroColoring then
 		local aggroStatus = GetAggroStatus(Virtual.RBP_threatGlow)
-		if aggroStatus > 0 then
-			if aggroStatus == 3 then
-				Virtual.RBP_healthBarTex:SetVertexColor(unpack(RBP.dbp.aggroColor))
-			elseif aggroStatus == 2 then
-				Virtual.RBP_healthBarTex:SetVertexColor(unpack(RBP.dbp.losingAggroColor))
-			elseif aggroStatus == 1 then
-				Virtual.RBP_healthBarTex:SetVertexColor(unpack(RBP.dbp.gainingAggroColor))
-			end
-		else
-			Virtual.RBP_healthBarTex:SetVertexColor(unpack(Virtual.RBP_healthBarColor))		
-		end
-	else
-		if Virtual.RBP_classKey == "FRIENDLY_PLAYER" and Virtual.RBP_friendColor then
-			Virtual.RBP_healthBarTex:SetVertexColor(unpack(Virtual.RBP_friendColor))
-		else
-			Virtual.RBP_healthBarTex:SetVertexColor(unpack(Virtual.RBP_healthBarColor))
+		if aggroStatus == 3 then
+			color = dbp.aggroColor
+		elseif aggroStatus == 2 then
+			color = dbp.losingAggroColor
+		elseif aggroStatus == 1 then
+			color = dbp.gainingAggroColor
 		end
 	end
+	Virtual.RBP_healthBarTex:SetVertexColor(unpack(color))
 end
 
 -- SecureHandlers System: Manages nameplate clickbox resizing while in combat
@@ -2108,7 +2120,6 @@ local function UpdatePlateReactionFlags(Virtual, r, g, b, reaction)
 	Virtual.RBP_reaction = reaction
 	Virtual.RBP_isFriendly = reaction == 5
 	Virtual.RBP_classKey = ClassByPlateColorKey[math_floor(r * 10 + g * 100 + b)]
-	Virtual.RBP_healthBarColor = {r, g, b}
 end
 
 local function UpdatePlateFlags(Virtual)
@@ -2130,7 +2141,6 @@ local function ResetPlateFlags(Virtual)
 	Virtual.RBP_reaction = nil
 	Virtual.RBP_isFriendly = nil
 	Virtual.RBP_classKey = nil
-	Virtual.RBP_healthBarColor = nil
 	Virtual.RBP_hasEliteIcon = nil
 	Virtual.RBP_hasBossIcon = nil
 	Virtual.RBP_levelNumber = nil
@@ -2326,16 +2336,7 @@ local function UpdateRefinedPlate(Virtual)
 						end
 					end
 				end
-				--------------- Show class icons in instances --------------
-				if RBP.inInstance then
-					if class == "FRIENDLY_PLAYER" and dbp.showClassOnFriends then
-						Virtual.RBP_classIcon:SetTexture(ASSETS .. "Classes\\" .. (ClassByFriendName[name] or ""))
-						Virtual.RBP_classIcon:Show()
-					elseif class ~= "FRIENDLY_PLAYER" and dbp.showClassOnEnemies then
-						Virtual.RBP_classIcon:SetTexture(ASSETS .. "Classes\\" .. class)
-						Virtual.RBP_classIcon:Show()
-					end
-				end
+				UpdateClassIcon(Virtual)
 				if Virtual.RBP_isFriendly then
 					Virtual.RBP_lowHpColoring = dbp.lowHpColor_FriendlyPlayers
 				else
@@ -2407,7 +2408,7 @@ local function ResetRefinedPlate(Virtual)
 	Virtual.RBP_lowHpColoring = nil
 	Virtual.RBP_aggroColoring = nil
 	Virtual.RBP_lowHp = nil
-	Virtual.RBP_classColor = nil
+	Virtual.RBP_customColor = nil
 	Virtual.RBP_unitToken = nil
 	Virtual.RBP_totemPlateIsShown = nil
 	if Virtual.RBP_totemPlate then
@@ -2613,14 +2614,15 @@ local function PlatesSecUpdate()
 end
 
 local function RefreshGroupVisuals()
-    for _, Virtual in pairs(PlatesVisible) do
-        UpdateClassColor(Virtual)
-        if Virtual.RBP_isBarlessPlate then
-            UpdateBarlessPlate(Virtual)
-        end
-        UpdateHealthTextValue(Virtual.RBP_healthBar)
-        UpdateHealthBarColor(Virtual)
-    end
+	for _, Virtual in pairs(PlatesVisible) do
+		UpdateClassColor(Virtual)
+		UpdateClassIcon(Virtual)
+		if Virtual.RBP_isBarlessPlate then
+			UpdateBarlessPlate(Virtual)
+		end
+		UpdateHealthTextValue(Virtual.RBP_healthBar)
+		UpdateHealthBarColor(Virtual)
+	end
 end
 
 local NP_COEF_CONST  = 49.5902306216304

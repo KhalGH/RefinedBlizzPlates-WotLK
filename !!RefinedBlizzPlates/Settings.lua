@@ -97,18 +97,17 @@ RBP.dbp.healthBar_hostilePlayerTex = "KhalBar"
 RBP.dbp.healthBar_npcTex = "KhalBar"
 RBP.dbp.healthBar_borderColor = {0.816, 0.675, 0, 1}
 RBP.dbp.healthBar_progressiveTexCrop = true
-RBP.dbp.healthBar_friendColor = {0, 0, 1}
-RBP.dbp.healthBar_friendClassColor = false
 RBP.dbp.healthBar_bgTex = "KhalBar"
 RBP.dbp.healthBar_bgColor = {0, 0, 0}
 RBP.dbp.healthBar_bgAlpha = 0.5
-RBP.dbp.showTargetGlowBorder = true
-RBP.dbp.targetGlow_Alpha = 1
+-- Glows
 RBP.dbp.targetGlow_Color = {1, 1, 0}
+RBP.dbp.targetGlow_Alpha = 1
+RBP.dbp.showTargetGlowBorder = true
 RBP.dbp.targetGlow_Gradient = true
-RBP.dbp.showMouseoverGlowBorder = true
-RBP.dbp.mouseoverGlow_Alpha = 1
 RBP.dbp.mouseoverGlow_Color = {1, 1, 1}
+RBP.dbp.mouseoverGlow_Alpha = 1
+RBP.dbp.showMouseoverGlowBorder = true
 -- Health Text
 RBP.dbp.healthText_hide = false
 RBP.dbp.healthText_font = RBP.RefinedFontKey
@@ -120,6 +119,29 @@ RBP.dbp.healthText_offsetY = 0
 RBP.dbp.healthText_color = {1, 1, 1} -- white
 RBP.dbp.healthText_format = 1
 RBP.dbp.healthText_hideMax = true
+-- Colors
+RBP.dbp.healthBar_hostileColor = {0.99999780301005, 0, 0}
+RBP.dbp.healthBar_neutralColor = {0.99999780301005, 0.99999779462814, 0}
+RBP.dbp.healthBar_friendlyNPCColor = {0, 0.99999779462814, 0}
+RBP.dbp.healthBar_friendlyPlayerColor = {0, 0, 0.99999779462814}
+RBP.dbp.healthBar_friendColor = {0, 0, 0.99999779462814}
+RBP.dbp.healthBar_friendClassColor = false
+RBP.dbp.healthBar_classColors = {
+	DEATHKNIGHT	= {0.768625762313600, 0.117646798491480, 0.227450475096700},
+	DRUID		= {0.999997803010050, 0.486273437738420, 0.039215601980686},
+	HUNTER		= {0.666665202006700, 0.827449142932890, 0.447057843208310},
+	MAGE		= {0.407842241227630, 0.799998223781590, 0.937252819538120},
+	PALADIN		= {0.956860642880200, 0.549018383026120, 0.729410171508790},
+	PRIEST		= {0.999997803010050, 0.999997794628140, 0.999997794628140},
+	ROGUE		= {0.999997803010050, 0.956860661506650, 0.407842248678210},
+	SHAMAN		= {0.000000000000000, 0.439214706420900, 0.866664767265320},
+	WARLOCK		= {0.576469321735200, 0.509802818298340, 0.788233578205110},
+	WARRIOR		= {0.776468882337210, 0.607841789722440, 0.427450031042100},
+}
+local classColorArgs = {}
+for i, class in ipairs({"DEATHKNIGHT", "DRUID", "HUNTER", "MAGE", "PALADIN", "PRIEST", "ROGUE", "SHAMAN", "WARLOCK", "WARRIOR"}) do
+	classColorArgs[class] = {order = i, type = "color", name = LOCALIZED_CLASS_NAMES_MALE and LOCALIZED_CLASS_NAMES_MALE[class] or class}
+end
 -- Low Health Coloring
 RBP.dbp.lowHpColor_EnemyPlayers = false
 RBP.dbp.lowHpColor_EnemyNPCs = false
@@ -1378,8 +1400,14 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllShownPlates()
 					end,
 				},
-				healthBar_borderColor = {
+				healthBar_progressiveTexCrop = {
 					order = 7,
+					type = "toggle",
+					name = L["Progressive Cropping"],
+					desc = L["Reveals the health bar texture progressively as health changes, instead of stretching it."],
+				},
+				healthBar_borderColor = {
+					order = 8,
 					type = "color",
 					hasAlpha = true,
 					name = L["Border Color"],
@@ -1392,47 +1420,16 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllHealthBars()
 					end,
 				},
-				healthBar_progressiveTexCrop = {
-					order = 8,
-					type = "toggle",
-					name = L["Progressive Cropping"],
-					desc = L["Reveals the health bar texture progressively as health changes, instead of stretching it."],
-				},
-				healthBar_friendColor = {
-					order = 9,
-					type = "color",
-					name = L["Party/Raid Color"],
-					desc = L["Use a custom color for party and raid member nameplates."],
-					get = function(info)
-						local c = RBP.dbp[info[#info]]
-						return c[1], c[2], c[3]
-					end,
-					set = function(info, r, g, b)
-						RBP.dbp[info[#info]] = {r, g, b}
-						RBP:UpdateAllHealthBars()
-						RBP:UpdateAllShownPlates()
-					end,
-				},
-				healthBar_friendClassColor = {
-					order = 10,
-					type = "toggle",
-					name = L["Party/Raid Class Colors"],
-					desc = L["Use class colors for party and raid member nameplates."],
-					set = function(info, val)
-						RBP.dbp[info[#info]] = val
-						RBP:UpdateAllHealthBars()
-						RBP:UpdateAllShownPlates()
-					end,
-				},
-				lineBreak3 = {order = 11, type = "description", name = ""},
+				lineBreak3 = {order = 9, type = "description", name = ""},
+				lineBreak4 = {order = 10, type = "description", name = ""},
 				healthBar_bgHeader = {
-					order = 12,
+					order = 11,
 					type = "header",
 					name = L["Background"],
 				},
-				lineBreak4 = {order = 13, type = "description", name = ""},
+				lineBreak5 = {order = 12, type = "description", name = ""},
 				healthBar_bgTex = {
-					order = 14,
+					order = 13,
 					type = "select",
 					name = L["Texture"],
 					dialogControl = "LSM30_Statusbar",
@@ -1444,7 +1441,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				healthBar_bgColor = {
-					order = 15,
+					order = 14,
 					type = "color",
 					name = L["Color"],
 					get = function(info)
@@ -1458,7 +1455,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				healthBar_bgAlpha = {
-					order = 16,
+					order = 15,
 					type = "range",
 					name = L["Alpha"],
 					min = 0,
@@ -1471,26 +1468,16 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllShownPlates()
 					end,
 				},
-				lineBreak5 = {order = 17, type = "description", name = ""},
-				lineBreak6 = {order = 18, type = "description", name = ""},
+				lineBreak6 = {order = 16, type = "description", name = ""},
+				lineBreak7 = {order = 17, type = "description", name = ""},
 				healthBarGlow_header = {
-					order = 19,
+					order = 18,
 					type = "header",
 					name = L["Glows"],
 				},
-				lineBreak7 = {order = 20, type = "description", name = ""},
-				showTargetGlowBorder = {
-					order = 21,
-					type = "toggle",
-					name = L["Target Glow Border"],
-					set = function(info, val)
-						RBP.dbp[info[#info]] = val
-						RBP:UpdateAllGlows()
-						RBP:UpdateAllShownPlates()
-					end,
-				},
+				lineBreak8 = {order = 19, type = "description", name = ""},
 				targetGlow_Color = {
-					order = 22,
+					order = 20,
 					type = "color",
 					name = L["Target Glow Color"],
 					get = function(info)
@@ -1504,7 +1491,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				targetGlow_Alpha = {
-					order = 23,
+					order = 21,
 					type = "range",
 					name = L["Target Glow Alpha"],
 					min = 0,
@@ -1517,29 +1504,34 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllShownPlates()
 					end,
 				},
+				showTargetGlowBorder = {
+					order = 22,
+					type = "toggle",
+					name = L["Target Glowing Border"],
+					desc = L["Replaces the minimalist target glow with a glowing border."],
+					set = function(info, val)
+						RBP.dbp[info[#info]] = val
+						RBP:UpdateAllGlows()
+						RBP:UpdateAllShownPlates()
+					end,
+				},
 				targetGlow_Gradient = {
-					order = 24,
+					order = 23,
 					type = "toggle",
-					name = L["Target Glow Gradient"],
+					name = L["Glowing Border Gradient"],
+					desc = L["Applies a gradient effect to the target's glowing border."],
 					set = function(info, val)
 						RBP.dbp[info[#info]] = val
 						RBP:UpdateAllGlows()
 						RBP:UpdateAllShownPlates()
 					end,
-				},
-				lineBreak8 = {order = 25, type = "description", name = ""},
-				showMouseoverGlowBorder = {
-					order = 26,
-					type = "toggle",
-					name = L["Mouseover Glow Border"],
-					set = function(info, val)
-						RBP.dbp[info[#info]] = val
-						RBP:UpdateAllGlows()
-						RBP:UpdateAllShownPlates()
+					disabled = function()
+						return not RBP.dbp.showTargetGlowBorder
 					end,
 				},
+				lineBreak9 = {order = 24, type = "description", name = ""},
 				mouseoverGlow_Color = {
-					order = 27,
+					order = 25,
 					type = "color",
 					name = L["Mouseover Glow Color"],
 					get = function(info)
@@ -1553,7 +1545,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				mouseoverGlow_Alpha = {
-					order = 28,
+					order = 26,
 					type = "range",
 					name = L["Mouseover Glow Alpha"],
 					min = 0,
@@ -1566,16 +1558,27 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllShownPlates()
 					end,
 				},
-				lineBreak9 = {order = 29, type = "description", name = ""},
-				lineBreak10 = {order = 30, type = "description",	name = ""},
+				showMouseoverGlowBorder = {
+					order = 27,
+					type = "toggle",
+					name = L["Mouseover Glowing Border"],
+					desc = L["Adds a glowing border around the mouseover glow."],
+					set = function(info, val)
+						RBP.dbp[info[#info]] = val
+						RBP:UpdateAllGlows()
+						RBP:UpdateAllShownPlates()
+					end,
+				},
+				lineBreak10 = {order = 28, type = "description", name = ""},
+				lineBreak11 = {order = 29, type = "description",	name = ""},
 				healthText_header = {
-					order = 31,
+					order = 30,
 					type = "header",
 					name = L["Health Text"],
 				},
-				lineBreak11 = {order = 32, type = "description", name = ""},
+				lineBreak12 = {order = 31, type = "description", name = ""},
 				healthText_format = {
-					order = 33,
+					order = 32,
 					type = "select", 
 					name = L["Format"],
 					values = {
@@ -1591,7 +1594,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				healthText_hideMax = {
-					order = 34,
+					order = 33,
 					type = "toggle",
 					name = L["Hide on max health"],
 					disabled = function()
@@ -1599,7 +1602,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				healthText_color = {
-					order = 35,
+					order = 34,
 					type = "color",
 					name = L["Text Color"],
 					get = function(info)
@@ -1615,7 +1618,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				healthText_font = {
-					order = 36,
+					order = 35,
 					type = "select",
 					name = L["Text Font"],
 					values = RBP.LSM:HashTable("font"),
@@ -1625,7 +1628,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				healthText_size = {
-					order = 37,
+					order = 36,
 					type = "range",
 					name = L["Font Size"],
 					min = 5,
@@ -1636,7 +1639,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				healthText_outline = {
-					order = 38,
+					order = 37,
 					type = "select", 
 					name = L["Outline"],
 					values = {
@@ -1652,7 +1655,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				healthText_anchor = {
-					order = 39,
+					order = 38,
 					type = "select", 
 					name = L["Anchor"],
 					values = {
@@ -1671,7 +1674,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				healthText_offsetX = {
-					order = 40,
+					order = 39,
 					type = "range",
 					name = L["Offset X"],
 					min = -50,
@@ -1682,7 +1685,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				healthText_offsetY = {
-					order = 41,
+					order = 40,
 					type = "range",
 					name = L["Offset Y"],
 					min = -50,
@@ -1693,19 +1696,138 @@ RBP.MainOptionTable = {
 					end,
 				},
 				healthText_hide = {
-					order = 42,
+					order = 41,
 					type = "toggle",
 					name = L["Hide Health Text"],
 				},
-				lineBreak12 = {order = 43, type = "description", name = ""},
-				lineBreak13 = {order = 44, type = "description", name = ""},
+				lineBreak13 = {order = 42, type = "description", name = ""},
+				lineBreak14 = {order = 43, type = "description", name = ""},
+				healthBar_colorsHeader = {
+					order = 44,
+					type = "header",
+					name = L["Colors"],
+				},
+				lineBreak15 = {order = 45, type = "description", name = ""},
+				healthBar_hostileColor = {
+					order = 46,
+					type = "color",
+					name = L["Hostile"],
+					get = function(info)
+						local c = RBP.dbp[info[#info]]
+						return c[1], c[2], c[3]
+					end,
+					set = function(info, r, g, b)
+						RBP.dbp[info[#info]] = {r, g, b}
+						RBP:UpdateAllShownPlates()
+					end,
+				},
+				healthBar_neutralColor = {
+					order = 47,
+					type = "color",
+					name = L["Neutral"],
+					get = function(info)
+						local c = RBP.dbp[info[#info]]
+						return c[1], c[2], c[3]
+					end,
+					set = function(info, r, g, b)
+						RBP.dbp[info[#info]] = {r, g, b}
+						RBP:UpdateAllShownPlates()
+					end,
+				},
+				healthBar_friendlyNPCColor = {
+					order = 48,
+					type = "color",
+					name = L["Friendly NPCs"],
+					get = function(info)
+						local c = RBP.dbp[info[#info]]
+						return c[1], c[2], c[3]
+					end,
+					set = function(info, r, g, b)
+						RBP.dbp[info[#info]] = {r, g, b}
+						RBP:UpdateAllShownPlates()
+					end,
+				},
+				healthBar_friendlyPlayerColor = {
+					order = 49,
+					type = "color",
+					name = L["Friendly Players"],
+					get = function(info)
+						local c = RBP.dbp[info[#info]]
+						return c[1], c[2], c[3]
+					end,
+					set = function(info, r, g, b)
+						RBP.dbp[info[#info]] = {r, g, b}
+						RBP:UpdateAllShownPlates()
+					end,
+				},
+				healthBar_friendColor = {
+					order = 50,
+					type = "color",
+					name = L["Grouped Players"],
+					get = function(info)
+						local c = RBP.dbp[info[#info]]
+						return c[1], c[2], c[3]
+					end,
+					set = function(info, r, g, b)
+						RBP.dbp[info[#info]] = {r, g, b}
+						RBP:UpdateAllShownPlates()
+					end,
+					disabled = function()
+						return RBP.dbp.healthBar_friendClassColor
+					end,
+				},
+				healthBar_friendClassColor = {
+					order = 51,
+					type = "toggle",
+					name = L["Class Colors for Grouped Players"],
+					desc = L["Use class colors for party and raid member nameplates."],
+					set = function(info, val)
+						RBP.dbp[info[#info]] = val
+						RBP:UpdateAllShownPlates()
+					end,
+				},
+				healthBar_classColors = {
+					order = 52,
+					type = "group",
+					inline = true,
+					name = L["Class Colors"],
+					get = function(info)
+						local c = RBP.dbp.healthBar_classColors[info[#info]]
+						return c[1], c[2], c[3]
+					end,
+					set = function(info, r, g, b)
+						RBP.dbp.healthBar_classColors[info[#info]] = {r, g, b}
+						RBP:UpdateAllShownPlates()
+					end,
+					args = classColorArgs,
+				},
+				resetHealthBarColors = {
+					order = 53,
+					type = "execute",
+					name = L["Reset Colors"],
+					confirm = true,
+					confirmText = L["Reset all color settings in this section to their defaults?"],
+					func = function()
+						local defaults = RBP.default.profile
+						RBP.dbp.healthBar_hostileColor = CopyTable(defaults.healthBar_hostileColor)
+						RBP.dbp.healthBar_neutralColor = CopyTable(defaults.healthBar_neutralColor)
+						RBP.dbp.healthBar_friendlyNPCColor = CopyTable(defaults.healthBar_friendlyNPCColor)
+						RBP.dbp.healthBar_friendlyPlayerColor = CopyTable(defaults.healthBar_friendlyPlayerColor)
+						RBP.dbp.healthBar_friendColor = CopyTable(defaults.healthBar_friendColor)
+						RBP.dbp.healthBar_classColors = CopyTable(defaults.healthBar_classColors)
+						RBP:UpdateAllShownPlates()
+					end,
+				},
+				lineBreak16 = {order = 54, type = "description", name = ""},
+				lineBreak17 = {order = 55, type = "description", name = ""},
 				lowHpColoring_header = {
-					order = 45,
+					order = 56,
 					type = "header",
 					name = L["Low Health Coloring"],
 				},
+				lineBreak18 = {order = 57, type = "description", name = ""},
 				lowHpColor_EnemyPlayers = {
-					order = 46,
+					order = 58,
 					type = "toggle",
 					name = L["Enemy Players"],
 					set = function(info, val)
@@ -1714,7 +1836,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				lowHpColor_EnemyNPCs = {
-					order = 47,
+					order = 59,
 					type = "toggle",
 					name = L["Enemy NPCs"],
 					set = function(info, val)
@@ -1723,7 +1845,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				lowHpColor_FriendlyPlayers = {
-					order = 48,
+					order = 60,
 					type = "toggle",
 					name = L["Friendly Players"],
 					set = function(info, val)
@@ -1732,7 +1854,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				lowHpColor_FriendlyNPCs = {
-					order = 49,
+					order = 61,
 					type = "toggle",
 					name = L["Friendly NPCs"],
 					set = function(info, val)
@@ -1740,9 +1862,9 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllShownPlates()
 					end,
 				},		
-				lineBreak14 = {order = 50, type = "description", name = ""},
+				lineBreak19 = {order = 62, type = "description", name = ""},
 				lowHpColor_threshold = {
-					order = 51,
+					order = 63,
 					type = "range",
 					name = L["Threshold"],
 					desc = L["Overrides health bar colors when health is at or below the configured percentage threshold."],
@@ -1759,7 +1881,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				lowHpColor_color = {
-					order = 52,
+					order = 64,
 					type = "color",
 					name = L["Color"],
 					get = function(info)
@@ -1774,16 +1896,16 @@ RBP.MainOptionTable = {
 						return not (RBP.dbp.lowHpColor_EnemyPlayers or RBP.dbp.lowHpColor_EnemyNPCs or RBP.dbp.lowHpColor_FriendlyPlayers or RBP.dbp.lowHpColor_FriendlyNPCs)
 					end,
 				},
-				lineBreak15 = {order = 53, type = "description", name = ""},
-				lineBreak16 = {order = 54, type = "description", name = ""},						
+				lineBreak20 = {order = 65, type = "description", name = ""},
+				lineBreak21 = {order = 66, type = "description", name = ""},						
 				aggroOverlay_header = {
-					order = 55,
+					order = 67,
 					type = "header",
 					name = L["Aggro Coloring"],
 				},
-				lineBreak17 = {order = 56, type = "description", name = ""},
+				lineBreak22 = {order = 68, type = "description", name = ""},
 				enableAggroColoring = {
-					order = 57,
+					order = 69,
 					type = "toggle",
 					name = L["Enable"],
 					desc = L["Changes NPC health bar color based on aggro status."],
@@ -1793,10 +1915,9 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllShownPlates()
 					end,
 				},
-				lineBreak18 = {order = 58, type = "description", name = ""},
-				lineBreak19 = {order = 59, type = "description", name = ""},
+				lineBreak23 = {order = 70, type = "description", name = ""},
 				aggroColor = {
-					order = 60,
+					order = 71,
 					type = "color",
 					name = L["Aggro"],
 					get = function(info)
@@ -1811,7 +1932,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				gainingAggroColor = {
-					order = 61,
+					order = 72,
 					type = "color",
 					name = L["Gaining Aggro"],
 					get = function(info)
@@ -1826,7 +1947,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				losingAggroColor = {
-					order = 62,
+					order = 73,
 					type = "color",
 					name = L["Losing Aggro"],
 					get = function(info)
@@ -1841,7 +1962,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				disableAggroOpenworld = {
-					order = 63,
+					order = 74,
 					type = "toggle",
 					name = L["Disable in Open World"],
 					set = function(info, val)
@@ -1853,8 +1974,8 @@ RBP.MainOptionTable = {
 						return not RBP.dbp.enableAggroColoring
 					end,
 				},
-				lineBreak20 = {order = 64, type = "description", name = ""},
-				lineBreak21 = {order = 65, type = "description", name = ""},
+				lineBreak24 = {order = 75, type = "description", name = ""},
+				lineBreak25 = {order = 76, type = "description", name = ""},
 			},
 		},
 		CastBar = {
@@ -2507,13 +2628,12 @@ RBP.MainOptionTable = {
 					order = 36,
 					type = "toggle",
 					name = L["Show on Friends"],
-					desc = L["Class icons will only be shown inside PvE or PvP instances."],
+					desc = L["Class icons will only be shown for party and raid members."],
 				},
 				showClassOnEnemies = {
 					order = 37,
 					type = "toggle",
 					name = L["Show on Enemies"],
-					desc = L["Class icons will only be shown inside PvE or PvP instances."],
 				},
 				lineBreak12 = {order = 38, type = "description", name = ""},
 				lineBreak13 = {order = 39, type = "description", name = ""},
@@ -2632,6 +2752,7 @@ RBP.MainOptionTable = {
 					set = function(info, r, g, b)
 						RBP.dbp[info[#info]] = {r, g, b}
 						RBP:UpdateAllBarlessPlates()
+						RBP:UpdateAllShownPlates()
 					end,
 					disabled = function()
 						return RBP.dbp.barlessPlate_excludeTarget or IsBarlessPlateDisabled()
@@ -2648,6 +2769,7 @@ RBP.MainOptionTable = {
 					set = function(info, val)
 						RBP.dbp[info[#info]] = val
 						RBP:UpdateAllBarlessPlates()
+						RBP:UpdateAllShownPlates()
 					end,
 					disabled = function()
 						return RBP.dbp.barlessPlate_excludeTarget or IsBarlessPlateDisabled()
@@ -3128,12 +3250,13 @@ RBP.MainOptionTable = {
 					order = 78,
 					type = "header",
 					name = L["Class Icon"],
-				},				
+				},
 				lineBreak30 = {order = 79, type = "description", name = ""},
 				barlessPlate_showClassIcon = {
 					order = 80,
 					type = "toggle",
 					name = L["Enable"],
+					desc = L["Class icons will only be shown for party and raid members."],
 					disabled = function() 
 						return IsBarlessPlateDisabled()
 					end,
@@ -3200,7 +3323,7 @@ RBP.MainOptionTable = {
 					order = 88,
 					type = "header",
 					name = L["BG Healer Icon"],
-				},				
+				},
 				lineBreak34 = {order = 89, type = "description", name = ""},
 				lineBreak35 = {order = 90, type = "description", name = ""},
 				barlessPlate_BGHiconDesc = {
