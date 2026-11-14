@@ -25,6 +25,10 @@ It preserves a Blizzlike appearance while adding useful features and visual refi
 - Users of Someweirdhuman's AwesomeWotlk must disable its hitbox CVars and use this addon's clickbox settings.
 
 ## Screenshots
+<details>
+<summary>Show screenshots</summary>
+<br>
+
 <p align="center">
   <img src="https://raw.githubusercontent.com/KhalGH/RefinedBlizzPlates-WotLK/refs/heads/assets/assets/KhalPlatesIMG2.jpg" 
        alt="KhalPlatesIMG2" width="90%">
@@ -42,20 +46,22 @@ It preserves a Blizzlike appearance while adding useful features and visual refi
        alt="KhalPlatesIMG6" width="90%">
 </p>
 <p align="center">
-  <img src="https://raw.githubusercontent.com/KhalGH/AwesomePlates-WotLK/refs/heads/assets/assets/AP_img1.jpg" 
+  <img src="https://raw.githubusercontent.com/KhalGH/RefinedBlizzPlates-WotLK/refs/heads/assets/assets/KhalPlatesIMG7.jpg" 
        alt="KhalPlatesIMG7" width="90%">
 </p>
 <p align="center">
-  <img src="https://raw.githubusercontent.com/KhalGH/AwesomePlates-WotLK/refs/heads/assets/assets/AP_img2.jpg" 
+  <img src="https://raw.githubusercontent.com/KhalGH/RefinedBlizzPlates-WotLK/refs/heads/assets/assets/KhalPlatesIMG8.jpg" 
        alt="KhalPlatesIMG8" width="90%">
 </p>
 <p align="center">
-  <img src="https://raw.githubusercontent.com/KhalGH/AwesomePlates-WotLK/refs/heads/assets/assets/AP_img3.jpg" 
+  <img src="https://raw.githubusercontent.com/KhalGH/RefinedBlizzPlates-WotLK/refs/heads/assets/assets/KhalPlatesIMG9.jpg" 
        alt="KhalPlatesIMG9" width="90%">
 </p>
 
+</details>
+
 ## Installation  
-1. [Download](https://github.com/KhalGH/RefinedBlizzPlates-WotLK/releases/download/v1.12.3/RefinedBlizzPlates-v1.12.3.zip) the addon
+1. [Download](https://github.com/KhalGH/RefinedBlizzPlates-WotLK/releases/download/v1.13.0/RefinedBlizzPlates-v1.13.0.zip) the addon
 2. Extract the **!!RefinedBlizzPlates** folder into `World of Warcraft/Interface/AddOns/`.
 3. Restart the game and enable the addon.  
 
@@ -68,6 +74,6 @@ The addon supports features from certain client modifications that are popular i
 **Disclaimer**: Some servers may have specific rules regarding the use of client modifications. Please check your server's policy to ensure they are allowed before using them.
 
 ## Information  
-- **Addon Version:** 1.12.3  
+- **Addon Version:** 1.13.0  
 - **Game Version:** 3.3.5a (WotLK)  
 - **Author:** Khal  
