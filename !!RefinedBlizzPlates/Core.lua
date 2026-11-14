@@ -10,6 +10,7 @@ local select, pairs, unpack, string_format, WorldFrame, GetAddOnMetadata, Create
       select, pairs, unpack, string.format, WorldFrame, GetAddOnMetadata, CreateFrame, UnitExists, IsInInstance, SetUIVisibility, C_NamePlate
 
 -- Localized namespace definitions
+local L = RBP.L
 local EventHandler = RBP.EventHandler
 local VirtualPlates = RBP.VirtualPlates
 local PlatesVisible = RBP.PlatesVisible
@@ -244,6 +245,44 @@ function RBP:Initialize()
     end	
 end
 
+function RBP:ShowStyleReworkNotice(force)
+	local global = self.db.global
+	if global.styleReworkNotice and not force then return end
+	global.styleReworkNotice = true
+	local S = self.NP_SCALE
+	StaticPopupDialogs["RBP_STYLE_REWORK_NOTICE"] = {
+		text = "|cffCCCC88RefinedBlizzPlates|r\n\n"
+			.. L["Nameplate styles were reworked in v1.13.0: \"Nameplate Style\" (formerly \"Preset\") now only changes the border and glow art, and every style shares the same layout: a |cffffd100Global Offset X|r of 0 centers the health bar, and the name is centered on it. Some settings may need adjusting."]
+			.. "\n\n"
+			.. string_format(L["What to do:\n- |cffffd100Blizzard|r was replaced by |cffffd100Classic|r. To move the name back above the health bar, set |cffffd100Text > Name Text > Offset Y|r to %.1f and |cffffd100Offset X|r to %.1f.\n- If you used |cffffd100Blizzard|r or had changed |cffffd100General > Global Offset X|r, subtract %.1f to keep your old position."], (6.934 + self.dbp.nameText_size / 2) * S, 8.576 * S, 8.576 * S),
+		button1 = OKAY,
+		timeout = 0,
+		whileDead = 1,
+		hideOnEscape = 1,
+		OnShow = function(dialog)
+			dialog:SetFrameStrata("TOOLTIP")
+			local text = _G[dialog:GetName() .. "Text"]
+			local height = text:GetHeight()
+			local font, size, flags = text:GetFont()
+			dialog.RBP_textFont = {font, size, flags}
+			text:SetFont(font, size + 2, flags)
+			text:SetJustifyH("LEFT")
+			dialog:SetHeight(dialog:GetHeight() + text:GetHeight() - height)
+		end,
+		OnHide = function(dialog)
+			dialog:SetFrameStrata("DIALOG")
+			local text = _G[dialog:GetName() .. "Text"]
+			if dialog.RBP_textFont then
+				text:SetFont(unpack(dialog.RBP_textFont))
+				dialog.RBP_textFont = nil
+			end
+			text:SetFontObject(GameFontHighlight)
+			text:SetJustifyH("CENTER")
+		end,
+	}
+	StaticPopup_Show("RBP_STYLE_REWORK_NOTICE")
+end
+
 --- Initializes settings once loaded.
 function EventHandler:ADDON_LOADED(event, Addon)
 	if Addon == AddonFile then
@@ -258,6 +297,7 @@ function EventHandler:PLAYER_LOGIN(event)
 	RBP:UpdateTotemDesc()
 	RBP:UpdateWorldFrameHeight(true)
 	RBP:UpdateCVars()
+	RBP:ShowStyleReworkNotice()
 	self:UnregisterEvent(event)
 	self[event] = nil
 end

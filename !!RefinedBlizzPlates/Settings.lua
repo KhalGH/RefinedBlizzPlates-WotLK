@@ -17,7 +17,7 @@ RBP.dbp = RBP.default.profile
 
 -------------------- Default Settings --------------------
 RBP.dbp.globalScale = 1    -- Global scale for nameplates
-RBP.dbp.globalOffsetX = 10.5  -- Global offset X for nameplates
+RBP.dbp.globalOffsetX = 0  -- Global offset X for nameplates
 RBP.dbp.globalOffsetY = 21 -- Global offset Y for nameplates
 RBP.dbp.targetScale = 1    -- Target scale factor
 RBP.dbp.friendlyScale = 1  -- Friendly scale factor
@@ -73,7 +73,7 @@ RBP.dbp.nameText_classColorEnemies = false
 -- Level Text
 RBP.dbp.levelText_hide = true
 RBP.dbp.levelText_font = RBP.RefinedFontKey
-RBP.dbp.levelText_size = 10.5
+RBP.dbp.levelText_size = 11.5
 RBP.dbp.levelText_outline = ""
 RBP.dbp.levelText_anchor = "Right"
 RBP.dbp.levelText_offsetX = 0
@@ -81,7 +81,7 @@ RBP.dbp.levelText_offsetY = 0
 -- ArenaID Text
 RBP.dbp.ArenaIDText_show = true
 RBP.dbp.ArenaIDText_font = RBP.RefinedFontKey
-RBP.dbp.ArenaIDText_size = 10
+RBP.dbp.ArenaIDText_size = 10.5
 RBP.dbp.ArenaIDText_outline = "OUTLINE"
 RBP.dbp.ArenaIDText_anchor = "Right"
 RBP.dbp.ArenaIDText_offsetX = 0
@@ -100,7 +100,7 @@ RBP.dbp.healthBar_friendlyPlayerTex = "KhalBar"
 RBP.dbp.healthBar_hostilePlayerTex = "KhalBar"
 RBP.dbp.healthBar_npcTex = "KhalBar"
 RBP.dbp.healthBar_borderColor = {0.816, 0.675, 0, 1}
-RBP.dbp.healthBar_progressiveTexCrop = true
+RBP.dbp.healthBar_progressiveTexCrop = false
 RBP.dbp.healthBar_bgTex = "KhalBar"
 RBP.dbp.healthBar_bgColor = {0, 0, 0}
 RBP.dbp.healthBar_bgAlpha = 0.5
@@ -352,17 +352,25 @@ RBP.MainOptionTable = {
 				healthBar_border = {
 					order = 4,
 					type = "select",
-					name = L["Nameplate Style Preset"],
-					desc = L["This will override some of your current settings to match the preset."],
-					confirm = true,
-					confirmText = L["This will override some of your current settings to match the preset."],
+					name = L["Nameplate Style"],
+					desc = L["Changes the nameplate's border and glow art."],
 					values = {
 						["Refined"] = "Refined",
-						["Blizzard"] = "Blizzard",
+						["Blizzard"] = "Classic",
+						["Clean"] = "Clean",
 					},
 					set = function(info, val)
 						RBP.dbp[info[#info]] = val
-						RBP:ApplyPreset()
+						RBP:ApplyStyle()
+					end,
+				},
+				styleReworkNotice = {
+					order = 4.5,
+					type = "execute",
+					name = L["Show Changes"],
+					desc = L["Shows again the notice about the nameplate style rework."],
+					func = function()
+						RBP:ShowStyleReworkNotice(true)
 					end,
 				},
 				lineBreak3 = {order = 5, type = "description", name = ""},
@@ -806,6 +814,7 @@ RBP.MainOptionTable = {
 						if not val then
 							RBP:ResetAllRegionsAlpha()
 							RBP:ResetPBFlags()
+							RBP:UpdateAllShownPlates()
 						end
 					end,
 				},
@@ -1353,6 +1362,7 @@ RBP.MainOptionTable = {
 					type = "color",
 					hasAlpha = true,
 					name = L["Border Color"],
+					disabled = function() return RBP.dbp.healthBar_border == "Clean" end,
 					get = function(info)
 						local c = RBP.dbp[info[#info]]
 						return c[1], c[2], c[3], c[4] or 1
@@ -1951,6 +1961,7 @@ RBP.MainOptionTable = {
 					order = 9,
 					type = "color",
 					name = L["Border Color"],
+					disabled = function() return RBP.dbp.healthBar_border == "Clean" end,
 					get = function(info)
 						local c = RBP.dbp[info[#info]]
 						return c[1], c[2], c[3]
@@ -1964,6 +1975,7 @@ RBP.MainOptionTable = {
 					order = 10,
 					type = "color",
 					name = L["Protected Border Color"],
+					disabled = function() return RBP.dbp.healthBar_border == "Clean" end,
 					get = function(info)
 						local c = RBP.dbp[info[#info]]
 						return c[1], c[2], c[3]
@@ -2252,9 +2264,9 @@ RBP.MainOptionTable = {
 					type = "select", 
 					name = L["Style"],
 					values = {
-						["Default"] = L["Default"],
+						["Default"] = L["Classic"],
 						["Modern"] = L["Modern"],
-						["Minimalist"] = L["Minimalist"],
+						["Minimalist"] = L["Small"],
 					},
 					set = function(info, val)
 						RBP.dbp[info[#info]] = val
