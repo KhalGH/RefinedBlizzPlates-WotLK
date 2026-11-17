@@ -2119,10 +2119,10 @@ local function ClickboxAttributeUpdater()
 	RBP.ResizeClickbox:SetAttribute("normalHeight", RBP.NP_HEIGHT * dbp.globalScale * dbp.clickboxHeightFactor)
 	RBP.ResizeClickbox:SetAttribute("friendlyWidth", RBP.NP_WIDTH * dbp.globalScale * dbp.friendlyScale * dbp.clickboxWidthFactor)
 	RBP.ResizeClickbox:SetAttribute("friendlyHeight", RBP.NP_HEIGHT * dbp.globalScale * dbp.friendlyScale * dbp.clickboxHeightFactor)
-	RBP.ResizeClickbox:SetAttribute("totemWidth", dbp.totemSize * 1.2 * dbp.globalScale)
-	RBP.ResizeClickbox:SetAttribute("totemHeight", dbp.totemSize * 1.2 * dbp.globalScale)
-	RBP.ResizeClickbox:SetAttribute("barlessWidth", (dbp.barlessPlate_textSize * 2 + 50) * dbp.globalScale)
-	RBP.ResizeClickbox:SetAttribute("barlessHeight",(dbp.barlessPlate_textSize + 5) * dbp.globalScale)
+	RBP.ResizeClickbox:SetAttribute("totemWidth", dbp.totemSize * 1.2 * dbp.globalScale * dbp.totem_clickboxWidthFactor)
+	RBP.ResizeClickbox:SetAttribute("totemHeight", dbp.totemSize * 1.2 * dbp.globalScale * dbp.totem_clickboxHeightFactor)
+	RBP.ResizeClickbox:SetAttribute("barlessWidth", dbp.barlessPlate_clickboxWidth * dbp.globalScale)
+	RBP.ResizeClickbox:SetAttribute("barlessHeight", dbp.barlessPlate_clickboxHeight * dbp.globalScale)
 end
 
 local function UpdateClickboxInCombat(Virtual)
@@ -2148,11 +2148,10 @@ local function UpdateClickboxOutOfCombat(Virtual)
 		width, height = 0.01, 0.01
 	elseif Virtual.RBP_totemPlateIsShown then
 		local size = dbp.totemSize * 1.2 * dbp.globalScale * dynamicScale
-		width, height = size, size
+		width, height = size * dbp.totem_clickboxWidthFactor, size * dbp.totem_clickboxHeightFactor
 	elseif Virtual.RBP_isBarlessPlate then
-		local textSize = dbp.barlessPlate_textSize
-		width = (2 * textSize + 50) * dbp.globalScale * dynamicScale
-		height = (textSize + 5) * dbp.globalScale * dynamicScale
+		local scale = dbp.globalScale * dynamicScale
+		width, height = dbp.barlessPlate_clickboxWidth * scale, dbp.barlessPlate_clickboxHeight * scale
 	else
 		local scale = dbp.globalScale * dynamicScale
 		if Virtual.RBP_isFriendly then
