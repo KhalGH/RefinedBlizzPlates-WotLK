@@ -1,5 +1,5 @@
 # RefinedBlizzPlates-WotLK
-**RefinedBlizzPlates** is a lightweight nameplate addon for WoW 3.3.5a.
+**RefinedBlizzPlates** is a lightweight nameplate addon for WoW 3.3.5a.  
 Built around the default nameplates, it adds useful features, visual refinements and alternative styles.
 
 ## Features  
