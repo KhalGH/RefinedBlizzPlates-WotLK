@@ -1156,7 +1156,8 @@ local function SetupTotemPlate(Virtual)
 	Virtual.RBP_totemPlate_icon:SetAllPoints(Virtual.RBP_totemPlate)
 	Virtual.RBP_totemPlate_targetGlow = Virtual.RBP_totemPlate:CreateTexture(nil, "OVERLAY")
 	Virtual.RBP_totemPlate_targetGlow:SetTexture(ASSETS .. "PlateRegions\\TotemPlate-TargetGlow")
-	Virtual.RBP_totemPlate_targetGlow:SetVertexColor(unpack(RBP.dbp.targetGlow_Color))
+	Virtual.RBP_totemPlate_targetGlow:SetVertexColor(unpack(RBP.dbp.totem_targetGlowColor))
+	Virtual.RBP_totemPlate_targetGlow:SetAlpha(RBP.dbp.totem_targetGlowAlpha)
 	Virtual.RBP_totemPlate_targetGlow:SetPoint("CENTER")
 	Virtual.RBP_totemPlate_targetGlow:Hide()
 	Virtual.RBP_totemPlate_border = Virtual.RBP_totemPlate:CreateTexture(nil, "ARTWORK")
@@ -1302,6 +1303,8 @@ local function UpdateBarlessPlate(Virtual)
 	else
 		barlessPlate_nameText:Show()
 		healthBarHighlight:SetTexture(ASSETS .. "PlateRegions\\BarlessPlate-MouseoverGlow")
+		healthBarHighlight:SetVertexColor(unpack(dbp.barlessPlate_mouseoverGlowColor))
+		healthBarHighlight:SetAlpha(dbp.barlessPlate_mouseoverGlowAlpha)
 		healthBarHighlight:ClearAllPoints()
 		healthBarHighlight:SetPoint("TOPLEFT", barlessPlate_nameText, -15, 10)
 		healthBarHighlight:SetPoint("BOTTOMRIGHT", barlessPlate_nameText, 15, -11)		
@@ -2334,6 +2337,8 @@ local function UpdateRefinedPlate(Virtual)
 				Virtual.RBP_totemPlate_icon:SetTexture(iconTexture)
 				local healthBarHighlight = Virtual.RBP_healthBarHighlight
 				healthBarHighlight:SetTexture(ASSETS .. "PlateRegions\\TotemPlate-MouseoverGlow")
+				healthBarHighlight:SetVertexColor(unpack(dbp.totem_mouseoverGlowColor))
+				healthBarHighlight:SetAlpha(dbp.totem_mouseoverGlowAlpha)
 				healthBarHighlight:ClearAllPoints()
 				local pad = dbp.totemSize * 5/22
 				healthBarHighlight:SetPoint("TOPLEFT", Virtual.RBP_totemPlate, -pad, pad)
@@ -3061,7 +3066,8 @@ function RBP:UpdateAllGlows()
 		UpdateMouseoverGlow(Virtual)
 		SetupThreatGlow(Virtual)
 		if Virtual.RBP_totemPlate_targetGlow then
-			Virtual.RBP_totemPlate_targetGlow:SetVertexColor(unpack(RBP.dbp.targetGlow_Color))
+			Virtual.RBP_totemPlate_targetGlow:SetVertexColor(unpack(RBP.dbp.totem_targetGlowColor))
+			Virtual.RBP_totemPlate_targetGlow:SetAlpha(RBP.dbp.totem_targetGlowAlpha)
 		end
 	end
 end

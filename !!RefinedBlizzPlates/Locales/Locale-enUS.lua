@@ -394,7 +394,6 @@ L["Disabled"] = true
 L["Players"] = true
 L["NPCs"] = true
 L["Players and NPCs"] = true
-L["Target Settings"] = true
 L["Exclude Target"] = true
 L["Shows the normal layout on your target's nameplate."] = true
 L["Player Name Text"] = true
