@@ -1,11 +1,12 @@
 # RefinedBlizzPlates-WotLK
-**RefinedBlizzPlates** is a lightweight nameplates addon for WoW 3.3.5a.  
-It preserves a Blizzlike appearance while adding useful features and visual refinements.
+**RefinedBlizzPlates** is a lightweight nameplate addon for WoW 3.3.5a.
+Built around the default nameplates, it adds useful features, visual refinements and alternative styles.
 
 ## Features  
-- Blizzlike nameplates with configurable visual elements.
-- Nameplate frame levels based on distance from the camera.
-- Adjusted Z-order spacing to prevent subregions of different nameplates from overlapping.
+- Four selectable nameplate styles: Classic, Refined, Clean and Modern.
+- Multiple settings to customize the main visual regions for every style.
+- Nameplate draw order based on distance from the camera.
+- Adjusted frame level spacing to prevent regions of different nameplates from overlapping.
 - Custom glow for target and mouseover nameplates.
 - Optional class icons in PvE or PvP instances.
 - Optional arenaID and partyID text in arenas.
@@ -13,10 +14,10 @@ It preserves a Blizzlike appearance while adding useful features and visual refi
 - Integrated TotemPlates with settings for each totem type.
 - Blacklist system for hiding specific nameplates or replacing them with icons.
 - Optional "Barless Plates" mode that displays only names and indicators on friendly nameplates.
-- Added click-through behavior for blacklisted nameplates and, optionally, friendly nameplates.
-- Integrated an optional system that simulates Retail's nameplate stacking.
-- Added settings to adjust the nameplate's Box Selection Space (clickbox).
-- Added Depth Perception for distant nameplates by adjusting their scale and opacity.
+- Settings to adjust the clickbox of nameplates, totems and barless plates.
+- Click-through behavior for blacklisted nameplates and, optionally, friendly nameplates.
+- Optional system that simulates Retail's nameplate stacking.
+- Depth Perception for distant nameplates by adjusting their scale and opacity.
 - Improved compatibility with different versions of AwesomeWotlk.
 
 ## Recommendations
@@ -46,6 +47,14 @@ It preserves a Blizzlike appearance while adding useful features and visual refi
        alt="KhalPlatesIMG6" width="90%">
 </p>
 <p align="center">
+  <img src="https://raw.githubusercontent.com/KhalGH/RefinedBlizzPlates-WotLK/refs/heads/assets/assets/KhalPlatesIMG9.jpg" 
+       alt="KhalPlatesIMG9" width="90%">
+</p>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/KhalGH/RefinedBlizzPlates-WotLK/refs/heads/assets/assets/KhalPlatesIMG10.jpg" 
+       alt="KhalPlatesIMG10" width="90%">
+</p>
+<p align="center">
   <img src="https://raw.githubusercontent.com/KhalGH/RefinedBlizzPlates-WotLK/refs/heads/assets/assets/KhalPlatesIMG7.jpg" 
        alt="KhalPlatesIMG7" width="90%">
 </p>
@@ -53,15 +62,11 @@ It preserves a Blizzlike appearance while adding useful features and visual refi
   <img src="https://raw.githubusercontent.com/KhalGH/RefinedBlizzPlates-WotLK/refs/heads/assets/assets/KhalPlatesIMG8.jpg" 
        alt="KhalPlatesIMG8" width="90%">
 </p>
-<p align="center">
-  <img src="https://raw.githubusercontent.com/KhalGH/RefinedBlizzPlates-WotLK/refs/heads/assets/assets/KhalPlatesIMG9.jpg" 
-       alt="KhalPlatesIMG9" width="90%">
-</p>
 
 </details>
 
 ## Installation  
-1. [Download](https://github.com/KhalGH/RefinedBlizzPlates-WotLK/releases/download/v1.13.0/RefinedBlizzPlates-v1.13.0.zip) the addon
+1. [Download](https://github.com/KhalGH/RefinedBlizzPlates-WotLK/releases/download/v1.13.1/RefinedBlizzPlates-v1.13.1.zip) the addon
 2. Extract the **!!RefinedBlizzPlates** folder into `World of Warcraft/Interface/AddOns/`.
 3. Restart the game and enable the addon.  
 
@@ -74,6 +79,6 @@ The addon supports features from certain client modifications that are popular i
 **Disclaimer**: Some servers may have specific rules regarding the use of client modifications. Please check your server's policy to ensure they are allowed before using them.
 
 ## Information  
-- **Addon Version:** 1.13.0  
+- **Addon Version:** 1.13.1  
 - **Game Version:** 3.3.5a (WotLK)  
 - **Author:** Khal  
