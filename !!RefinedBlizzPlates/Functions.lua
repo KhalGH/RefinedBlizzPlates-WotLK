@@ -62,11 +62,13 @@ local Styles = {
 	Refined = {
 		healthBorder = ASSETS .. "PlateRegions\\Refined-HealthBar-Border",
 		threatGlow = ASSETS .. "PlateRegions\\Refined-HealthBar-ThreatGlow",
-		targetGlow = ASSETS .. "PlateRegions\\Refined-HealthBar-TargetGlow",
-		targetGlowGradient = ASSETS .. "PlateRegions\\Refined-HealthBar-TargetGlow_Gradient",
-		mouseoverGlow = ASSETS .. "PlateRegions\\Refined-HealthBar-MouseoverGlow",
-		targetGlowNoBorder = ASSETS .. "PlateRegions\\Refined-HealthBar-TargetGlow_NoBorder",
-		mouseoverGlowNoBorder = ASSETS .. "PlateRegions\\Refined-HealthBar-MouseoverGlow_NoBorder",
+		targetGlowHighlight = ASSETS .. "PlateRegions\\Refined-HealthBar-TargetGlow_Highlight",
+		targetGlowBorder = ASSETS .. "PlateRegions\\Refined-HealthBar-TargetGlow_Border",
+		targetGlowBorderGradient = ASSETS .. "PlateRegions\\Refined-HealthBar-TargetGlow_Border_Gradient",
+		targetGlowBoth = ASSETS .. "PlateRegions\\Refined-HealthBar-TargetGlow_Both",
+		targetGlowBothGradient = ASSETS .. "PlateRegions\\Refined-HealthBar-TargetGlow_Both_Gradient",
+		mouseoverGlowHighlight = ASSETS .. "PlateRegions\\Refined-HealthBar-MouseoverGlow_Highlight",
+		mouseoverGlowBoth = ASSETS .. "PlateRegions\\Refined-HealthBar-MouseoverGlow_Both",
 		castBorder = ASSETS .. "PlateRegions\\Refined-CastBar-Border",
 		shieldBorder = ASSETS .. "PlateRegions\\Refined-CastBar-ShieldBorder",
 		shieldX = 0.572, shieldY = -11.439, shieldWf = 0.926, shieldHf = 1, shieldCoord = {0, 1, 0, 1},
@@ -106,12 +108,14 @@ local Styles = {
 	},
 	Blizzard = {
 		healthBorder = ASSETS .. "PlateRegions\\Classic-HealthBar-Border",
-		threatGlow = "Interface\\TargetingFrame\\UI-TargetingFrame-Flash",
-		targetGlow = ASSETS .. "PlateRegions\\Classic-HealthBar-TargetGlow",
-		targetGlowGradient = ASSETS .. "PlateRegions\\Classic-HealthBar-TargetGlow_Gradient",
-		mouseoverGlow = ASSETS .. "PlateRegions\\Classic-HealthBar-MouseoverGlow",
-		targetGlowNoBorder = ASSETS .. "PlateRegions\\Refined-HealthBar-TargetGlow_NoBorder",
-		mouseoverGlowNoBorder = ASSETS .. "PlateRegions\\Refined-HealthBar-MouseoverGlow_NoBorder",
+		threatGlow = ASSETS .. "PlateRegions\\Classic-HealthBar-ThreatGlow",
+		targetGlowHighlight = ASSETS .. "PlateRegions\\Refined-HealthBar-TargetGlow_Highlight",
+		targetGlowBorder = ASSETS .. "PlateRegions\\Classic-HealthBar-TargetGlow_Border",
+		targetGlowBorderGradient = ASSETS .. "PlateRegions\\Classic-HealthBar-TargetGlow_Border_Gradient",
+		targetGlowBoth = ASSETS .. "PlateRegions\\Classic-HealthBar-TargetGlow_Both",
+		targetGlowBothGradient = ASSETS .. "PlateRegions\\Classic-HealthBar-TargetGlow_Both_Gradient",
+		mouseoverGlowHighlight = ASSETS .. "PlateRegions\\Refined-HealthBar-MouseoverGlow_Highlight",
+		mouseoverGlowBoth = ASSETS .. "PlateRegions\\Classic-HealthBar-MouseoverGlow_Both",
 		castBorder = ASSETS .. "PlateRegions\\Refined-CastBar-Border",
 		shieldBorder = ASSETS .. "PlateRegions\\Refined-CastBar-ShieldBorder",
 		shieldX = 0.572, shieldY = -11.439, shieldWf = 1.017, shieldHf = 1, shieldCoord = {0, 1, 0, 1},
@@ -152,11 +156,13 @@ local Styles = {
 	Clean = {
 		healthBorder = ASSETS .. "PlateRegions\\Clean-HealthBar-Border",
 		threatGlow = ASSETS .. "PlateRegions\\Clean-HealthBar-ThreatGlow",
-		targetGlow = ASSETS .. "PlateRegions\\Clean-HealthBar-TargetGlow",
-		targetGlowGradient = ASSETS .. "PlateRegions\\Clean-HealthBar-TargetGlow_Gradient",
-		mouseoverGlow = ASSETS .. "PlateRegions\\Clean-HealthBar-MouseoverGlow",
-		targetGlowNoBorder = ASSETS .. "PlateRegions\\Clean-HealthBar-TargetGlow_NoBorder",
-		mouseoverGlowNoBorder = ASSETS .. "PlateRegions\\Clean-HealthBar-MouseoverGlow_NoBorder",
+		targetGlowHighlight = ASSETS .. "PlateRegions\\Clean-HealthBar-TargetGlow_Highlight",
+		targetGlowBorder = ASSETS .. "PlateRegions\\Clean-HealthBar-TargetGlow_Border",
+		targetGlowBorderGradient = ASSETS .. "PlateRegions\\Clean-HealthBar-TargetGlow_Border_Gradient",
+		targetGlowBoth = ASSETS .. "PlateRegions\\Clean-HealthBar-TargetGlow_Both",
+		targetGlowBothGradient = ASSETS .. "PlateRegions\\Clean-HealthBar-TargetGlow_Both_Gradient",
+		mouseoverGlowHighlight = ASSETS .. "PlateRegions\\Clean-HealthBar-MouseoverGlow_Highlight",
+		mouseoverGlowBoth = ASSETS .. "PlateRegions\\Clean-HealthBar-MouseoverGlow_Both",
 		castBorder = ASSETS .. "PlateRegions\\Clean-CastBar-Border",
 		shieldBorder = ASSETS .. "PlateRegions\\Clean-CastBar-ShieldBorder",
 		shieldX = 0, shieldY = 0, shieldWf = 1, shieldHf = 1, shieldCoord = {1, 0, 0, 1},
@@ -168,9 +174,32 @@ local Styles = {
 		shield = {barX = -21, barY = 3, iconX = 9, iconY = 8, iconSize = 10},
 		castTextX = -5.576, castTimerX = -1.274, castTextY = 0.82,
 		iconCoord = {0.08, 0.92, 0.08, 0.92},
+		bgOutset = 0.6,
+	},
+	Modern = {
+		healthBorder = ASSETS .. "PlateRegions\\Modern-HealthBar-Border",
+		threatGlow = ASSETS .. "PlateRegions\\Modern-HealthBar-ThreatGlow",
+		targetGlowHighlight = ASSETS .. "PlateRegions\\Refined-HealthBar-TargetGlow_Highlight",
+		targetGlowBorder = ASSETS .. "PlateRegions\\Modern-HealthBar-TargetGlow_Border",
+		targetGlowBorderGradient = ASSETS .. "PlateRegions\\Modern-HealthBar-TargetGlow_Border_Gradient",
+		targetGlowBoth = ASSETS .. "PlateRegions\\Modern-HealthBar-TargetGlow_Both",
+		targetGlowBothGradient = ASSETS .. "PlateRegions\\Modern-HealthBar-TargetGlow_Both_Gradient",
+		mouseoverGlowHighlight = ASSETS .. "PlateRegions\\Refined-HealthBar-MouseoverGlow_Highlight",
+		mouseoverGlowBoth = ASSETS .. "PlateRegions\\Modern-HealthBar-MouseoverGlow_Both",
+		castBorder = ASSETS .. "PlateRegions\\Modern-CastBar-Border",
+		shieldBorder = ASSETS .. "PlateRegions\\Modern-CastBar-ShieldBorder",
+		shieldX = 0, shieldY = -10, shieldWf = 0.926, shieldHf = 1, shieldCoord = {0, 1, 0, 1},
+		castGlow = ASSETS .. "PlateRegions\\Modern-CastBar-Glow",
+		castGlowWf = 1.852, castGlowHf = 2, castGlowX = 0, castGlowY = 0,
+		castBarW = 96.01, castBarH = 10,
+		castBoxX = -9.397, castBoxY = -12.7, castBoxWf = 0.926, castBoxHf = 1,
+		normal = {barX = -3.3, barY = 3, iconX = 11.1, iconY = 7.9, iconSize = 12.9},
+		shield = {barX = -3.6, barY = 1, iconX = 11, iconY = 6, iconSize = 12},
+		castTextX = -7, castTimerX = -1.5, castTextY = 0.7,
 	},
 }
 Styles.Clean.icons = Styles.Refined.icons
+Styles.Modern.icons = Styles.Refined.icons
 
 local FixedAnchors = {
 	boss = {
@@ -206,6 +235,7 @@ end
 local function InitBarTextures(Virtual)
 	Virtual.RBP_healthBar:SetFrameLevel(Virtual:GetFrameLevel())
 	Virtual.RBP_castBar:SetFrameLevel(Virtual:GetFrameLevel())
+	Virtual.RBP_threatGlow:SetTexCoord(0.00125, 0.55125, 0.01, 1.17)
 	Virtual.RBP_ogCastBarBorder:SetTexture(nil)
 	Virtual.RBP_ogShieldCastBarBorder:SetTexture(nil)
 	Virtual.RBP_spellIcon:SetDrawLayer("BORDER")
@@ -479,6 +509,9 @@ end
 
 local function UpdateHealthBarBg(Virtual)
 	local dbp = RBP.dbp
+	local outset = (GetStyle().bgOutset or 0) * RBP.NP_SCALE
+	Virtual.RBP_healthBarBg:SetPoint("TOPLEFT", -outset, outset)
+	Virtual.RBP_healthBarBg:SetPoint("BOTTOMRIGHT", outset, -outset)
 	Virtual.RBP_healthBarBg:SetTexture(RBP.LSM:Fetch("statusbar", dbp.healthBar_bgTex))
 	Virtual.RBP_healthBarBg:SetVertexColor(unpack(dbp.healthBar_bgColor))
 	Virtual.RBP_healthBarBg:SetAlpha(dbp.healthBar_bgAlpha)
@@ -487,9 +520,6 @@ end
 local function SetupHealthBarBg(Virtual)
 	if Virtual.RBP_healthBarBg then return end
 	Virtual.RBP_healthBarBg = Virtual.RBP_healthBar:CreateTexture(nil, "BACKGROUND")
-	local outset = 0.6 * RBP.NP_SCALE
-	Virtual.RBP_healthBarBg:SetPoint("TOPLEFT", -outset, outset)
-	Virtual.RBP_healthBarBg:SetPoint("BOTTOMRIGHT", outset, -outset)
 	UpdateHealthBarBg(Virtual)
 end
 
@@ -510,12 +540,17 @@ local function UpdateTargetGlow(Virtual)
 	Virtual.RBP_targetGlow:SetAlpha(dbp.targetGlow_Alpha)
 	Virtual.RBP_targetGlow:SetSize(RBP.NP_WIDTH * 2, RBP.NP_HEIGHT * 2)
 	Virtual.RBP_targetGlow:SetPoint("CENTER", -RBP.HB_CENTER_X, -RBP.HB_CENTER_Y)
-	local style = GetStyle()
+	local style, texture = GetStyle()
 	if dbp.showTargetGlowBorder then
-		Virtual.RBP_targetGlow:SetTexture(dbp.targetGlow_Gradient and style.targetGlowGradient or style.targetGlow)
-	else
-		Virtual.RBP_targetGlow:SetTexture(style.targetGlowNoBorder)
+		if dbp.showTargetHighlight then
+			texture = dbp.targetGlow_Gradient and style.targetGlowBothGradient or style.targetGlowBoth
+		else
+			texture = dbp.targetGlow_Gradient and style.targetGlowBorderGradient or style.targetGlowBorder
+		end
+	elseif dbp.showTargetHighlight then
+		texture = style.targetGlowHighlight
 	end
+	Virtual.RBP_targetGlow:SetTexture(texture)
 end
 
 local function SetupTargetGlow(Virtual)
@@ -533,7 +568,7 @@ local function UpdateMouseoverGlow(Virtual)
 	Virtual.RBP_healthBarHighlight:SetSize(RBP.NP_WIDTH * 2, RBP.NP_HEIGHT * 2)
 	Virtual.RBP_healthBarHighlight:SetPoint("CENTER", dbp.globalOffsetX - RBP.HB_CENTER_X, dbp.globalOffsetY)
 	local style = GetStyle()
-	Virtual.RBP_healthBarHighlight:SetTexture(dbp.showMouseoverGlowBorder and style.mouseoverGlow or style.mouseoverGlowNoBorder)
+	Virtual.RBP_healthBarHighlight:SetTexture(dbp.showMouseoverGlowBorder and style.mouseoverGlowBoth or style.mouseoverGlowHighlight)
 end
 
 local function SetupCastBarBorder(Virtual)
@@ -592,8 +627,31 @@ local function SetupCastBarTex(Virtual)
 	Virtual.RBP_castBarTex:SetVertexColor(unpack(dbp.castBar_color))
 end
 
+local function GetCastBarSkin(Virtual)
+	local dbp = RBP.dbp
+	if Virtual.RBP_ogShieldCastBarBorderIsShown then
+		return dbp.castBar_protectedTex, dbp.castBar_protectedColor
+	elseif Virtual.RBP_channelingFlag == 1 then
+		return dbp.castBar_channelingTex, dbp.castBar_channelingColor
+	end
+	return dbp.castBar_Tex, dbp.castBar_color
+end
+
+local function UpdateCastBarSkin(Virtual)
+	local dbp = RBP.dbp
+	local tex, color = GetCastBarSkin(Virtual)
+	Virtual.RBP_castBarTex:SetTexture(RBP.LSM:Fetch("statusbar", tex))
+	Virtual.RBP_castBarTex:SetVertexColor(unpack(color))
+	if dbp.healthBar_border ~= "Clean" then
+		Virtual.RBP_castBarBorder:SetVertexColor(unpack(Virtual.RBP_channelingFlag == 1 and dbp.castBar_channelingBorderColor or dbp.castBar_borderColor))
+	end
+end
+
 local function UpdateCastBarBg(Virtual)
 	local dbp = RBP.dbp
+	local outset = (GetStyle().bgOutset or 0) * RBP.NP_SCALE
+	Virtual.RBP_castBarBg:SetPoint("TOPLEFT", -outset, outset)
+	Virtual.RBP_castBarBg:SetPoint("BOTTOMRIGHT", outset, -outset)
 	Virtual.RBP_castBarBg:SetTexture(RBP.LSM:Fetch("statusbar", dbp.castBar_bgTex))
 	Virtual.RBP_castBarBg:SetVertexColor(unpack(dbp.castBar_bgColor))
 	Virtual.RBP_castBarBg:SetAlpha(dbp.castBar_bgAlpha)
@@ -602,9 +660,6 @@ end
 local function SetupCastBarBg(Virtual)
 	if Virtual.RBP_castBarBg then return end
 	Virtual.RBP_castBarBg = Virtual.RBP_castBar:CreateTexture(nil, "BACKGROUND")
-	local outset = 0.6 * RBP.NP_SCALE
-	Virtual.RBP_castBarBg:SetPoint("TOPLEFT", -outset, outset)
-	Virtual.RBP_castBarBg:SetPoint("BOTTOMRIGHT", outset, -outset)
 	UpdateCastBarBg(Virtual)
 end
 
@@ -783,14 +838,10 @@ local function HookCastBarScripts(Virtual)
 			UpdateCastTextString(Virtual, unit)
 			UpdateCastBarRegionsVisibility(Virtual)
 			UpdateCastBarRegionsAnchor(Virtual)
+			UpdateCastBarSkin(Virtual)
 			if dbp.castBar_showSpark then
 				Virtual.RBP_castSpark:Hide()
 				Virtual.RBP_castBarInitSpark = true
-			end
-			if Virtual.RBP_channelingFlag == 1 then
-				Virtual.RBP_castBarTex:SetVertexColor(unpack(dbp.castBar_channelingColor))
-			else
-				Virtual.RBP_castBarTex:SetVertexColor(unpack(dbp.castBar_color))
 			end
 			if dbp.castBar_progressiveTexCrop then
 				Virtual.RBP_castBarTexCrop = true
@@ -919,22 +970,25 @@ local function HookCastBarScripts(Virtual)
 				lastOVC = true
 				channelingCompleted = nil
 				castingFailed = nil
+				local dbp = RBP.dbp
 				if Virtual.RBP_channelingFlag == 1 then
-					if currCastVal < RBP.dbp.castBar_completionTol then
+					local tex, color = GetCastBarSkin(Virtual)
+					castBarTexFull:SetTexture(RBP.LSM:Fetch("statusbar", tex))
+					if currCastVal < dbp.castBar_completionTol then
 						castBarTexFull:SetVertexColor(0, 0, 0, 0.5)
 						channelingCompleted = true
 					else
-						castBarTexFull:SetVertexColor(unpack(RBP.dbp.castBar_channelingColor))
+						castBarTexFull:SetVertexColor(unpack(color))
 					end
+				elseif maxCastVal - currCastVal < dbp.castBar_completionTol then
+					castBarTexFull:SetTexture(RBP.LSM:Fetch("statusbar", dbp.castBar_completedTex))
+					castBarTexFull:SetVertexColor(unpack(dbp.castBar_completedColor))
 				else
-					if maxCastVal - currCastVal < RBP.dbp.castBar_completionTol then
-						castBarTexFull:SetVertexColor(0, 1, 0)
-					else
-						castBarTexFull:SetVertexColor(1, 0, 0)
-						castingFailed = true
-						if castText:GetText() then
-							castText:SetText(L["Failed"])
-						end
+					castBarTexFull:SetTexture(RBP.LSM:Fetch("statusbar", dbp.castBar_failedTex))
+					castBarTexFull:SetVertexColor(unpack(dbp.castBar_failedColor))
+					castingFailed = true
+					if castText:GetText() then
+						castText:SetText(L["Failed"])
 					end
 				end
 			end
@@ -946,10 +1000,9 @@ local function HookCastBarScripts(Virtual)
 				if not Virtual.RBP_channelingFlag then
 					if secondCastVal < firstCastVal then
 						Virtual.RBP_channelingFlag = 1
-						Virtual.RBP_castBarTex:SetVertexColor(unpack(RBP.dbp.castBar_channelingColor))
+						UpdateCastBarSkin(Virtual)
 					else
 						Virtual.RBP_channelingFlag = 0
-						Virtual.RBP_castBarTex:SetVertexColor(unpack(RBP.dbp.castBar_color))
 					end
 				end
 			end
@@ -1622,6 +1675,7 @@ local function DelayedUpdate(Virtual, fromOnShow)
 		end
 		if Virtual.RBP_castBarIsShown and not Virtual.RBP_castText:GetText() then
 			UpdateCastTextString(Virtual, "target")
+			UpdateCastBarSkin(Virtual)
 		end
 	else
 		Virtual.RBP_targetGlow:Hide()
@@ -1905,6 +1959,9 @@ local function UpdateClassColor(Virtual)
 	end
 	if classColor and ((class == "FRIENDLY_PLAYER" and dbp.nameText_classColorFriends) or (class ~= "FRIENDLY_PLAYER" and dbp.nameText_classColorEnemies)) then
 		Virtual.RBP_nameColorR, Virtual.RBP_nameColorG, Virtual.RBP_nameColorB = classColor[1], classColor[2], classColor[3]
+	elseif not class and dbp.nameText_reactionColorNPCs then
+		local c = Virtual.RBP_customColor
+		Virtual.RBP_nameColorR, Virtual.RBP_nameColorG, Virtual.RBP_nameColorB = c[1], c[2], c[3]
 	else
 		Virtual.RBP_nameColorR, Virtual.RBP_nameColorG, Virtual.RBP_nameColorB = unpack(dbp.nameText_color)
 	end
@@ -2937,14 +2994,8 @@ end
 function RBP:UpdateAllCastBars()
 	local dbp = RBP.dbp
 	for _, Virtual in pairs(VirtualPlates) do
-		if Virtual.RBP_channelingFlag == 1 then
-			Virtual.RBP_castBarTex:SetVertexColor(unpack(dbp.castBar_channelingColor))
-		else
-			Virtual.RBP_castBarTex:SetVertexColor(unpack(dbp.castBar_color))
-		end
-		Virtual.RBP_castBarTex:SetTexture(RBP.LSM:Fetch("statusbar", dbp.castBar_Tex))
-		Virtual.RBP_castBarTexFull:SetTexture(RBP.LSM:Fetch("statusbar", dbp.castBar_Tex))
 		UpdateCastBarArt(Virtual)
+		UpdateCastBarSkin(Virtual)
 		UpdateCastBarBg(Virtual)
 		UpdateCastText(Virtual)
 		UpdateCastTimer(Virtual)
@@ -2976,6 +3027,7 @@ end
 function RBP:UpdateAllCastBarBorders()
 	for _, Virtual in pairs(VirtualPlates) do
 		UpdateCastBarArt(Virtual)
+		UpdateCastBarSkin(Virtual)
 	end
 end
 
