@@ -162,6 +162,9 @@ RBP.dbp.aggroColor = {0.24, 0.64, 0.50}
 RBP.dbp.gainingAggroColor = {0.36, 1.00, 0.82}
 RBP.dbp.losingAggroColor = {0.7, 0.2, 0.4}
 -- CastBar
+RBP.dbp.castBar_style = "Same"
+RBP.dbp.castBar_offsetX = 0
+RBP.dbp.castBar_offsetY = 0
 RBP.dbp.castBar_Tex = "KhalBar"
 RBP.dbp.castBar_progressiveTexCrop = false
 RBP.dbp.castBar_color = {1, 0.7, 0}
@@ -363,30 +366,9 @@ RBP.MainOptionTable = {
 			type = "group",
 			args = {
 				lineBreak1 = {order = 1, type = "description", name = ""},
-				general_header = {
-					order = 2,
-					type = "header",
-					name = L["General Settings"],
-				},
-				lineBreak2 = {order = 3, type = "description", name = ""},
-				healthBar_border = {
-					order = 4,
-					type = "select",
-					name = L["Nameplate Style"],
-					desc = L["Changes the nameplate's border and glow art."],
-					values = {
-						["Refined"] = "Refined",
-						["Blizzard"] = "Classic",
-						["Clean"] = "Clean",
-						["Modern"] = "Modern",
-					},
-					set = function(info, val)
-						RBP.dbp[info[#info]] = val
-						RBP:ApplyStyle()
-					end,
-				},
+				lineBreak2 = {order = 2, type = "description", name = ""},
 				styleReworkNotice = {
-					order = 5,
+					order = 3,
 					type = "execute",
 					name = L["Show Changes"],
 					desc = L["Shows again the notice about the nameplate style rework."],
@@ -394,11 +376,16 @@ RBP.MainOptionTable = {
 						RBP:ShowStyleReworkNotice(true)
 					end,
 				},
-				lineBreak3 = {order = 6, type = "description", name = ""},
-				lineBreak4 = {order = 7, type = "description", name = ""},
-				lineBreak5 = {order = 8, type = "description", name = ""},
+				lineBreak3 = {order = 4, type = "description", name = ""},
+				general_header = {
+					order = 5,
+					type = "header",
+					name = L["General Settings"],
+				},
+				lineBreak4 = {order = 6, type = "description", name = ""},
+				lineBreak5 = {order = 7, type = "description", name = ""},
 				globalScale = {
-					order = 9,
+					order = 8,
 					type = "range",
 					name = L["Global Scale"],
 					desc = L["Scales both the visual size and the clickbox of nameplates."],
@@ -412,7 +399,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				globalOffsetX = {
-					order = 10,
+					order = 9,
 					type = "range",
 					name = L["Global Offset X"],
 					desc = L["Affects only the nameplate's visual regions. The clickbox can't be moved using this feature."],
@@ -425,7 +412,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				globalOffsetY = {
-					order = 11,
+					order = 10,
 					type = "range",
 					name = L["Global Offset Y"],
 					desc = L["Affects only the nameplate's visual regions. The clickbox can't be moved using this feature."],
@@ -437,10 +424,10 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllShownPlates()
 					end,
 				},
-				lineBreak6 = {order = 12, type = "description", name = ""},
-				lineBreak7 = {order = 13, type = "description", name = ""},
+				lineBreak6 = {order = 11, type = "description", name = ""},
+				lineBreak7 = {order = 12, type = "description", name = ""},
 				friendlyScale = {
-					order = 14,
+					order = 13,
 					type = "range",
 					name = L["Friendly Scale Factor"],
 					desc = L["Adjusts friendly nameplate scale, applied multiplicatively with the global scale. Affects the visual size and the clickbox."],
@@ -454,7 +441,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				targetScale = {
-					order = 15,
+					order = 14,
 					type = "range",
 					name = L["Target Scale Factor"],
 					desc = L["Adjusts the target nameplate’s scale, applied multiplicatively with the global scale."],
@@ -466,17 +453,17 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllVirtualsScale()
 					end,
 				},
-				lineBreak8 = {order = 16, type = "description", name = ""},
-				lineBreak9 = {order = 17, type = "description", name = ""},
+				lineBreak8 = {order = 15, type = "description", name = ""},
+				lineBreak9 = {order = 16, type = "description", name = ""},
 				clickbox_header = {
-					order = 18,
+					order = 17,
 					type = "header",
 					name = L["Clickbox"],
 				},
-				lineBreak14 = {order = 19, type = "description", name = ""},
-				lineBreak15 = {order = 20, type = "description", name = ""},
+				lineBreak10 = {order = 18, type = "description", name = ""},
+				lineBreak11 = {order = 19, type = "description", name = ""},
 				clickboxWidthFactor = {
-					order = 21,
+					order = 20,
 					type = "range",
 					name = L["Nameplate Width Factor"],
 					desc = L["Scales the nameplate clickbox relative to its original size."],
@@ -490,7 +477,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				clickboxHeightFactor = {
-					order = 22,
+					order = 21,
 					type = "range",
 					name = L["Nameplate Height Factor"],
 					desc = L["Scales the nameplate clickbox relative to its original size."],
@@ -503,9 +490,9 @@ RBP.MainOptionTable = {
 						RBP:UpdateClickboxAttributes()
 					end,
 				},
-				lineBreak33 = {order = 23, type = "description", name = ""},
+				lineBreak12 = {order = 22, type = "description", name = ""},
 				totem_clickboxWidthFactor = {
-					order = 24,
+					order = 23,
 					type = "range",
 					name = L["Totem Width Factor"],
 					desc = L["Scales the totem clickbox relative to its icon size."],
@@ -519,7 +506,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				totem_clickboxHeightFactor = {
-					order = 25,
+					order = 24,
 					type = "range",
 					name = L["Totem Height Factor"],
 					desc = L["Scales the totem clickbox relative to its icon size."],
@@ -532,9 +519,9 @@ RBP.MainOptionTable = {
 						RBP:UpdateClickboxAttributes()
 					end,
 				},
-				lineBreak34 = {order = 26, type = "description", name = ""},
+				lineBreak13 = {order = 25, type = "description", name = ""},
 				barlessPlate_clickboxWidth = {
-					order = 27,
+					order = 26,
 					type = "range",
 					name = L["Barless Width"],
 					desc = L["Sets the barless plate clickbox size."],
@@ -549,7 +536,7 @@ RBP.MainOptionTable = {
 					disabled = function() return IsBarlessPlateDisabled() end,
 				},
 				barlessPlate_clickboxHeight = {
-					order = 28,
+					order = 27,
 					type = "range",
 					name = L["Barless Height"],
 					desc = L["Sets the barless plate clickbox size."],
@@ -563,9 +550,9 @@ RBP.MainOptionTable = {
 					end,
 					disabled = function() return IsBarlessPlateDisabled() end,
 				},
-				lineBreak35 = {order = 29, type = "description", name = ""},
+				lineBreak14 = {order = 28, type = "description", name = ""},
 				friendlyClickthrough = {
-					order = 30,
+					order = 29,
 					type = "toggle",
 					name = L["Click-through Friendly Nameplates"],
 					desc = L["Disable friendly nameplates clickboxes inside PvE and PvP instances."],
@@ -576,7 +563,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				showClickbox = {
-					order = 31,
+					order = 30,
 					type = "toggle",
 					name = L["Show Clickbox"],
 					desc = L["Displays clickboxes for easier configuration. Recommended to adjust clickbox settings while out of combat."],
@@ -586,25 +573,25 @@ RBP.MainOptionTable = {
 						RBP:UpdateClickboxesDriver()
 					end,
 				},
-				lineBreak12 = {order = 32, type = "description", name = "", hidden = function() return RBP.hasAlphaOverride end},
-				lineBreak13 = {order = 33, type = "description", name = "", hidden = function() return RBP.hasAlphaOverride end},
+				lineBreak15 = {order = 31, type = "description", name = "", hidden = function() return RBP.hasAlphaOverride end},
+				lineBreak16 = {order = 32, type = "description", name = "", hidden = function() return RBP.hasAlphaOverride end},
 				nonTargetAlpha_header = {
-					order = 34,
+					order = 33,
 					type = "header",
 					name = L["Non-target Opacity"],
 					hidden = function() return RBP.hasAlphaOverride end,
 				},
-				lineBreak10 = {order = 35, type = "description", name = "", hidden = function() return RBP.hasAlphaOverride end},
+				lineBreak17 = {order = 34, type = "description", name = "", hidden = function() return RBP.hasAlphaOverride end},
 				modNonTargetAlpha = {
-					order = 36,
+					order = 35,
 					type = "toggle",
 					name = L["Enable"],
 					desc = L["Overrides non-target nameplate opacity. May increase CPU usage depending on the number of visible nameplates."],
 					hidden = function() return RBP.hasAlphaOverride end,
 				},
-				lineBreak11 = {order = 37, type = "description", name = "", hidden = function() return RBP.hasAlphaOverride end},
+				lineBreak18 = {order = 36, type = "description", name = "", hidden = function() return RBP.hasAlphaOverride end},
 				nonTargetAlpha_enemy = {
-					order = 38,
+					order = 37,
 					type = "range",
 					name = L["Enemy Plate"],
 					min = 0,
@@ -619,7 +606,7 @@ RBP.MainOptionTable = {
 					hidden = function() return RBP.hasAlphaOverride end,
 				},
 				nonTargetAlpha_friendly = {
-					order = 39,
+					order = 38,
 					type = "range",
 					name = L["Friendly Plate"],
 					min = 0,
@@ -634,7 +621,7 @@ RBP.MainOptionTable = {
 					hidden = function() return RBP.hasAlphaOverride end,
 				},
 				nonTargetAlpha_barless = {
-					order = 40,
+					order = 39,
 					type = "range",
 					name = L["Barless Plate"],
 					min = 0,
@@ -649,7 +636,7 @@ RBP.MainOptionTable = {
 					hidden = function() return RBP.hasAlphaOverride end,
 				},
 				nonTargetAlpha_totem = {
-					order = 41,
+					order = 40,
 					type = "range",
 					name = L["Totems"],
 					min = 0,
@@ -663,17 +650,17 @@ RBP.MainOptionTable = {
 					disabled = function() return not RBP.dbp.modNonTargetAlpha end,
 					hidden = function() return RBP.hasAlphaOverride end,
 				},
-				lineBreak16 = {order = 42, type = "description", name = ""},
-				lineBreak17 = {order = 43, type = "description", name = ""},
+				lineBreak19 = {order = 41, type = "description", name = ""},
+				lineBreak20 = {order = 42, type = "description", name = ""},
 				clamp_header = {
-					order = 44,
+					order = 43,
 					type = "header",
 					name =  L["Screen Clamping"],
 					hidden = function() return RBP.hasModernStacking end,
 				},
-				lineBreak18 = {order = 45, type = "description", name = "", hidden = function() return RBP.hasModernStacking end},
+				lineBreak21 = {order = 44, type = "description", name = "", hidden = function() return RBP.hasModernStacking end},
 				clampTarget = {
-					order = 46,
+					order = 45,
 					type = "toggle",
 					name = L["Clamp Target"],
 					desc = function()
@@ -691,7 +678,7 @@ RBP.MainOptionTable = {
 					hidden = function() return RBP.hasModernStacking end,			
 				},
 				clampBoss = {
-					order = 47,
+					order = 46,
 					type = "toggle",
 					name = L["Clamp Bosses"],
 					desc = L["Prevents boss nameplates inside instances from going above the top of the screen."],
@@ -704,7 +691,7 @@ RBP.MainOptionTable = {
 					hidden = function() return RBP.hasModernStacking end,	
 				},
 				upperborder = {
-					order = 48,
+					order = 47,
 					type = "range",
 					name = L["Clamping Top Inset"],
 					desc = L["Adjusts the distance below the top of the screen where clamped nameplates will stop."],
@@ -718,17 +705,17 @@ RBP.MainOptionTable = {
 					disabled = function() return (RBP.hasLegacyStacking and not RBP.dbp.stackingEnabled) or (not RBP.dbp.clampTarget and not RBP.dbp.clampBoss) end,
 					hidden = function() return RBP.hasModernStacking end,
 				},
-				lineBreak19 = {order = 49, type = "description", name = "", hidden = function() return RBP.hasModernStacking or RBP.hasLegacyStacking end},
-				lineBreak20 = {order = 50, type = "description", name = "", hidden = function() return RBP.hasModernStacking or RBP.hasLegacyStacking end},
+				lineBreak22 = {order = 48, type = "description", name = "", hidden = function() return RBP.hasModernStacking or RBP.hasLegacyStacking end},
+				lineBreak23 = {order = 49, type = "description", name = "", hidden = function() return RBP.hasModernStacking or RBP.hasLegacyStacking end},
 				stacking_header = {
-					order = 51,
+					order = 50,
 					type = "header",
 					name = L["Retail-like Stacking"],
 					hidden = function() return RBP.hasModernStacking or RBP.hasLegacyStacking end,
 				},
-				lineBreak21 = {order = 52, type = "description", name = "", hidden = function() return RBP.hasModernStacking  or RBP.hasLegacyStacking end},
+				lineBreak24 = {order = 51, type = "description", name = "", hidden = function() return RBP.hasModernStacking  or RBP.hasLegacyStacking end},
 				stackingEnabled = {
-					order = 53,
+					order = 52,
 					type = "toggle",
 					name = L["Enable"],
 					desc = function()
@@ -745,7 +732,7 @@ RBP.MainOptionTable = {
 					hidden = function() return RBP.hasModernStacking end,
 				},
 				disableCollisions = {
-					order = 54,
+					order = 53,
 					type = "toggle",
 					name = L["Disable Collisions"],
 					desc = L["Disables nameplate overlap resolution while preserving Vertical Offset and Clamping. Reduces CPU usage."],
@@ -756,10 +743,10 @@ RBP.MainOptionTable = {
 					disabled = function() return not RBP.dbp.stackingEnabled end,
 					hidden = function() return RBP.hasModernStacking or RBP.hasLegacyStacking end,
 				},
-				lineBreak22 = {order = 55, type = "description", name = "", hidden = function() return RBP.hasModernStacking or RBP.hasLegacyStacking end},
-				lineBreak23 = {order = 56, type = "description", name = "", hidden = function() return RBP.hasModernStacking or RBP.hasLegacyStacking end},
+				lineBreak25 = {order = 54, type = "description", name = "", hidden = function() return RBP.hasModernStacking or RBP.hasLegacyStacking end},
+				lineBreak26 = {order = 55, type = "description", name = "", hidden = function() return RBP.hasModernStacking or RBP.hasLegacyStacking end},
 				xspace = {
-					order = 57,
+					order = 56,
 					type = "range",
 					name = L["Collider Width"],
 					desc = L["Sets the width of the virtual collider centered on each nameplate used to detect overlaps."],
@@ -770,7 +757,7 @@ RBP.MainOptionTable = {
 					hidden = function() return RBP.hasModernStacking or RBP.hasLegacyStacking end,
 				},
 				yspace = {
-					order = 58,
+					order = 57,
 					type = "range",
 					name = L["Collider Height"],
 					desc = L["Sets the height of the virtual collider centered on each nameplate used to detect overlaps."],
@@ -781,7 +768,7 @@ RBP.MainOptionTable = {
 					hidden = function() return RBP.hasModernStacking or RBP.hasLegacyStacking end,
 				},
 				yspeed = {
-					order = 59,
+					order = 58,
 					type = "range",
 					name = L["Stacking Speed"],
 					desc = L["Speed at which nameplates move to resolve overlaps."],
@@ -792,7 +779,7 @@ RBP.MainOptionTable = {
 					hidden = function() return RBP.hasModernStacking or RBP.hasLegacyStacking end,
 				},
 				originpos = {
-					order = 60,
+					order = 59,
 					type = "range",
 					name = L["Vertical Offset"],
 					desc = L["Vertically offsets the entire nameplate, including its clickbox."],
@@ -803,7 +790,7 @@ RBP.MainOptionTable = {
 					hidden = function() return RBP.hasModernStacking or RBP.hasLegacyStacking end,
 				},
 				friendlyStackOffset = {
-					order = 61,
+					order = 60,
 					type = "toggle",
 					name = L["Offset Friendly Nameplates"],
 					desc = L["Applies the Vertical Offset and Clamping to friendly nameplates as well. They do not take part in collision calculations, but may add some extra overhead."],
@@ -815,7 +802,7 @@ RBP.MainOptionTable = {
 					hidden = function() return RBP.hasModernStacking or RBP.hasLegacyStacking end,
 				},
 				FreezeMouseover = {
-					order = 62,
+					order = 61,
 					type = "toggle",
 					name = L["Freeze Mouseover"],
 					desc = L["Stops the nameplate you're mousing over from moving for better selection."],
@@ -823,7 +810,7 @@ RBP.MainOptionTable = {
 					hidden = function() return RBP.hasModernStacking or RBP.hasLegacyStacking end,
 				},
 				stackingInInstance = {
-					order = 63,
+					order = 62,
 					type = "toggle",
 					name = L["Disable in Open World"],
 					desc = L["Only process stacking inside PvE and PvP instances. This will reduce CPU usage in the open world."],
@@ -834,16 +821,16 @@ RBP.MainOptionTable = {
 					disabled = function() return not RBP.dbp.stackingEnabled end,
 					hidden = function() return RBP.hasModernStacking or RBP.hasLegacyStacking end,
 				},
-				lineBreak24 = {order = 64, type = "description", name = "", hidden = function() return RBP.hasModernStacking end},
-				lineBreak25 = {order = 65, type = "description", name = "", hidden = function() return RBP.hasModernStacking end},
+				lineBreak27 = {order = 63, type = "description", name = "", hidden = function() return RBP.hasModernStacking end},
+				lineBreak28 = {order = 64, type = "description", name = "", hidden = function() return RBP.hasModernStacking end},
 				depth_header = {
-					order = 66,
+					order = 65,
 					type = "header",
 					name = L["Depth Perception"],
 				},
-				lineBreak26 = {order = 67, type = "description", name = ""},
+				lineBreak29 = {order = 66, type = "description", name = ""},
 				depthScaling = {
-					order = 68,
+					order = 67,
 					type = "toggle",
 					name = L["Distance Shrinking"],
 					desc = function()
@@ -861,7 +848,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				depthPivot = {
-					order = 69,
+					order = 68,
 					type = "range",
 					name = L["Shrink Start Distance"],
 					desc = L["Camera distance where shrinking begins. Closer plates keep their normal size."],
@@ -871,7 +858,7 @@ RBP.MainOptionTable = {
 					disabled = function() return not RBP.dbp.depthScaling end,
 				},
 				minScaleFactor = {
-					order = 70,
+					order = 69,
 					type = "range",
 					name = L["Minimum Scale"],
 					desc = L["The smallest scale a distant nameplate can reach."],
@@ -880,9 +867,9 @@ RBP.MainOptionTable = {
 					step = 0.01,
 					disabled = function() return not RBP.dbp.depthScaling end,
 				},
-				lineBreak27 = {order = 71, type = "description", name = ""},
+				lineBreak30 = {order = 70, type = "description", name = ""},
 				depthFading = {
-					order = 72,
+					order = 71,
 					type = "toggle",
 					name = L["Distance Fading"],
 					desc = function()
@@ -901,7 +888,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				depthFadeStart = {
-					order = 73,
+					order = 72,
 					type = "range",
 					name = L["Fade Start Distance"],
 					desc = L["Camera distance where fading begins. Closer plates stay fully visible."],
@@ -911,7 +898,7 @@ RBP.MainOptionTable = {
 					disabled = function() return not RBP.dbp.depthFading end,
 				},
 				depthFadeRange = {
-					order = 74,
+					order = 73,
 					type = "range",
 					name = L["Fade Range"],
 					desc = L["Distance between fading stages. Higher values make nameplates disappear farther away."],
@@ -921,14 +908,14 @@ RBP.MainOptionTable = {
 					disabled = function() return not RBP.dbp.depthFading end,
 				},
 				fadeNPCs = {
-					order = 75,
+					order = 74,
 					type = "toggle",
 					name = L["Hide Distant NPCs"],
 					desc = L["Hides NPC nameplates at very long distances."],
 					disabled = function() return not RBP.dbp.depthFading end,					
 				},
 				fadePlateBuffs = {
-					order = 76,
+					order = 75,
 					type = "toggle",
 					name = L["Hide Distant PlateBuffs"],
 					desc = L["Fades out and hides PlateBuffs icons on distant nameplates. Icons are not updated while hidden, slightly reducing overhead."],
@@ -941,7 +928,7 @@ RBP.MainOptionTable = {
 					disabled = function() return not RBP.dbp.depthFading end,					
 				},
 				nameplateDistance = {
-					order = 77,
+					order = 76,
 					type = "range",
 					name = L["Extended Draw Distance"],
 					desc = L["Extends the distance at which nameplates are drawn."],
@@ -960,7 +947,7 @@ RBP.MainOptionTable = {
 					hidden = function() return not RBP.hasModernEngine or RBP.hasLegacyStacking or RBP.hasModernStacking end,
 				},
 				cameraFov = {
-					order = 78,
+					order = 77,
 					type = "range",
 					name = L["Field of View"],
 					desc = L["Adjusts the camera field of view."],
@@ -976,16 +963,16 @@ RBP.MainOptionTable = {
 					end,
 					hidden = function() return not RBP.hasModernEngine or RBP.hasLegacyStacking or RBP.hasModernStacking end,
 				},
-				lineBreak28 = {order = 79, type = "description", name = ""},
-				lineBreak29 = {order = 80, type = "description", name = ""},
+				lineBreak31 = {order = 78, type = "description", name = ""},
+				lineBreak32 = {order = 79, type = "description", name = ""},
 				misc_header = {
-					order = 81,
+					order = 80,
 					type = "header",
 					name = L["Miscellaneous Settings"],
 				},
-				lineBreak30 = {order = 82, type = "description", name = ""},
+				lineBreak33 = {order = 81, type = "description", name = ""},
 				levelFilter = {
-					order = 83,
+					order = 82,
 					type = "range",
 					name = L["Level Filter"],
 					desc = L["Minimum unit level required for the nameplate to be shown."],
@@ -998,7 +985,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				LDWfix = {
-					order = 84,
+					order = 83,
 					type = "toggle",
 					name = L["Hide on LDW MC"],
 					desc = L["Hide nameplates when mind-controlled by Lady Deathwhisper."],
@@ -1007,8 +994,8 @@ RBP.MainOptionTable = {
 						RBP:UpdateLDWfix()
 					end,
 				},
-				lineBreak31 = {order = 85, type = "description", name = ""},
-				lineBreak32 = {order = 86, type = "description", name = ""},
+				lineBreak34 = {order = 84, type = "description", name = ""},
+				lineBreak35 = {order = 85, type = "description", name = ""},
 			},
 		},
 		Text = {
@@ -1404,8 +1391,25 @@ RBP.MainOptionTable = {
 					name = L["Appearance"],
 				},
 				lineBreak2 = {order = 3, type = "description", name = ""},
-				healthBar_friendlyPlayerTex = {
+				healthBar_border = {
 					order = 4,
+					type = "select",
+					name = L["Style"],
+					desc = L["Changes the health bar's border and glow art."],
+					values = {
+						["Refined"] = "Refined",
+						["Blizzard"] = "Classic",
+						["Clean"] = "Clean",
+						["Modern"] = "Modern",
+					},
+					set = function(info, val)
+						RBP.dbp[info[#info]] = val
+						RBP:ApplyStyle()
+					end,
+				},
+				lineBreak3 = {order = 5, type = "description", name = ""},
+				healthBar_friendlyPlayerTex = {
+					order = 6,
 					type = "select",
 					name = L["Friendly Player Texture"],
 					dialogControl = "LSM30_Statusbar",
@@ -1417,7 +1421,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				healthBar_hostilePlayerTex = {
-					order = 5,
+					order = 7,
 					type = "select",
 					name = L["Hostile Player Texture"],
 					dialogControl = "LSM30_Statusbar",
@@ -1429,7 +1433,7 @@ RBP.MainOptionTable = {
 					end,
 				},		
 				healthBar_npcTex = {
-					order = 6,
+					order = 8,
 					type = "select",
 					name = L["NPC Texture"],
 					dialogControl = "LSM30_Statusbar",
@@ -1441,13 +1445,13 @@ RBP.MainOptionTable = {
 					end,
 				},
 				healthBar_progressiveTexCrop = {
-					order = 7,
+					order = 9,
 					type = "toggle",
 					name = L["Progressive Cropping"],
 					desc = L["Reveals the health bar texture progressively as health changes, instead of stretching it."],
 				},
 				healthBar_borderColor = {
-					order = 8,
+					order = 10,
 					type = "color",
 					hasAlpha = true,
 					name = L["Border Color"],
@@ -1461,16 +1465,16 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllHealthBars()
 					end,
 				},
-				lineBreak3 = {order = 9, type = "description", name = ""},
-				lineBreak4 = {order = 10, type = "description", name = ""},
+				lineBreak4 = {order = 11, type = "description", name = ""},
+				lineBreak5 = {order = 12, type = "description", name = ""},
 				healthBar_bgHeader = {
-					order = 11,
+					order = 13,
 					type = "header",
 					name = L["Background"],
 				},
-				lineBreak5 = {order = 12, type = "description", name = ""},
+				lineBreak6 = {order = 14, type = "description", name = ""},
 				healthBar_bgTex = {
-					order = 13,
+					order = 15,
 					type = "select",
 					name = L["Texture"],
 					dialogControl = "LSM30_Statusbar",
@@ -1482,7 +1486,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				healthBar_bgAlpha = {
-					order = 14,
+					order = 16,
 					type = "range",
 					name = L["Alpha"],
 					min = 0,
@@ -1496,7 +1500,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				healthBar_bgColor = {
-					order = 15,
+					order = 17,
 					type = "color",
 					name = L["Color"],
 					get = function(info)
@@ -1509,16 +1513,16 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllShownPlates()
 					end,
 				},
-				lineBreak6 = {order = 16, type = "description", name = ""},
-				lineBreak7 = {order = 17, type = "description", name = ""},
+				lineBreak7 = {order = 18, type = "description", name = ""},
+				lineBreak8 = {order = 19, type = "description", name = ""},
 				healthBarGlow_header = {
-					order = 18,
+					order = 20,
 					type = "header",
 					name = L["Glows"],
 				},
-				lineBreak8 = {order = 19, type = "description", name = ""},
+				lineBreak9 = {order = 21, type = "description", name = ""},
 				showTargetHighlight = {
-					order = 20,
+					order = 22,
 					type = "toggle",
 					name = L["Target Highlight"],
 					desc = L["Highlights the inside of the target's health bar."],
@@ -1529,7 +1533,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				showTargetGlowBorder = {
-					order = 21,
+					order = 23,
 					type = "toggle",
 					name = L["Target Glowing Border"],
 					desc = L["Adds a glowing border around the target's health bar."],
@@ -1540,7 +1544,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				targetGlow_Gradient = {
-					order = 22,
+					order = 24,
 					type = "toggle",
 					name = L["Glowing Border Gradient"],
 					desc = L["Applies a gradient effect to the target's glowing border."],
@@ -1552,7 +1556,7 @@ RBP.MainOptionTable = {
 					disabled = function() return not RBP.dbp.showTargetGlowBorder end,
 				},
 				targetGlow_Color = {
-					order = 23,
+					order = 25,
 					type = "color",
 					name = L["Target Glow Color"],
 					get = function(info)
@@ -1567,7 +1571,7 @@ RBP.MainOptionTable = {
 					disabled = function() return not (RBP.dbp.showTargetHighlight or RBP.dbp.showTargetGlowBorder) end,
 				},
 				targetGlow_Alpha = {
-					order = 24,
+					order = 26,
 					type = "range",
 					name = L["Target Glow Alpha"],
 					min = 0,
@@ -1581,9 +1585,9 @@ RBP.MainOptionTable = {
 					end,
 					disabled = function() return not (RBP.dbp.showTargetHighlight or RBP.dbp.showTargetGlowBorder) end,
 				},
-				lineBreak9 = {order = 25, type = "description", name = ""},
+				lineBreak10 = {order = 27, type = "description", name = ""},
 				showMouseoverGlowBorder = {
-					order = 26,
+					order = 28,
 					type = "toggle",
 					name = L["Mouseover Glowing Border"],
 					desc = L["Adds a glowing border around the mouseover glow."],
@@ -1594,7 +1598,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				mouseoverGlow_Color = {
-					order = 27,
+					order = 29,
 					type = "color",
 					name = L["Mouseover Glow Color"],
 					get = function(info)
@@ -1608,7 +1612,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				mouseoverGlow_Alpha = {
-					order = 28,
+					order = 30,
 					type = "range",
 					name = L["Mouseover Glow Alpha"],
 					min = 0,
@@ -1621,16 +1625,16 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllShownPlates()
 					end,
 				},
-				lineBreak10 = {order = 29, type = "description", name = ""},
-				lineBreak11 = {order = 30, type = "description",	name = ""},
+				lineBreak11 = {order = 31, type = "description", name = ""},
+				lineBreak12 = {order = 32, type = "description",	name = ""},
 				healthText_header = {
-					order = 31,
+					order = 33,
 					type = "header",
 					name = L["Health Text"],
 				},
-				lineBreak12 = {order = 32, type = "description", name = ""},
+				lineBreak13 = {order = 34, type = "description", name = ""},
 				healthText_format = {
-					order = 33,
+					order = 35,
 					type = "select", 
 					name = L["Format"],
 					values = {
@@ -1644,13 +1648,13 @@ RBP.MainOptionTable = {
 					disabled = function() return RBP.dbp.healthText_hide end,
 				},
 				healthText_hideMax = {
-					order = 34,
+					order = 36,
 					type = "toggle",
 					name = L["Hide on max health"],
 					disabled = function() return RBP.dbp.healthText_hide end,
 				},
 				healthText_color = {
-					order = 35,
+					order = 37,
 					type = "color",
 					name = L["Text Color"],
 					get = function(info)
@@ -1664,7 +1668,7 @@ RBP.MainOptionTable = {
 					disabled = function() return RBP.dbp.healthText_hide end,
 				},
 				healthText_font = {
-					order = 36,
+					order = 38,
 					type = "select",
 					name = L["Text Font"],
 					values = RBP.LSM:HashTable("font"),
@@ -1672,7 +1676,7 @@ RBP.MainOptionTable = {
 					disabled = function() return RBP.dbp.healthText_hide end,
 				},
 				healthText_size = {
-					order = 37,
+					order = 39,
 					type = "range",
 					name = L["Font Size"],
 					min = 5,
@@ -1681,7 +1685,7 @@ RBP.MainOptionTable = {
 					disabled = function() return RBP.dbp.healthText_hide end,
 				},
 				healthText_outline = {
-					order = 38,
+					order = 40,
 					type = "select", 
 					name = L["Outline"],
 					values = {
@@ -1695,7 +1699,7 @@ RBP.MainOptionTable = {
 					disabled = function() return RBP.dbp.healthText_hide end,
 				},
 				healthText_anchor = {
-					order = 39,
+					order = 41,
 					type = "select", 
 					name = L["Anchor"],
 					values = {
@@ -1712,7 +1716,7 @@ RBP.MainOptionTable = {
 					disabled = function() return RBP.dbp.healthText_hide end,
 				},
 				healthText_offsetX = {
-					order = 40,
+					order = 42,
 					type = "range",
 					name = L["Offset X"],
 					min = -50,
@@ -1721,7 +1725,7 @@ RBP.MainOptionTable = {
 					disabled = function() return RBP.dbp.healthText_hide end,
 				},
 				healthText_offsetY = {
-					order = 41,
+					order = 43,
 					type = "range",
 					name = L["Offset Y"],
 					min = -50,
@@ -1730,20 +1734,20 @@ RBP.MainOptionTable = {
 					disabled = function() return RBP.dbp.healthText_hide end,
 				},
 				healthText_hide = {
-					order = 42,
+					order = 44,
 					type = "toggle",
 					name = L["Hide Health Text"],
 				},
-				lineBreak13 = {order = 43, type = "description", name = ""},
-				lineBreak14 = {order = 44, type = "description", name = ""},
+				lineBreak14 = {order = 45, type = "description", name = ""},
+				lineBreak15 = {order = 46, type = "description", name = ""},
 				healthBar_colorsHeader = {
-					order = 45,
+					order = 47,
 					type = "header",
 					name = L["Colors"],
 				},
-				lineBreak15 = {order = 46, type = "description", name = ""},
+				lineBreak16 = {order = 48, type = "description", name = ""},
 				healthBar_hostileColor = {
-					order = 47,
+					order = 49,
 					type = "color",
 					name = L["Hostile"],
 					get = function(info)
@@ -1756,7 +1760,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				healthBar_neutralColor = {
-					order = 48,
+					order = 50,
 					type = "color",
 					name = L["Neutral"],
 					get = function(info)
@@ -1769,7 +1773,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				healthBar_friendlyNPCColor = {
-					order = 49,
+					order = 51,
 					type = "color",
 					name = L["Friendly NPCs"],
 					get = function(info)
@@ -1782,7 +1786,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				healthBar_friendlyPlayerColor = {
-					order = 50,
+					order = 52,
 					type = "color",
 					name = L["Friendly Players"],
 					get = function(info)
@@ -1795,7 +1799,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				healthBar_friendColor = {
-					order = 51,
+					order = 53,
 					type = "color",
 					name = L["Grouped Players"],
 					get = function(info)
@@ -1809,7 +1813,7 @@ RBP.MainOptionTable = {
 					disabled = function() return RBP.dbp.healthBar_friendClassColor end,
 				},
 				healthBar_friendClassColor = {
-					order = 52,
+					order = 54,
 					type = "toggle",
 					name = L["Class Colors for Grouped Players"],
 					desc = L["Use class colors for party and raid member nameplates."],
@@ -1819,7 +1823,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				healthBar_classColors = {
-					order = 53,
+					order = 55,
 					type = "group",
 					inline = true,
 					name = L["Class Colors"],
@@ -1834,7 +1838,7 @@ RBP.MainOptionTable = {
 					args = classColorArgs,
 				},
 				resetHealthBarColors = {
-					order = 54,
+					order = 56,
 					type = "execute",
 					name = L["Reset Colors"],
 					confirm = true,
@@ -1850,16 +1854,16 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllShownPlates()
 					end,
 				},
-				lineBreak16 = {order = 55, type = "description", name = ""},
-				lineBreak17 = {order = 56, type = "description", name = ""},
+				lineBreak17 = {order = 57, type = "description", name = ""},
+				lineBreak18 = {order = 58, type = "description", name = ""},
 				lowHpColoring_header = {
-					order = 57,
+					order = 59,
 					type = "header",
 					name = L["Low Health Coloring"],
 				},
-				lineBreak18 = {order = 58, type = "description", name = ""},
+				lineBreak19 = {order = 60, type = "description", name = ""},
 				lowHpColor_EnemyPlayers = {
-					order = 59,
+					order = 61,
 					type = "toggle",
 					name = L["Enemy Players"],
 					set = function(info, val)
@@ -1868,7 +1872,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				lowHpColor_EnemyNPCs = {
-					order = 60,
+					order = 62,
 					type = "toggle",
 					name = L["Enemy NPCs"],
 					set = function(info, val)
@@ -1877,7 +1881,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				lowHpColor_FriendlyPlayers = {
-					order = 61,
+					order = 63,
 					type = "toggle",
 					name = L["Friendly Players"],
 					set = function(info, val)
@@ -1886,7 +1890,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				lowHpColor_FriendlyNPCs = {
-					order = 62,
+					order = 64,
 					type = "toggle",
 					name = L["Friendly NPCs"],
 					set = function(info, val)
@@ -1894,9 +1898,9 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllShownPlates()
 					end,
 				},		
-				lineBreak19 = {order = 63, type = "description", name = ""},
+				lineBreak20 = {order = 65, type = "description", name = ""},
 				lowHpColor_threshold = {
-					order = 64,
+					order = 66,
 					type = "range",
 					name = L["Threshold"],
 					desc = L["Overrides health bar colors when health is at or below the configured percentage threshold."],
@@ -1911,7 +1915,7 @@ RBP.MainOptionTable = {
 					disabled = function() return not (RBP.dbp.lowHpColor_EnemyPlayers or RBP.dbp.lowHpColor_EnemyNPCs or RBP.dbp.lowHpColor_FriendlyPlayers or RBP.dbp.lowHpColor_FriendlyNPCs) end,
 				},
 				lowHpColor_color = {
-					order = 65,
+					order = 67,
 					type = "color",
 					name = L["Color"],
 					get = function(info)
@@ -1924,16 +1928,16 @@ RBP.MainOptionTable = {
 					end,
 					disabled = function() return not (RBP.dbp.lowHpColor_EnemyPlayers or RBP.dbp.lowHpColor_EnemyNPCs or RBP.dbp.lowHpColor_FriendlyPlayers or RBP.dbp.lowHpColor_FriendlyNPCs) end,
 				},
-				lineBreak20 = {order = 66, type = "description", name = ""},
-				lineBreak21 = {order = 67, type = "description", name = ""},						
+				lineBreak21 = {order = 68, type = "description", name = ""},
+				lineBreak22 = {order = 69, type = "description", name = ""},						
 				aggroOverlay_header = {
-					order = 68,
+					order = 70,
 					type = "header",
 					name = L["Aggro Coloring"],
 				},
-				lineBreak22 = {order = 69, type = "description", name = ""},
+				lineBreak23 = {order = 71, type = "description", name = ""},
 				enableAggroColoring = {
-					order = 70,
+					order = 72,
 					type = "toggle",
 					name = L["Enable"],
 					desc = L["Changes NPC health bar color based on aggro status."],
@@ -1943,9 +1947,9 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllShownPlates()
 					end,
 				},
-				lineBreak23 = {order = 71, type = "description", name = ""},
+				lineBreak24 = {order = 73, type = "description", name = ""},
 				aggroColor = {
-					order = 72,
+					order = 74,
 					type = "color",
 					name = L["Aggro"],
 					get = function(info)
@@ -1958,7 +1962,7 @@ RBP.MainOptionTable = {
 					disabled = function() return not RBP.dbp.enableAggroColoring end,
 				},
 				gainingAggroColor = {
-					order = 73,
+					order = 75,
 					type = "color",
 					name = L["Gaining Aggro"],
 					get = function(info)
@@ -1971,7 +1975,7 @@ RBP.MainOptionTable = {
 					disabled = function() return not RBP.dbp.enableAggroColoring end,
 				},
 				losingAggroColor = {
-					order = 74,
+					order = 76,
 					type = "color",
 					name = L["Losing Aggro"],
 					get = function(info)
@@ -1984,7 +1988,7 @@ RBP.MainOptionTable = {
 					disabled = function() return not RBP.dbp.enableAggroColoring end,
 				},
 				disableAggroOpenworld = {
-					order = 75,
+					order = 77,
 					type = "toggle",
 					name = L["Disable in Open World"],
 					set = function(info, val)
@@ -1994,8 +1998,8 @@ RBP.MainOptionTable = {
 					end,
 					disabled = function() return not RBP.dbp.enableAggroColoring end,
 				},
-				lineBreak24 = {order = 76, type = "description", name = ""},
-				lineBreak25 = {order = 77, type = "description", name = ""},
+				lineBreak25 = {order = 78, type = "description", name = ""},
+				lineBreak26 = {order = 79, type = "description", name = ""},
 			},
 		},
 		CastBar = {
@@ -2014,15 +2018,58 @@ RBP.MainOptionTable = {
 					name = L["Appearance"],
 				},
 				lineBreak2 = {order = 3, type = "description", name = ""},
-				castBar_Tex = {
+				castBar_style = {
 					order = 4,
+					type = "select",
+					name = L["Style"],
+					desc = L["Changes the cast bar's border and glow art."],
+					values = {
+						["Same"] = L["Same as Health Bar"],
+						["Refined"] = "Refined",
+						["Blizzard"] = "Classic",
+						["Clean"] = "Clean",
+						["Modern"] = "Modern",
+					},
+					sorting = {"Same", "Blizzard", "Clean", "Modern", "Refined"},
+					set = function(info, val)
+						RBP.dbp[info[#info]] = val
+						RBP:ApplyStyle()
+					end,
+				},
+				castBar_offsetX = {
+					order = 5,
+					type = "range",
+					name = L["Offset X"],
+					min = -50,
+					max = 50,
+					step = 0.1,
+					set = function(info, val)
+						RBP.dbp[info[#info]] = val
+						RBP:UpdateAllShownPlates()
+					end,
+				},
+				castBar_offsetY = {
+					order = 6,
+					type = "range",
+					name = L["Offset Y"],
+					min = -50,
+					max = 50,
+					step = 0.1,
+					set = function(info, val)
+						RBP.dbp[info[#info]] = val
+						RBP:UpdateAllShownPlates()
+					end,
+				},
+				lineBreak3 = {order = 7, type = "description", name = ""},
+				castBar_Tex = {
+					order = 8,
 					type = "select",
 					name = L["Casting Texture"],
 					dialogControl = "LSM30_Statusbar",
 					values = AceGUIWidgetLSMlists.statusbar,
 				},
 				castBar_color = {
-					order = 5,
+					order = 9,
 					type = "color",
 					name = L["Casting Color"],
 					get = function(info)
@@ -2035,10 +2082,10 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castBar_borderColor = {
-					order = 6,
+					order = 10,
 					type = "color",
 					name = L["Casting Border Color"],
-					disabled = function() return RBP.dbp.healthBar_border == "Clean" end,
+					disabled = function() return RBP.castStyleKey == "Clean" end,
 					get = function(info)
 						local c = RBP.dbp[info[#info]]
 						return c[1], c[2], c[3]
@@ -2048,16 +2095,16 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllCastBars()
 					end,
 				},
-				lineBreak2a = {order = 7, type = "description", name = ""},
+				lineBreak4 = {order = 11, type = "description", name = ""},
 				castBar_channelingTex = {
-					order = 8,
+					order = 12,
 					type = "select",
 					name = L["Channeling Texture"],
 					dialogControl = "LSM30_Statusbar",
 					values = AceGUIWidgetLSMlists.statusbar,
 				},
 				castBar_channelingColor = {
-					order = 9,
+					order = 13,
 					type = "color",
 					name = L["Channeling Color"],
 					get = function(info)
@@ -2070,10 +2117,10 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castBar_channelingBorderColor = {
-					order = 10,
+					order = 14,
 					type = "color",
 					name = L["Channeling Border Color"],
-					disabled = function() return RBP.dbp.healthBar_border == "Clean" end,
+					disabled = function() return RBP.castStyleKey == "Clean" end,
 					get = function(info)
 						local c = RBP.dbp[info[#info]]
 						return c[1], c[2], c[3]
@@ -2083,16 +2130,16 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllCastBars()
 					end,
 				},
-				lineBreak2b = {order = 11, type = "description", name = ""},
+				lineBreak5 = {order = 15, type = "description", name = ""},
 				castBar_protectedTex = {
-					order = 12,
+					order = 16,
 					type = "select",
 					name = L["Protected Texture"],
 					dialogControl = "LSM30_Statusbar",
 					values = AceGUIWidgetLSMlists.statusbar,
 				},
 				castBar_protectedColor = {
-					order = 13,
+					order = 17,
 					type = "color",
 					name = L["Protected Color"],
 					get = function(info)
@@ -2105,10 +2152,10 @@ RBP.MainOptionTable = {
 					end,
 				},
 				castBar_protectedBorderColor = {
-					order = 14,
+					order = 18,
 					type = "color",
 					name = L["Protected Border Color"],
-					disabled = function() return RBP.dbp.healthBar_border == "Clean" end,
+					disabled = function() return RBP.castStyleKey == "Clean" end,
 					get = function(info)
 						local c = RBP.dbp[info[#info]]
 						return c[1], c[2], c[3]
@@ -2118,35 +2165,35 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllCastBars()
 					end,
 				},
-				lineBreak2c = {order = 15, type = "description", name = ""},
+				lineBreak6 = {order = 19, type = "description", name = ""},
 				castBar_progressiveTexCrop = {
-					order = 16,
+					order = 20,
 					type = "toggle",
 					name = L["Progressive Cropping"],
 					desc = L["Reveals the cast bar texture progressively as the cast advances, instead of stretching it."],
 				},
 				castBar_showSpark = {
-					order = 17,
+					order = 21,
 					type = "toggle",
 					name = L["Show Spark"],
 					desc = L["Shows a spark that follows the current cast progress."],
 				},
-				lineBreak3 = {order = 18, type = "description", name = ""},
+				lineBreak7 = {order = 22, type = "description", name = ""},
 				castBar_bgHeader = {
-					order = 19,
+					order = 23,
 					type = "header",
 					name = L["Background"],
 				},
-				lineBreak4 = {order = 20, type = "description", name = ""},
+				lineBreak8 = {order = 24, type = "description", name = ""},
 				castBar_bgTex = {
-					order = 21,
+					order = 25,
 					type = "select",
 					name = L["Texture"],
 					dialogControl = "LSM30_Statusbar",
 					values = AceGUIWidgetLSMlists.statusbar,
 				},
 				castBar_bgAlpha = {
-					order = 22,
+					order = 26,
 					type = "range",
 					name = L["Alpha"],
 					min = 0,
@@ -2155,7 +2202,7 @@ RBP.MainOptionTable = {
 					isPercent = true,
 				},
 				castBar_bgColor = {
-					order = 23,
+					order = 27,
 					type = "color",
 					name = L["Color"],
 					get = function(info)
@@ -2167,21 +2214,21 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllCastBars()
 					end,
 				},
-				lineBreak5 = {order = 24, type = "description", name = ""},
+				lineBreak9 = {order = 28, type = "description", name = ""},
 				castBar_fadingHeader = {
-					order = 25,
+					order = 29,
 					type = "header",
 					name = L["Fading"],
 				},
-				lineBreak6 = {order = 26, type = "description", name = ""},
+				lineBreak10 = {order = 30, type = "description", name = ""},
 				castBar_forcedFading = {
-					order = 27,
+					order = 31,
 					type = "toggle",
 					name = L["Enable"],
 					desc = L["Forces ended casts to fade out smoothly instead of disappearing instantly."],
 				},
 				castBar_completionTol = {
-					order = 28,
+					order = 32,
 					type = "range",
 					name = L["Completion Tolerance"],
 					desc = L["Tolerance for detecting completed casts, which may vary with server latency. Increase it if completed casts are shown as Failed; decrease it if failed casts are shown as completed."],
@@ -2190,9 +2237,9 @@ RBP.MainOptionTable = {
 					step = 0.01,
 					disabled = function() return not RBP.dbp.castBar_forcedFading end,
 				},
-				lineBreak6a = {order = 29, type = "description", name = ""},
+				lineBreak11 = {order = 33, type = "description", name = ""},
 				castBar_completedTex = {
-					order = 30,
+					order = 34,
 					type = "select",
 					name = L["Casting Completed Texture"],
 					dialogControl = "LSM30_Statusbar",
@@ -2200,7 +2247,7 @@ RBP.MainOptionTable = {
 					disabled = function() return not RBP.dbp.castBar_forcedFading end,
 				},
 				castBar_completedColor = {
-					order = 31,
+					order = 35,
 					type = "color",
 					name = L["Casting Completed Color"],
 					get = function(info)
@@ -2212,9 +2259,9 @@ RBP.MainOptionTable = {
 					end,
 					disabled = function() return not RBP.dbp.castBar_forcedFading end,
 				},
-				lineBreak6b = {order = 32, type = "description", name = ""},
+				lineBreak12 = {order = 36, type = "description", name = ""},
 				castBar_failedTex = {
-					order = 33,
+					order = 37,
 					type = "select",
 					name = L["Casting Failed Texture"],
 					dialogControl = "LSM30_Statusbar",
@@ -2222,7 +2269,7 @@ RBP.MainOptionTable = {
 					disabled = function() return not RBP.dbp.castBar_forcedFading end,
 				},
 				castBar_failedColor = {
-					order = 34,
+					order = 38,
 					type = "color",
 					name = L["Casting Failed Color"],
 					get = function(info)
@@ -2234,15 +2281,15 @@ RBP.MainOptionTable = {
 					end,
 					disabled = function() return not RBP.dbp.castBar_forcedFading end,
 				},
-				lineBreak7 = {order = 35, type = "description", name = ""},
+				lineBreak13 = {order = 39, type = "description", name = ""},
 				castText_header = {
-					order = 36,
+					order = 40,
 					type = "header",
 					name = L["Cast Text"],
 				},
-				lineBreak8 = {order = 37, type = "description", name = ""},
+				lineBreak14 = {order = 41, type = "description", name = ""},
 				castText_font = {
-					order = 38,
+					order = 42,
 					type = "select",
 					name = L["Text Font"],
 					values = RBP.LSM:HashTable("font"),
@@ -2250,7 +2297,7 @@ RBP.MainOptionTable = {
 					disabled = function() return RBP.dbp.castText_hide end,
 				},
 				castText_size = {
-					order = 39,
+					order = 43,
 					type = "range",
 					name = L["Font Size"],
 					min = 5,
@@ -2259,7 +2306,7 @@ RBP.MainOptionTable = {
 					disabled = function() return RBP.dbp.castText_hide end,
 				},
 				castText_outline = {
-					order = 40,
+					order = 44,
 					type = "select", 
 					name = L["Outline"],
 					values = {
@@ -2273,7 +2320,7 @@ RBP.MainOptionTable = {
 					disabled = function() return RBP.dbp.castText_hide end,
 				},
 				castText_anchor = {
-					order = 41,
+					order = 45,
 					type = "select", 
 					name = L["Anchor"],
 					values = {
@@ -2290,7 +2337,7 @@ RBP.MainOptionTable = {
 					disabled = function() return RBP.dbp.castText_hide end,
 				},
 				castText_offsetX = {
-					order = 42,
+					order = 46,
 					type = "range",
 					name = L["Offset X"],
 					min = -50,
@@ -2299,7 +2346,7 @@ RBP.MainOptionTable = {
 					disabled = function() return RBP.dbp.castText_hide end,
 				},
 				castText_offsetY = {
-					order = 43,
+					order = 47,
 					type = "range",
 					name = L["Offset Y"],
 					min = -50,
@@ -2308,7 +2355,7 @@ RBP.MainOptionTable = {
 					disabled = function() return RBP.dbp.castText_hide end,
 				},
 				castText_width = {
-					order = 44,
+					order = 48,
 					type = "range",
 					name = L["Width"],
 					min = 50,
@@ -2317,7 +2364,7 @@ RBP.MainOptionTable = {
 					disabled = function() return RBP.dbp.castText_hide end,
 				},
 				castText_color = {
-					order = 45,
+					order = 49,
 					type = "color",
 					name = L["Text Color"],
 					get = function(info)
@@ -2331,20 +2378,20 @@ RBP.MainOptionTable = {
 					disabled = function() return RBP.dbp.castText_hide end,
 				},
 				castText_hide = {
-					order = 46,
+					order = 50,
 					type = "toggle",
 					name = L["Hide Cast Text"],
 				},
-				lineBreak9 = {order = 47, type = "description", name = ""},
-				lineBreak10 = {order = 48, type = "description",	name = ""},
+				lineBreak15 = {order = 51, type = "description", name = ""},
+				lineBreak16 = {order = 52, type = "description",	name = ""},
 				castTimerText_header = {
-					order = 49,
+					order = 53,
 					type = "header",
 					name = L["Cast Timer Text"],
 				},
-				lineBreak11 = {order = 50, type = "description", name = ""},
+				lineBreak17 = {order = 54, type = "description", name = ""},
 				castTimerText_font = {
-					order = 51,
+					order = 55,
 					type = "select",
 					name = L["Text Font"],
 					values = RBP.LSM:HashTable("font"),
@@ -2352,7 +2399,7 @@ RBP.MainOptionTable = {
 					disabled = function() return RBP.dbp.castTimerText_hide end,
 				},
 				castTimerText_size = {
-					order = 52,
+					order = 56,
 					type = "range",
 					name = L["Font Size"],
 					min = 5,
@@ -2361,7 +2408,7 @@ RBP.MainOptionTable = {
 					disabled = function() return RBP.dbp.castTimerText_hide end,
 				},
 				castTimerText_outline = {
-					order = 53,
+					order = 57,
 					type = "select", 
 					name = L["Outline"],
 					values = {
@@ -2375,7 +2422,7 @@ RBP.MainOptionTable = {
 					disabled = function() return RBP.dbp.castTimerText_hide end,
 				},
 				castTimerText_anchor = {
-					order = 54,
+					order = 58,
 					type = "select", 
 					name = L["Anchor"],
 					values = {
@@ -2392,7 +2439,7 @@ RBP.MainOptionTable = {
 					disabled = function() return RBP.dbp.castTimerText_hide end,
 				},
 				castTimerText_offsetX = {
-					order = 55,
+					order = 59,
 					type = "range",
 					name = L["Offset X"],
 					min = -50,
@@ -2401,7 +2448,7 @@ RBP.MainOptionTable = {
 					disabled = function() return RBP.dbp.castTimerText_hide end,
 				},
 				castTimerText_offsetY = {
-					order = 56,
+					order = 60,
 					type = "range",
 					name = L["Offset Y"],
 					min = -50,
@@ -2410,7 +2457,7 @@ RBP.MainOptionTable = {
 					disabled = function() return RBP.dbp.castTimerText_hide end,
 				},
 				castTimerText_color = {
-					order = 57,
+					order = 61,
 					type = "color",
 					name = L["Text Color"],
 					get = function(info)
@@ -2424,12 +2471,12 @@ RBP.MainOptionTable = {
 					disabled = function() return RBP.dbp.castTimerText_hide end,
 				},
 				castTimerText_hide = {
-					order = 58,
+					order = 62,
 					type = "toggle",
 					name = L["Hide Cast Timer Text"],
 				},
-				lineBreak12 = {order = 59, type = "description", name = ""},
-				lineBreak13 = {order = 60, type = "description", name = ""},
+				lineBreak18 = {order = 63, type = "description", name = ""},
+				lineBreak19 = {order = 64, type = "description", name = ""},
 			},
 		},
 		Icons = {

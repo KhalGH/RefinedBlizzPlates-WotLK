@@ -222,6 +222,7 @@ function RBP:Initialize()
 	self.db.RegisterCallback(self, "OnProfileReset", "OnProfileChanged")
 	self.db.RegisterCallback(self, "OnProfileDeleted", "OnProfileChanged")
 	self.dbp = self.db.profile -- Replace default profile with AceDB profile
+	self:UpdateStyleCache()
 
 	self:BuildBlacklistUI()
 	self:OverrideNameplateSize()
@@ -252,7 +253,7 @@ function RBP:ShowStyleReworkNotice(force)
 	local S = self.NP_SCALE
 	StaticPopupDialogs["RBP_STYLE_REWORK_NOTICE"] = {
 		text = "|cffCCCC88RefinedBlizzPlates|r\n\n"
-			.. L["Nameplate styles were reworked in v1.13.0: \"Nameplate Style\" (formerly \"Preset\") now only changes the border and glow art, and every style shares the same layout: a |cffffd100Global Offset X|r of 0 centers the health bar, and the name is centered on it. Some settings may need adjusting."]
+			.. L["Nameplate styles were reworked in v1.13.0: every style now shares the same layout, where a |cffffd100Global Offset X|r of 0 centers the health bar and the name is centered on it. Some settings may need adjusting.\n\nThe style (formerly \"Preset\") is now set in |cffffd100Health Bar > Style|r, and |cffffd100Cast Bar > Style|r can use a different one or match the health bar."]
 			.. "\n\n"
 			.. string_format(L["What to do:\n- |cffffd100Blizzard|r was replaced by |cffffd100Classic|r. To move the name back above the health bar, set |cffffd100Text > Name Text > Offset Y|r to %.1f and |cffffd100Offset X|r to %.1f.\n- If you used |cffffd100Blizzard|r or had changed |cffffd100General > Global Offset X|r, subtract %.1f to keep your old position."], (6.934 + self.dbp.nameText_size / 2) * S, 8.576 * S, 8.576 * S),
 		button1 = OKAY,

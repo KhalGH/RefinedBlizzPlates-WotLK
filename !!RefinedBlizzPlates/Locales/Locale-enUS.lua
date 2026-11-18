@@ -146,11 +146,12 @@ local L = RBP.L
 -- General --
 L["General"] = true
 L["General Settings"] = true
-L["Nameplate Style"] = true
-L["Changes the nameplate's border and glow art."] = true
+L["Same as Health Bar"] = true
+L["Changes the health bar's border and glow art."] = true
+L["Changes the cast bar's border and glow art."] = true
 L["Show Changes"] = true
 L["Shows again the notice about the nameplate style rework."] = true
-L["Nameplate styles were reworked in v1.13.0: \"Nameplate Style\" (formerly \"Preset\") now only changes the border and glow art, and every style shares the same layout: a |cffffd100Global Offset X|r of 0 centers the health bar, and the name is centered on it. Some settings may need adjusting."] = true
+L["Nameplate styles were reworked in v1.13.0: every style now shares the same layout, where a |cffffd100Global Offset X|r of 0 centers the health bar and the name is centered on it. Some settings may need adjusting.\n\nThe style (formerly \"Preset\") is now set in |cffffd100Health Bar > Style|r, and |cffffd100Cast Bar > Style|r can use a different one or match the health bar."] = true
 L["What to do:\n- |cffffd100Blizzard|r was replaced by |cffffd100Classic|r. To move the name back above the health bar, set |cffffd100Text > Name Text > Offset Y|r to %.1f and |cffffd100Offset X|r to %.1f.\n- If you used |cffffd100Blizzard|r or had changed |cffffd100General > Global Offset X|r, subtract %.1f to keep your old position."] = true
 L["Global Scale"] = true
 L["Scales both the visual size and the clickbox of nameplates."] = true

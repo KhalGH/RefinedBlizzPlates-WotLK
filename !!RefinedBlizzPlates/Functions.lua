@@ -219,9 +219,15 @@ local FixedAnchors = {
 	},
 }
 
-local function GetStyle()
-	return Styles[RBP.dbp.healthBar_border] or Styles.Refined
+function RBP:UpdateStyleCache()
+	local dbp = self.dbp
+	local healthKey = Styles[dbp.healthBar_border] and dbp.healthBar_border or "Refined"
+	local castKey = dbp.castBar_style ~= "Same" and Styles[dbp.castBar_style] and dbp.castBar_style or healthKey
+	self.healthStyle = Styles[healthKey]
+	self.castStyle = Styles[castKey]
+	self.castStyleKey = castKey
 end
+RBP:UpdateStyleCache()
 
 local function PlaceOnHealthBar(region, Virtual, spec, offsetX, offsetY)
 	local x, y = offsetX + spec.x * RBP.NP_SCALE, offsetY + spec.y * RBP.NP_SCALE
@@ -258,14 +264,14 @@ end
 local function SetupThreatGlow(Virtual)
 	local dbp = RBP.dbp
 	Virtual.RBP_threatGlow:SetPoint("TOP", Virtual, RBP.TG_TOP_X + dbp.globalOffsetX - RBP.HB_CENTER_X, RBP.TG_TOP_Y + dbp.globalOffsetY)
-	Virtual.RBP_threatGlow:SetTexture(GetStyle().threatGlow)
+	Virtual.RBP_threatGlow:SetTexture(RBP.healthStyle.threatGlow)
 end
 
 local function UpdateHealthBorder(Virtual)
 	if not Virtual.RBP_healthBarBorder then return end
 	local dbp = RBP.dbp
 	Virtual.RBP_healthBarBorder:SetPoint("CENTER", Virtual.RBP_healthBar, -RBP.HB_CENTER_X, -RBP.HB_CENTER_Y)
-	Virtual.RBP_healthBarBorder:SetTexture(GetStyle().healthBorder)
+	Virtual.RBP_healthBarBorder:SetTexture(RBP.healthStyle.healthBorder)
 	if dbp.healthBar_border == "Clean" then
 		Virtual.RBP_healthBarBorder:SetVertexColor(0, 0, 0, 1)
 	else
@@ -509,7 +515,7 @@ end
 
 local function UpdateHealthBarBg(Virtual)
 	local dbp = RBP.dbp
-	local outset = (GetStyle().bgOutset or 0) * RBP.NP_SCALE
+	local outset = (RBP.healthStyle.bgOutset or 0) * RBP.NP_SCALE
 	Virtual.RBP_healthBarBg:SetPoint("TOPLEFT", -outset, outset)
 	Virtual.RBP_healthBarBg:SetPoint("BOTTOMRIGHT", outset, -outset)
 	Virtual.RBP_healthBarBg:SetTexture(RBP.LSM:Fetch("statusbar", dbp.healthBar_bgTex))
@@ -540,7 +546,7 @@ local function UpdateTargetGlow(Virtual)
 	Virtual.RBP_targetGlow:SetAlpha(dbp.targetGlow_Alpha)
 	Virtual.RBP_targetGlow:SetSize(RBP.NP_WIDTH * 2, RBP.NP_HEIGHT * 2)
 	Virtual.RBP_targetGlow:SetPoint("CENTER", -RBP.HB_CENTER_X, -RBP.HB_CENTER_Y)
-	local style, texture = GetStyle()
+	local style, texture = RBP.healthStyle
 	if dbp.showTargetGlowBorder then
 		if dbp.showTargetHighlight then
 			texture = dbp.targetGlow_Gradient and style.targetGlowBothGradient or style.targetGlowBoth
@@ -567,7 +573,7 @@ local function UpdateMouseoverGlow(Virtual)
 	Virtual.RBP_healthBarHighlight:ClearAllPoints()
 	Virtual.RBP_healthBarHighlight:SetSize(RBP.NP_WIDTH * 2, RBP.NP_HEIGHT * 2)
 	Virtual.RBP_healthBarHighlight:SetPoint("CENTER", dbp.globalOffsetX - RBP.HB_CENTER_X, dbp.globalOffsetY)
-	local style = GetStyle()
+	local style = RBP.healthStyle
 	Virtual.RBP_healthBarHighlight:SetTexture(dbp.showMouseoverGlowBorder and style.mouseoverGlowBoth or style.mouseoverGlowHighlight)
 end
 
@@ -579,13 +585,13 @@ local function SetupCastBarBorder(Virtual)
 end
 
 local function UpdateCastBarArt(Virtual)
-	local dbp, style, S = RBP.dbp, GetStyle(), RBP.NP_SCALE
+	local dbp, style, S = RBP.dbp, RBP.castStyle, RBP.NP_SCALE
 	local border, shield = Virtual.RBP_castBarBorder, Virtual.RBP_shieldCastBarBorder
 	border:SetTexture(style.castBorder)
 	border:SetTexCoord(1, 0, 0, 1)
 	shield:SetTexture(style.shieldBorder)
 	shield:SetTexCoord(unpack(style.shieldCoord))
-	if dbp.healthBar_border == "Clean" then
+	if RBP.castStyleKey == "Clean" then
 		border:SetVertexColor(0, 0, 0)
 		shield:SetVertexColor(0, 0, 0)
 	else
@@ -642,14 +648,14 @@ local function UpdateCastBarSkin(Virtual)
 	local tex, color = GetCastBarSkin(Virtual)
 	Virtual.RBP_castBarTex:SetTexture(RBP.LSM:Fetch("statusbar", tex))
 	Virtual.RBP_castBarTex:SetVertexColor(unpack(color))
-	if dbp.healthBar_border ~= "Clean" then
+	if RBP.castStyleKey ~= "Clean" then
 		Virtual.RBP_castBarBorder:SetVertexColor(unpack(Virtual.RBP_channelingFlag == 1 and dbp.castBar_channelingBorderColor or dbp.castBar_borderColor))
 	end
 end
 
 local function UpdateCastBarBg(Virtual)
 	local dbp = RBP.dbp
-	local outset = (GetStyle().bgOutset or 0) * RBP.NP_SCALE
+	local outset = (RBP.castStyle.bgOutset or 0) * RBP.NP_SCALE
 	Virtual.RBP_castBarBg:SetPoint("TOPLEFT", -outset, outset)
 	Virtual.RBP_castBarBg:SetPoint("BOTTOMRIGHT", outset, -outset)
 	Virtual.RBP_castBarBg:SetTexture(RBP.LSM:Fetch("statusbar", dbp.castBar_bgTex))
@@ -671,7 +677,7 @@ local function UpdateCastText(Virtual)
 	Virtual.RBP_castText:SetJustifyH(dbp.castText_anchor)
 	Virtual.RBP_castText:SetWidth(dbp.castText_width)
 	Virtual.RBP_castText:ClearAllPoints()
-	local style = GetStyle()
+	local style = RBP.castStyle
 	Virtual.RBP_castText:SetPoint(dbp.castText_anchor, Virtual.RBP_castBar, dbp.castText_offsetX + style.castTextX * RBP.NP_SCALE, dbp.castText_offsetY + style.castTextY * RBP.NP_SCALE)
 end
 
@@ -693,7 +699,7 @@ local function UpdateCastTimer(Virtual)
 	Virtual.RBP_castTimerText:SetFont(RBP.LSM:Fetch("font", dbp.castTimerText_font), dbp.castTimerText_size * RBP.NP_SCALE, dbp.castTimerText_outline)
 	Virtual.RBP_castTimerText:SetTextColor(unpack(dbp.castTimerText_color))
 	Virtual.RBP_castTimerText:ClearAllPoints()
-	local style = GetStyle()
+	local style = RBP.castStyle
 	Virtual.RBP_castTimerText:SetPoint(dbp.castTimerText_anchor, Virtual.RBP_castBar, dbp.castTimerText_offsetX + style.castTimerX * RBP.NP_SCALE, dbp.castTimerText_offsetY + style.castTextY * RBP.NP_SCALE)
 end
 
@@ -734,7 +740,7 @@ local function UpdateCastTextString(Virtual, unit)
 end
 
 local function UpdateCastBarRegionsVisibility(Virtual)
-	local style = GetStyle()
+	local style = RBP.castStyle
 	Virtual.RBP_castBarBorder:SetAlpha(1)
 	Virtual.RBP_shieldCastBarBorder:SetAlpha(1)
 	if Virtual.RBP_ogShieldCastBarBorderIsShown then
@@ -749,7 +755,7 @@ local function UpdateCastBarRegionsVisibility(Virtual)
 end
 
 local function UpdateCastBarRegionsAnchor(Virtual)
-	local style, S = GetStyle(), RBP.NP_SCALE
+	local style, S = RBP.castStyle, RBP.NP_SCALE
 	local state = Virtual.RBP_ogShieldCastBarBorderIsShown and style.shield or style.normal
 	Virtual.RBP_castBar:SetPoint("BOTTOMRIGHT", Virtual.RBP_ogCastBarBorder, state.barX * S, Virtual.RBP_castBarExpectedY)
 	Virtual.RBP_spellIcon:SetPoint("CENTER", Virtual.RBP_ogCastBarBorder, "BOTTOMLEFT", state.iconX * S, state.iconY * S)
@@ -808,9 +814,9 @@ local function SetupCastBarTexFull(Virtual)
 end
 
 local function UpdateCastBarSize(Virtual)
-	local dbp, style, S = RBP.dbp, GetStyle(), RBP.NP_SCALE
+	local dbp, style, S = RBP.dbp, RBP.castStyle, RBP.NP_SCALE
 	Virtual.RBP_castBar:SetSize(style.castBarW * S, style.castBarH * S)
-	Virtual.RBP_ogCastBarBorder:SetPoint("CENTER", dbp.globalOffsetX - RBP.HB_CENTER_X + style.castBoxX * S, dbp.globalOffsetY + style.castBoxY * S)
+	Virtual.RBP_ogCastBarBorder:SetPoint("CENTER", dbp.globalOffsetX + dbp.castBar_offsetX - RBP.HB_CENTER_X + style.castBoxX * S, dbp.globalOffsetY + dbp.castBar_offsetY + style.castBoxY * S)
 	Virtual.RBP_ogCastBarBorder:SetSize(RBP.NP_WIDTH * style.castBoxWf, RBP.NP_HEIGHT * style.castBoxHf)
 end
 
@@ -1070,7 +1076,7 @@ end
 
 local function SetupRaidTargetIcon(Virtual)
 	local dbp = RBP.dbp
-	local raid = GetStyle().icons.raid
+	local raid = RBP.healthStyle.icons.raid
 	Virtual.RBP_raidTargetIcon:SetSize(dbp.raidTargetIcon_size * RBP.NP_SCALE, dbp.raidTargetIcon_size * RBP.NP_SCALE)
 	PlaceOnHealthBar(Virtual.RBP_raidTargetIcon, Virtual, raid[dbp.raidTargetIcon_anchor] or raid.Right, dbp.raidTargetIcon_offsetX, dbp.raidTargetIcon_offsetY)
 end
@@ -1078,7 +1084,7 @@ end
 local function SetupEliteIcon(Virtual)
 	local dbp = RBP.dbp
 	local isLeft = dbp.eliteIcon_anchor == "Left"
-	local elite = GetStyle().icons.elite
+	local elite = RBP.healthStyle.icons.elite
 	local spec = elite[dbp.eliteIcon_style] or elite.Default
 	Virtual.RBP_eliteIcon:SetVertexColor(unpack(dbp.eliteIcon_color))
 	if dbp.eliteIcon_style == "Modern" then
@@ -1115,7 +1121,7 @@ local function SetupClassIcon(Virtual)
 		Virtual.RBP_classIcon = Virtual.RBP_healthBar:CreateTexture(nil, "ARTWORK")
 		Virtual.RBP_classIcon:Hide()
 	end
-	local class = GetStyle().icons.class
+	local class = RBP.healthStyle.icons.class
 	Virtual.RBP_classIcon:SetSize(dbp.classIcon_size * RBP.NP_SCALE, dbp.classIcon_size * RBP.NP_SCALE)
 	PlaceOnHealthBar(Virtual.RBP_classIcon, Virtual, class[dbp.classIcon_anchor] or class.Right, dbp.classIcon_offsetX, dbp.classIcon_offsetY)
 end
@@ -3157,6 +3163,7 @@ function RBP:UpdateCVars()
 end
 
 function RBP:ApplyStyle()
+	self:UpdateStyleCache()
 	self:UpdateAllHealthBars()
 	self:UpdateAllCastBars()
 	self:UpdateAllIcons()
@@ -3165,6 +3172,7 @@ function RBP:ApplyStyle()
 end
 
 function RBP:UpdateProfile()
+	self:UpdateStyleCache()
 	self:UpdateCVars()
 	self:UpdateLDWfix()
 	self:ResetDynamicScales()
