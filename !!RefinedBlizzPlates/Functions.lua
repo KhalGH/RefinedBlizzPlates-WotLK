@@ -37,7 +37,6 @@ local GetAlpha = EventHandler.GetAlpha
 -- Status Flags
 RBP.hasTarget = false
 RBP.inCombat = false
-RBP.combatResizeActive = false
 RBP.inInstance = false
 RBP.inOpenWorld = false
 RBP.inPvEInstance = false
@@ -2188,7 +2187,7 @@ end
 local function UpdateClickbox(Virtual)
 	if not RBP.inCombat then
 		UpdateClickboxOutOfCombat(Virtual)
-	elseif RBP.combatResizeActive then
+	elseif RBP.dbp.clickboxCombatResize then
 		UpdateClickboxInCombat(Virtual)
 	end
 end
@@ -2951,7 +2950,7 @@ local function PlateOnHide(Plate)
 	end
 	Plate.namePlateUnitToken = nil
 	Virtual.namePlateUnitToken = nil
-	if RBP.inCombat and RBP.combatResizeActive then
+	if RBP.inCombat and RBP.dbp.clickboxCombatResize then
 		ExecuteClickboxSecureScript()
 	end
 end
