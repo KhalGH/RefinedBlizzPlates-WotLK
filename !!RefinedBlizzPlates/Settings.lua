@@ -32,6 +32,7 @@ RBP.dbp.clickboxWidthFactor = 1
 RBP.dbp.clickboxHeightFactor = 1
 RBP.dbp.friendlyClickthrough = false -- Disables clickbox on friendly nameplates
 RBP.dbp.showClickbox = false
+RBP.dbp.clickboxCombatResize = true
 -- Misc Settings
 RBP.dbp.levelFilter = 1    -- Minimum unit level to show its nameplate
 RBP.dbp.LDWfix = false      -- Hide nameplates when controlled by LDW
@@ -461,9 +462,21 @@ RBP.MainOptionTable = {
 					name = L["Clickbox"],
 				},
 				lineBreak10 = {order = 18, type = "description", name = ""},
-				lineBreak11 = {order = 19, type = "description", name = ""},
+				showClickbox = {
+					order = 19,
+					type = "toggle",
+					name = L["Show Clickbox"],
+					desc = L["Displays clickboxes for easier configuration. Recommended to adjust clickbox settings while out of combat."],
+					set = function(info, val)
+						RBP.dbp[info[#info]] = val
+						RBP:UpdateAllClickboxTextures()
+						RBP:UpdateClickboxesDriver()
+					end,
+				},
+				lineBreak11 = {order = 20, type = "description", name = ""},
+				lineBreak12 = {order = 21, type = "description", name = ""},
 				clickboxWidthFactor = {
-					order = 20,
+					order = 22,
 					type = "range",
 					name = L["Nameplate Width Factor"],
 					desc = L["Scales the nameplate clickbox relative to its original size."],
@@ -477,7 +490,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				clickboxHeightFactor = {
-					order = 21,
+					order = 23,
 					type = "range",
 					name = L["Nameplate Height Factor"],
 					desc = L["Scales the nameplate clickbox relative to its original size."],
@@ -490,9 +503,9 @@ RBP.MainOptionTable = {
 						RBP:UpdateClickboxAttributes()
 					end,
 				},
-				lineBreak12 = {order = 22, type = "description", name = ""},
+				lineBreak13 = {order = 24, type = "description", name = ""},
 				totem_clickboxWidthFactor = {
-					order = 23,
+					order = 25,
 					type = "range",
 					name = L["Totem Width Factor"],
 					desc = L["Scales the totem clickbox relative to its icon size."],
@@ -506,7 +519,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				totem_clickboxHeightFactor = {
-					order = 24,
+					order = 26,
 					type = "range",
 					name = L["Totem Height Factor"],
 					desc = L["Scales the totem clickbox relative to its icon size."],
@@ -519,9 +532,9 @@ RBP.MainOptionTable = {
 						RBP:UpdateClickboxAttributes()
 					end,
 				},
-				lineBreak13 = {order = 25, type = "description", name = ""},
+				lineBreak14 = {order = 27, type = "description", name = ""},
 				barlessPlate_clickboxWidth = {
-					order = 26,
+					order = 28,
 					type = "range",
 					name = L["Barless Width"],
 					desc = L["Sets the barless plate clickbox size."],
@@ -536,7 +549,7 @@ RBP.MainOptionTable = {
 					disabled = function() return IsBarlessPlateDisabled() end,
 				},
 				barlessPlate_clickboxHeight = {
-					order = 27,
+					order = 29,
 					type = "range",
 					name = L["Barless Height"],
 					desc = L["Sets the barless plate clickbox size."],
@@ -550,9 +563,15 @@ RBP.MainOptionTable = {
 					end,
 					disabled = function() return IsBarlessPlateDisabled() end,
 				},
-				lineBreak14 = {order = 28, type = "description", name = ""},
+				lineBreak15 = {order = 30, type = "description", name = ""},
+				clickboxCombatResize = {
+					order = 31,
+					type = "toggle",
+					name = L["Force in Combat"],
+					desc = L["Forces nameplates that appear during combat to use the modified clickbox. May increase CPU usage in fights with many nameplates continuously appearing on screen."],
+				},
 				friendlyClickthrough = {
-					order = 29,
+					order = 32,
 					type = "toggle",
 					name = L["Click-through Friendly Nameplates"],
 					desc = L["Disable friendly nameplates clickboxes inside PvE and PvP instances."],
@@ -562,36 +581,25 @@ RBP.MainOptionTable = {
 						RBP:UpdateClickboxAttributes()
 					end,
 				},
-				showClickbox = {
-					order = 30,
-					type = "toggle",
-					name = L["Show Clickbox"],
-					desc = L["Displays clickboxes for easier configuration. Recommended to adjust clickbox settings while out of combat."],
-					set = function(info, val)
-						RBP.dbp[info[#info]] = val
-						RBP:UpdateAllClickboxTextures()
-						RBP:UpdateClickboxesDriver()
-					end,
-				},
-				lineBreak15 = {order = 31, type = "description", name = "", hidden = function() return RBP.hasAlphaOverride end},
-				lineBreak16 = {order = 32, type = "description", name = "", hidden = function() return RBP.hasAlphaOverride end},
+				lineBreak16 = {order = 33, type = "description", name = "", hidden = function() return RBP.hasAlphaOverride end},
+				lineBreak17 = {order = 34, type = "description", name = "", hidden = function() return RBP.hasAlphaOverride end},
 				nonTargetAlpha_header = {
-					order = 33,
+					order = 35,
 					type = "header",
 					name = L["Non-target Opacity"],
 					hidden = function() return RBP.hasAlphaOverride end,
 				},
-				lineBreak17 = {order = 34, type = "description", name = "", hidden = function() return RBP.hasAlphaOverride end},
+				lineBreak18 = {order = 36, type = "description", name = "", hidden = function() return RBP.hasAlphaOverride end},
 				modNonTargetAlpha = {
-					order = 35,
+					order = 37,
 					type = "toggle",
 					name = L["Enable"],
 					desc = L["Overrides non-target nameplate opacity. May increase CPU usage depending on the number of visible nameplates."],
 					hidden = function() return RBP.hasAlphaOverride end,
 				},
-				lineBreak18 = {order = 36, type = "description", name = "", hidden = function() return RBP.hasAlphaOverride end},
+				lineBreak19 = {order = 38, type = "description", name = "", hidden = function() return RBP.hasAlphaOverride end},
 				nonTargetAlpha_enemy = {
-					order = 37,
+					order = 39,
 					type = "range",
 					name = L["Enemy Plate"],
 					min = 0,
@@ -606,7 +614,7 @@ RBP.MainOptionTable = {
 					hidden = function() return RBP.hasAlphaOverride end,
 				},
 				nonTargetAlpha_friendly = {
-					order = 38,
+					order = 40,
 					type = "range",
 					name = L["Friendly Plate"],
 					min = 0,
@@ -621,7 +629,7 @@ RBP.MainOptionTable = {
 					hidden = function() return RBP.hasAlphaOverride end,
 				},
 				nonTargetAlpha_barless = {
-					order = 39,
+					order = 41,
 					type = "range",
 					name = L["Barless Plate"],
 					min = 0,
@@ -636,7 +644,7 @@ RBP.MainOptionTable = {
 					hidden = function() return RBP.hasAlphaOverride end,
 				},
 				nonTargetAlpha_totem = {
-					order = 40,
+					order = 42,
 					type = "range",
 					name = L["Totems"],
 					min = 0,
@@ -650,17 +658,17 @@ RBP.MainOptionTable = {
 					disabled = function() return not RBP.dbp.modNonTargetAlpha end,
 					hidden = function() return RBP.hasAlphaOverride end,
 				},
-				lineBreak19 = {order = 41, type = "description", name = ""},
-				lineBreak20 = {order = 42, type = "description", name = ""},
+				lineBreak20 = {order = 43, type = "description", name = ""},
+				lineBreak21 = {order = 44, type = "description", name = ""},
 				clamp_header = {
-					order = 43,
+					order = 45,
 					type = "header",
 					name =  L["Screen Clamping"],
 					hidden = function() return RBP.hasModernStacking end,
 				},
-				lineBreak21 = {order = 44, type = "description", name = "", hidden = function() return RBP.hasModernStacking end},
+				lineBreak22 = {order = 46, type = "description", name = "", hidden = function() return RBP.hasModernStacking end},
 				clampTarget = {
-					order = 45,
+					order = 47,
 					type = "toggle",
 					name = L["Clamp Target"],
 					desc = function()
@@ -678,7 +686,7 @@ RBP.MainOptionTable = {
 					hidden = function() return RBP.hasModernStacking end,			
 				},
 				clampBoss = {
-					order = 46,
+					order = 48,
 					type = "toggle",
 					name = L["Clamp Bosses"],
 					desc = L["Prevents boss nameplates inside instances from going above the top of the screen."],
@@ -691,7 +699,7 @@ RBP.MainOptionTable = {
 					hidden = function() return RBP.hasModernStacking end,	
 				},
 				upperborder = {
-					order = 47,
+					order = 49,
 					type = "range",
 					name = L["Clamping Top Inset"],
 					desc = L["Adjusts the distance below the top of the screen where clamped nameplates will stop."],
@@ -705,17 +713,17 @@ RBP.MainOptionTable = {
 					disabled = function() return (RBP.hasLegacyStacking and not RBP.dbp.stackingEnabled) or (not RBP.dbp.clampTarget and not RBP.dbp.clampBoss) end,
 					hidden = function() return RBP.hasModernStacking end,
 				},
-				lineBreak22 = {order = 48, type = "description", name = "", hidden = function() return RBP.hasModernStacking or RBP.hasLegacyStacking end},
-				lineBreak23 = {order = 49, type = "description", name = "", hidden = function() return RBP.hasModernStacking or RBP.hasLegacyStacking end},
+				lineBreak23 = {order = 50, type = "description", name = "", hidden = function() return RBP.hasModernStacking or RBP.hasLegacyStacking end},
+				lineBreak24 = {order = 51, type = "description", name = "", hidden = function() return RBP.hasModernStacking or RBP.hasLegacyStacking end},
 				stacking_header = {
-					order = 50,
+					order = 52,
 					type = "header",
 					name = L["Retail-like Stacking"],
 					hidden = function() return RBP.hasModernStacking or RBP.hasLegacyStacking end,
 				},
-				lineBreak24 = {order = 51, type = "description", name = "", hidden = function() return RBP.hasModernStacking  or RBP.hasLegacyStacking end},
+				lineBreak25 = {order = 53, type = "description", name = "", hidden = function() return RBP.hasModernStacking  or RBP.hasLegacyStacking end},
 				stackingEnabled = {
-					order = 52,
+					order = 54,
 					type = "toggle",
 					name = L["Enable"],
 					desc = function()
@@ -732,7 +740,7 @@ RBP.MainOptionTable = {
 					hidden = function() return RBP.hasModernStacking end,
 				},
 				disableCollisions = {
-					order = 53,
+					order = 55,
 					type = "toggle",
 					name = L["Disable Collisions"],
 					desc = L["Disables nameplate overlap resolution while preserving Vertical Offset and Clamping. Reduces CPU usage."],
@@ -743,10 +751,10 @@ RBP.MainOptionTable = {
 					disabled = function() return not RBP.dbp.stackingEnabled end,
 					hidden = function() return RBP.hasModernStacking or RBP.hasLegacyStacking end,
 				},
-				lineBreak25 = {order = 54, type = "description", name = "", hidden = function() return RBP.hasModernStacking or RBP.hasLegacyStacking end},
-				lineBreak26 = {order = 55, type = "description", name = "", hidden = function() return RBP.hasModernStacking or RBP.hasLegacyStacking end},
+				lineBreak26 = {order = 56, type = "description", name = "", hidden = function() return RBP.hasModernStacking or RBP.hasLegacyStacking end},
+				lineBreak27 = {order = 57, type = "description", name = "", hidden = function() return RBP.hasModernStacking or RBP.hasLegacyStacking end},
 				xspace = {
-					order = 56,
+					order = 58,
 					type = "range",
 					name = L["Collider Width"],
 					desc = L["Sets the width of the virtual collider centered on each nameplate used to detect overlaps."],
@@ -757,7 +765,7 @@ RBP.MainOptionTable = {
 					hidden = function() return RBP.hasModernStacking or RBP.hasLegacyStacking end,
 				},
 				yspace = {
-					order = 57,
+					order = 59,
 					type = "range",
 					name = L["Collider Height"],
 					desc = L["Sets the height of the virtual collider centered on each nameplate used to detect overlaps."],
@@ -768,7 +776,7 @@ RBP.MainOptionTable = {
 					hidden = function() return RBP.hasModernStacking or RBP.hasLegacyStacking end,
 				},
 				yspeed = {
-					order = 58,
+					order = 60,
 					type = "range",
 					name = L["Stacking Speed"],
 					desc = L["Speed at which nameplates move to resolve overlaps."],
@@ -779,7 +787,7 @@ RBP.MainOptionTable = {
 					hidden = function() return RBP.hasModernStacking or RBP.hasLegacyStacking end,
 				},
 				originpos = {
-					order = 59,
+					order = 61,
 					type = "range",
 					name = L["Vertical Offset"],
 					desc = L["Vertically offsets the entire nameplate, including its clickbox."],
@@ -790,7 +798,7 @@ RBP.MainOptionTable = {
 					hidden = function() return RBP.hasModernStacking or RBP.hasLegacyStacking end,
 				},
 				friendlyStackOffset = {
-					order = 60,
+					order = 62,
 					type = "toggle",
 					name = L["Offset Friendly Nameplates"],
 					desc = L["Applies the Vertical Offset and Clamping to friendly nameplates as well. They do not take part in collision calculations, but may add some extra overhead."],
@@ -802,7 +810,7 @@ RBP.MainOptionTable = {
 					hidden = function() return RBP.hasModernStacking or RBP.hasLegacyStacking end,
 				},
 				FreezeMouseover = {
-					order = 61,
+					order = 63,
 					type = "toggle",
 					name = L["Freeze Mouseover"],
 					desc = L["Stops the nameplate you're mousing over from moving for better selection."],
@@ -810,7 +818,7 @@ RBP.MainOptionTable = {
 					hidden = function() return RBP.hasModernStacking or RBP.hasLegacyStacking end,
 				},
 				stackingInInstance = {
-					order = 62,
+					order = 64,
 					type = "toggle",
 					name = L["Disable in Open World"],
 					desc = L["Only process stacking inside PvE and PvP instances. This will reduce CPU usage in the open world."],
@@ -821,16 +829,16 @@ RBP.MainOptionTable = {
 					disabled = function() return not RBP.dbp.stackingEnabled end,
 					hidden = function() return RBP.hasModernStacking or RBP.hasLegacyStacking end,
 				},
-				lineBreak27 = {order = 63, type = "description", name = "", hidden = function() return RBP.hasModernStacking end},
-				lineBreak28 = {order = 64, type = "description", name = "", hidden = function() return RBP.hasModernStacking end},
+				lineBreak28 = {order = 65, type = "description", name = "", hidden = function() return RBP.hasModernStacking end},
+				lineBreak29 = {order = 66, type = "description", name = "", hidden = function() return RBP.hasModernStacking end},
 				depth_header = {
-					order = 65,
+					order = 67,
 					type = "header",
 					name = L["Depth Perception"],
 				},
-				lineBreak29 = {order = 66, type = "description", name = ""},
+				lineBreak30 = {order = 68, type = "description", name = ""},
 				depthScaling = {
-					order = 67,
+					order = 69,
 					type = "toggle",
 					name = L["Distance Shrinking"],
 					desc = function()
@@ -848,7 +856,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				depthPivot = {
-					order = 68,
+					order = 70,
 					type = "range",
 					name = L["Shrink Start Distance"],
 					desc = L["Camera distance where shrinking begins. Closer plates keep their normal size."],
@@ -858,7 +866,7 @@ RBP.MainOptionTable = {
 					disabled = function() return not RBP.dbp.depthScaling end,
 				},
 				minScaleFactor = {
-					order = 69,
+					order = 71,
 					type = "range",
 					name = L["Minimum Scale"],
 					desc = L["The smallest scale a distant nameplate can reach."],
@@ -867,9 +875,9 @@ RBP.MainOptionTable = {
 					step = 0.01,
 					disabled = function() return not RBP.dbp.depthScaling end,
 				},
-				lineBreak30 = {order = 70, type = "description", name = ""},
+				lineBreak31 = {order = 72, type = "description", name = ""},
 				depthFading = {
-					order = 71,
+					order = 73,
 					type = "toggle",
 					name = L["Distance Fading"],
 					desc = function()
@@ -888,7 +896,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				depthFadeStart = {
-					order = 72,
+					order = 74,
 					type = "range",
 					name = L["Fade Start Distance"],
 					desc = L["Camera distance where fading begins. Closer plates stay fully visible."],
@@ -898,7 +906,7 @@ RBP.MainOptionTable = {
 					disabled = function() return not RBP.dbp.depthFading end,
 				},
 				depthFadeRange = {
-					order = 73,
+					order = 75,
 					type = "range",
 					name = L["Fade Range"],
 					desc = L["Distance between fading stages. Higher values make nameplates disappear farther away."],
@@ -908,14 +916,14 @@ RBP.MainOptionTable = {
 					disabled = function() return not RBP.dbp.depthFading end,
 				},
 				fadeNPCs = {
-					order = 74,
+					order = 76,
 					type = "toggle",
 					name = L["Hide Distant NPCs"],
 					desc = L["Hides NPC nameplates at very long distances."],
 					disabled = function() return not RBP.dbp.depthFading end,					
 				},
 				fadePlateBuffs = {
-					order = 75,
+					order = 77,
 					type = "toggle",
 					name = L["Hide Distant PlateBuffs"],
 					desc = L["Fades out and hides PlateBuffs icons on distant nameplates. Icons are not updated while hidden, slightly reducing overhead."],
@@ -928,7 +936,7 @@ RBP.MainOptionTable = {
 					disabled = function() return not RBP.dbp.depthFading end,					
 				},
 				nameplateDistance = {
-					order = 76,
+					order = 78,
 					type = "range",
 					name = L["Extended Draw Distance"],
 					desc = L["Extends the distance at which nameplates are drawn."],
@@ -947,7 +955,7 @@ RBP.MainOptionTable = {
 					hidden = function() return not RBP.hasModernEngine or RBP.hasLegacyStacking or RBP.hasModernStacking end,
 				},
 				cameraFov = {
-					order = 77,
+					order = 79,
 					type = "range",
 					name = L["Field of View"],
 					desc = L["Adjusts the camera field of view."],
@@ -963,16 +971,16 @@ RBP.MainOptionTable = {
 					end,
 					hidden = function() return not RBP.hasModernEngine or RBP.hasLegacyStacking or RBP.hasModernStacking end,
 				},
-				lineBreak31 = {order = 78, type = "description", name = ""},
-				lineBreak32 = {order = 79, type = "description", name = ""},
+				lineBreak32 = {order = 80, type = "description", name = ""},
+				lineBreak33 = {order = 81, type = "description", name = ""},
 				misc_header = {
-					order = 80,
+					order = 82,
 					type = "header",
 					name = L["Miscellaneous Settings"],
 				},
-				lineBreak33 = {order = 81, type = "description", name = ""},
+				lineBreak34 = {order = 83, type = "description", name = ""},
 				levelFilter = {
-					order = 82,
+					order = 84,
 					type = "range",
 					name = L["Level Filter"],
 					desc = L["Minimum unit level required for the nameplate to be shown."],
@@ -985,7 +993,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				LDWfix = {
-					order = 83,
+					order = 85,
 					type = "toggle",
 					name = L["Hide on LDW MC"],
 					desc = L["Hide nameplates when mind-controlled by Lady Deathwhisper."],
@@ -994,8 +1002,8 @@ RBP.MainOptionTable = {
 						RBP:UpdateLDWfix()
 					end,
 				},
-				lineBreak34 = {order = 84, type = "description", name = ""},
-				lineBreak35 = {order = 85, type = "description", name = ""},
+				lineBreak35 = {order = 86, type = "description", name = ""},
+				lineBreak36 = {order = 87, type = "description", name = ""},
 			},
 		},
 		Text = {
@@ -1488,7 +1496,7 @@ RBP.MainOptionTable = {
 				healthBar_bgAlpha = {
 					order = 16,
 					type = "range",
-					name = L["Alpha"],
+					name = L["Opacity"],
 					min = 0,
 					max = 1,
 					step = 0.01,
@@ -1522,10 +1530,10 @@ RBP.MainOptionTable = {
 				},
 				lineBreak9 = {order = 21, type = "description", name = ""},
 				showTargetHighlight = {
-					order = 22,
+					order = 26,
 					type = "toggle",
 					name = L["Target Highlight"],
-					desc = L["Highlights the inside of the target's health bar."],
+					desc = L["Highlights the inside of the target's health bar. When combined with Target Glowing Border, a simplified version of the highlight is used and it won't look the same."],
 					set = function(info, val)
 						RBP.dbp[info[#info]] = val
 						RBP:UpdateAllGlows()
@@ -1533,7 +1541,7 @@ RBP.MainOptionTable = {
 					end,
 				},
 				showTargetGlowBorder = {
-					order = 23,
+					order = 22,
 					type = "toggle",
 					name = L["Target Glowing Border"],
 					desc = L["Adds a glowing border around the target's health bar."],
@@ -1556,9 +1564,9 @@ RBP.MainOptionTable = {
 					disabled = function() return not RBP.dbp.showTargetGlowBorder end,
 				},
 				targetGlow_Color = {
-					order = 25,
+					order = 23,
 					type = "color",
-					name = L["Target Glow Color"],
+					name = L["Glowing Border Color"],
 					get = function(info)
 						local c = RBP.dbp[info[#info]]
 						return c[1], c[2], c[3]
@@ -1568,12 +1576,12 @@ RBP.MainOptionTable = {
 						RBP:UpdateAllGlows()
 						RBP:UpdateAllShownPlates()
 					end,
-					disabled = function() return not (RBP.dbp.showTargetHighlight or RBP.dbp.showTargetGlowBorder) end,
+					disabled = function() return not RBP.dbp.showTargetGlowBorder end,
 				},
 				targetGlow_Alpha = {
-					order = 26,
+					order = 25,
 					type = "range",
-					name = L["Target Glow Alpha"],
+					name = L["Target Glow Opacity"],
 					min = 0,
 					max = 1,
 					step = 0.01,
@@ -1614,7 +1622,7 @@ RBP.MainOptionTable = {
 				mouseoverGlow_Alpha = {
 					order = 30,
 					type = "range",
-					name = L["Mouseover Glow Alpha"],
+					name = L["Mouseover Glow Opacity"],
 					min = 0,
 					max = 1,
 					step = 0.01,
@@ -2195,7 +2203,7 @@ RBP.MainOptionTable = {
 				castBar_bgAlpha = {
 					order = 26,
 					type = "range",
-					name = L["Alpha"],
+					name = L["Opacity"],
 					min = 0,
 					max = 1,
 					step = 0.01,
@@ -2859,7 +2867,7 @@ RBP.MainOptionTable = {
 				barlessPlate_targetGlowAlpha = {
 					order = 15,
 					type = "range",
-					name = L["Target Glow Alpha"],
+					name = L["Target Glow Opacity"],
 					min = 0,
 					max = 1,
 					step = 0.01,
@@ -2897,7 +2905,7 @@ RBP.MainOptionTable = {
 				barlessPlate_mouseoverGlowAlpha = {
 					order = 19,
 					type = "range",
-					name = L["Mouseover Glow Alpha"],
+					name = L["Mouseover Glow Opacity"],
 					min = 0,
 					max = 1,
 					step = 0.01,
@@ -3528,7 +3536,7 @@ RBP.MainOptionTable = {
 				totem_targetGlowAlpha = {
 					order = 11,
 					type = "range",
-					name = L["Target Glow Alpha"],
+					name = L["Target Glow Opacity"],
 					min = 0,
 					max = 1,
 					step = 0.01,
@@ -3557,7 +3565,7 @@ RBP.MainOptionTable = {
 				totem_mouseoverGlowAlpha = {
 					order = 14,
 					type = "range",
-					name = L["Mouseover Glow Alpha"],
+					name = L["Mouseover Glow Opacity"],
 					min = 0,
 					max = 1,
 					step = 0.01,

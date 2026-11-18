@@ -316,8 +316,11 @@ end
 
 function EventHandler:PLAYER_REGEN_DISABLED()
 	RBP.inCombat = true
-	InitPlatesClickboxes()
-	ExecuteClickboxSecureScript()
+	RBP.combatResizeActive = RBP.dbp.clickboxCombatResize
+	if RBP.combatResizeActive then
+		InitPlatesClickboxes()
+		ExecuteClickboxSecureScript()
+	end
 end
 
 function EventHandler:PLAYER_TARGET_CHANGED()

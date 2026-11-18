@@ -37,6 +37,7 @@ local GetAlpha = EventHandler.GetAlpha
 -- Status Flags
 RBP.hasTarget = false
 RBP.inCombat = false
+RBP.combatResizeActive = false
 RBP.inInstance = false
 RBP.inOpenWorld = false
 RBP.inPvEInstance = false
@@ -62,7 +63,6 @@ local Styles = {
 	Refined = {
 		healthBorder = ASSETS .. "PlateRegions\\Refined-HealthBar-Border",
 		threatGlow = ASSETS .. "PlateRegions\\Refined-HealthBar-ThreatGlow",
-		targetGlowHighlight = ASSETS .. "PlateRegions\\Refined-HealthBar-TargetGlow_Highlight",
 		targetGlowBorder = ASSETS .. "PlateRegions\\Refined-HealthBar-TargetGlow_Border",
 		targetGlowBorderGradient = ASSETS .. "PlateRegions\\Refined-HealthBar-TargetGlow_Border_Gradient",
 		targetGlowBoth = ASSETS .. "PlateRegions\\Refined-HealthBar-TargetGlow_Both",
@@ -109,7 +109,6 @@ local Styles = {
 	Blizzard = {
 		healthBorder = ASSETS .. "PlateRegions\\Classic-HealthBar-Border",
 		threatGlow = ASSETS .. "PlateRegions\\Classic-HealthBar-ThreatGlow",
-		targetGlowHighlight = ASSETS .. "PlateRegions\\Refined-HealthBar-TargetGlow_Highlight",
 		targetGlowBorder = ASSETS .. "PlateRegions\\Classic-HealthBar-TargetGlow_Border",
 		targetGlowBorderGradient = ASSETS .. "PlateRegions\\Classic-HealthBar-TargetGlow_Border_Gradient",
 		targetGlowBoth = ASSETS .. "PlateRegions\\Classic-HealthBar-TargetGlow_Both",
@@ -156,7 +155,6 @@ local Styles = {
 	Clean = {
 		healthBorder = ASSETS .. "PlateRegions\\Clean-HealthBar-Border",
 		threatGlow = ASSETS .. "PlateRegions\\Clean-HealthBar-ThreatGlow",
-		targetGlowHighlight = ASSETS .. "PlateRegions\\Clean-HealthBar-TargetGlow_Highlight",
 		targetGlowBorder = ASSETS .. "PlateRegions\\Clean-HealthBar-TargetGlow_Border",
 		targetGlowBorderGradient = ASSETS .. "PlateRegions\\Clean-HealthBar-TargetGlow_Border_Gradient",
 		targetGlowBoth = ASSETS .. "PlateRegions\\Clean-HealthBar-TargetGlow_Both",
@@ -179,7 +177,6 @@ local Styles = {
 	Modern = {
 		healthBorder = ASSETS .. "PlateRegions\\Modern-HealthBar-Border",
 		threatGlow = ASSETS .. "PlateRegions\\Modern-HealthBar-ThreatGlow",
-		targetGlowHighlight = ASSETS .. "PlateRegions\\Refined-HealthBar-TargetGlow_Highlight",
 		targetGlowBorder = ASSETS .. "PlateRegions\\Modern-HealthBar-TargetGlow_Border",
 		targetGlowBorderGradient = ASSETS .. "PlateRegions\\Modern-HealthBar-TargetGlow_Border_Gradient",
 		targetGlowBoth = ASSETS .. "PlateRegions\\Modern-HealthBar-TargetGlow_Both",
@@ -530,22 +527,39 @@ local function SetupHealthBarBg(Virtual)
 end
 
 local function UpdateHealthBarTex(Virtual)
+	local dbp = RBP.dbp
+	local tex
 	if Virtual.RBP_classKey == "FRIENDLY_PLAYER" then
-		Virtual.RBP_healthBarTex:SetTexture(RBP.LSM:Fetch("statusbar", RBP.dbp.healthBar_friendlyPlayerTex))
+		tex = RBP.LSM:Fetch("statusbar", dbp.healthBar_friendlyPlayerTex)
 	elseif Virtual.RBP_classKey then
-		Virtual.RBP_healthBarTex:SetTexture(RBP.LSM:Fetch("statusbar", RBP.dbp.healthBar_hostilePlayerTex))
+		tex = RBP.LSM:Fetch("statusbar", dbp.healthBar_hostilePlayerTex)
 	else
-		Virtual.RBP_healthBarTex:SetTexture(RBP.LSM:Fetch("statusbar", RBP.dbp.healthBar_npcTex))
+		tex = RBP.LSM:Fetch("statusbar", dbp.healthBar_npcTex)
+	end
+	Virtual.RBP_healthBarTex:SetTexture(tex)
+	if dbp.showTargetHighlight and not dbp.showTargetGlowBorder then
+		Virtual.RBP_targetGlow:SetTexture(tex)
 	end
 end
 
 local function UpdateTargetGlow(Virtual)
-	if not Virtual.RBP_targetGlow then return end
+	local glow = Virtual.RBP_targetGlow
+	if not glow then return end
 	local dbp = RBP.dbp
-	Virtual.RBP_targetGlow:SetVertexColor(unpack(dbp.targetGlow_Color))
-	Virtual.RBP_targetGlow:SetAlpha(dbp.targetGlow_Alpha)
-	Virtual.RBP_targetGlow:SetSize(RBP.NP_WIDTH * 2, RBP.NP_HEIGHT * 2)
-	Virtual.RBP_targetGlow:SetPoint("CENTER", -RBP.HB_CENTER_X, -RBP.HB_CENTER_Y)
+	glow:ClearAllPoints()
+	if dbp.showTargetHighlight and not dbp.showTargetGlowBorder then
+		glow:SetAlpha(dbp.targetGlow_Alpha * 0.6)
+		glow:SetVertexColor(1, 1, 1)
+		glow:SetAllPoints(Virtual.RBP_healthBar)
+		glow:SetBlendMode("ADD")
+		glow:SetTexture(Virtual.RBP_healthBarTex and Virtual.RBP_healthBarTex:GetTexture())
+		return
+	end
+	glow:SetAlpha(dbp.targetGlow_Alpha)
+	glow:SetVertexColor(unpack(dbp.targetGlow_Color))
+	glow:SetSize(RBP.NP_WIDTH * 2, RBP.NP_HEIGHT * 2)
+	glow:SetPoint("CENTER", -RBP.HB_CENTER_X, -RBP.HB_CENTER_Y)
+	glow:SetBlendMode("BLEND")
 	local style, texture = RBP.healthStyle
 	if dbp.showTargetGlowBorder then
 		if dbp.showTargetHighlight then
@@ -553,10 +567,8 @@ local function UpdateTargetGlow(Virtual)
 		else
 			texture = dbp.targetGlow_Gradient and style.targetGlowBorderGradient or style.targetGlowBorder
 		end
-	elseif dbp.showTargetHighlight then
-		texture = style.targetGlowHighlight
 	end
-	Virtual.RBP_targetGlow:SetTexture(texture)
+	glow:SetTexture(texture)
 end
 
 local function SetupTargetGlow(Virtual)
@@ -2174,10 +2186,10 @@ local function UpdateClickboxOutOfCombat(Virtual)
 end
 
 local function UpdateClickbox(Virtual)
-	if RBP.inCombat then
-		UpdateClickboxInCombat(Virtual)
-	else
+	if not RBP.inCombat then
 		UpdateClickboxOutOfCombat(Virtual)
+	elseif RBP.combatResizeActive then
+		UpdateClickboxInCombat(Virtual)
 	end
 end
 
@@ -2939,7 +2951,7 @@ local function PlateOnHide(Plate)
 	end
 	Plate.namePlateUnitToken = nil
 	Virtual.namePlateUnitToken = nil
-	if RBP.inCombat then
+	if RBP.inCombat and RBP.combatResizeActive then
 		ExecuteClickboxSecureScript()
 	end
 end
