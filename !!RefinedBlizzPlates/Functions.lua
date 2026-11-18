@@ -64,8 +64,6 @@ local Styles = {
 		threatGlow = ASSETS .. "PlateRegions\\Refined-HealthBar-ThreatGlow",
 		targetGlowBorder = ASSETS .. "PlateRegions\\Refined-HealthBar-TargetGlow_Border",
 		targetGlowBorderGradient = ASSETS .. "PlateRegions\\Refined-HealthBar-TargetGlow_Border_Gradient",
-		targetGlowBoth = ASSETS .. "PlateRegions\\Refined-HealthBar-TargetGlow_Both",
-		targetGlowBothGradient = ASSETS .. "PlateRegions\\Refined-HealthBar-TargetGlow_Both_Gradient",
 		mouseoverGlowHighlight = ASSETS .. "PlateRegions\\Refined-HealthBar-MouseoverGlow_Highlight",
 		mouseoverGlowBoth = ASSETS .. "PlateRegions\\Refined-HealthBar-MouseoverGlow_Both",
 		castBorder = ASSETS .. "PlateRegions\\Refined-CastBar-Border",
@@ -110,8 +108,6 @@ local Styles = {
 		threatGlow = ASSETS .. "PlateRegions\\Classic-HealthBar-ThreatGlow",
 		targetGlowBorder = ASSETS .. "PlateRegions\\Classic-HealthBar-TargetGlow_Border",
 		targetGlowBorderGradient = ASSETS .. "PlateRegions\\Classic-HealthBar-TargetGlow_Border_Gradient",
-		targetGlowBoth = ASSETS .. "PlateRegions\\Classic-HealthBar-TargetGlow_Both",
-		targetGlowBothGradient = ASSETS .. "PlateRegions\\Classic-HealthBar-TargetGlow_Both_Gradient",
 		mouseoverGlowHighlight = ASSETS .. "PlateRegions\\Refined-HealthBar-MouseoverGlow_Highlight",
 		mouseoverGlowBoth = ASSETS .. "PlateRegions\\Classic-HealthBar-MouseoverGlow_Both",
 		castBorder = ASSETS .. "PlateRegions\\Refined-CastBar-Border",
@@ -156,8 +152,6 @@ local Styles = {
 		threatGlow = ASSETS .. "PlateRegions\\Clean-HealthBar-ThreatGlow",
 		targetGlowBorder = ASSETS .. "PlateRegions\\Clean-HealthBar-TargetGlow_Border",
 		targetGlowBorderGradient = ASSETS .. "PlateRegions\\Clean-HealthBar-TargetGlow_Border_Gradient",
-		targetGlowBoth = ASSETS .. "PlateRegions\\Clean-HealthBar-TargetGlow_Both",
-		targetGlowBothGradient = ASSETS .. "PlateRegions\\Clean-HealthBar-TargetGlow_Both_Gradient",
 		mouseoverGlowHighlight = ASSETS .. "PlateRegions\\Clean-HealthBar-MouseoverGlow_Highlight",
 		mouseoverGlowBoth = ASSETS .. "PlateRegions\\Clean-HealthBar-MouseoverGlow_Both",
 		castBorder = ASSETS .. "PlateRegions\\Clean-CastBar-Border",
@@ -178,8 +172,6 @@ local Styles = {
 		threatGlow = ASSETS .. "PlateRegions\\Modern-HealthBar-ThreatGlow",
 		targetGlowBorder = ASSETS .. "PlateRegions\\Modern-HealthBar-TargetGlow_Border",
 		targetGlowBorderGradient = ASSETS .. "PlateRegions\\Modern-HealthBar-TargetGlow_Border_Gradient",
-		targetGlowBoth = ASSETS .. "PlateRegions\\Modern-HealthBar-TargetGlow_Both",
-		targetGlowBothGradient = ASSETS .. "PlateRegions\\Modern-HealthBar-TargetGlow_Both_Gradient",
 		mouseoverGlowHighlight = ASSETS .. "PlateRegions\\Refined-HealthBar-MouseoverGlow_Highlight",
 		mouseoverGlowBoth = ASSETS .. "PlateRegions\\Modern-HealthBar-MouseoverGlow_Both",
 		castBorder = ASSETS .. "PlateRegions\\Modern-CastBar-Border",
@@ -536,45 +528,60 @@ local function UpdateHealthBarTex(Virtual)
 		tex = RBP.LSM:Fetch("statusbar", dbp.healthBar_npcTex)
 	end
 	Virtual.RBP_healthBarTex:SetTexture(tex)
-	if dbp.showTargetHighlight and not dbp.showTargetGlowBorder then
-		Virtual.RBP_targetGlow:SetTexture(tex)
+	Virtual.RBP_healthBarTexPath = tex
+	if Virtual.RBP_targetHighlight then
+		Virtual.RBP_targetHighlight:SetTexture(tex)
+	end
+end
+
+local function UpdateTargetGlowVisibility(Virtual)
+	local dbp = RBP.dbp
+	local isTarget = Virtual.RBP_isTarget
+	local glow, highlight = Virtual.RBP_targetGlow, Virtual.RBP_targetHighlight
+	if glow then
+		if isTarget and dbp.showTargetGlowBorder then
+			glow:Show()
+		else
+			glow:Hide()
+		end
+	end
+	if highlight then
+		if isTarget and dbp.showTargetHighlight then
+			highlight:Show()
+		else
+			highlight:Hide()
+		end
 	end
 end
 
 local function UpdateTargetGlow(Virtual)
-	local glow = Virtual.RBP_targetGlow
-	if not glow then return end
 	local dbp = RBP.dbp
-	glow:ClearAllPoints()
-	if dbp.showTargetHighlight and not dbp.showTargetGlowBorder then
-		glow:SetAlpha(dbp.targetGlow_Alpha * 0.6)
-		glow:SetVertexColor(1, 1, 1)
-		glow:SetAllPoints(Virtual.RBP_healthBar)
-		glow:SetBlendMode("ADD")
-		glow:SetTexture(Virtual.RBP_healthBarTex and Virtual.RBP_healthBarTex:GetTexture())
-		return
-	end
-	glow:SetAlpha(dbp.targetGlow_Alpha)
-	glow:SetVertexColor(unpack(dbp.targetGlow_Color))
-	glow:SetSize(RBP.NP_WIDTH * 2, RBP.NP_HEIGHT * 2)
-	glow:SetPoint("CENTER", -RBP.HB_CENTER_X, -RBP.HB_CENTER_Y)
-	glow:SetBlendMode("BLEND")
-	local style, texture = RBP.healthStyle
 	if dbp.showTargetGlowBorder then
-		if dbp.showTargetHighlight then
-			texture = dbp.targetGlow_Gradient and style.targetGlowBothGradient or style.targetGlowBoth
-		else
-			texture = dbp.targetGlow_Gradient and style.targetGlowBorderGradient or style.targetGlowBorder
+		local glow = Virtual.RBP_targetGlow
+		if not glow then
+			glow = Virtual.RBP_healthBar:CreateTexture(nil, "OVERLAY")
+			Virtual.RBP_targetGlow = glow
 		end
+		local style = RBP.healthStyle
+		glow:SetTexture(dbp.targetGlow_Gradient and style.targetGlowBorderGradient or style.targetGlowBorder)
+		glow:SetVertexColor(unpack(dbp.targetGlow_Color))
+		glow:SetAlpha(dbp.targetGlow_Alpha)
+		glow:SetSize(RBP.NP_WIDTH * 2, RBP.NP_HEIGHT * 2)
+		glow:SetPoint("CENTER", -RBP.HB_CENTER_X, -RBP.HB_CENTER_Y)
 	end
-	glow:SetTexture(texture)
-end
-
-local function SetupTargetGlow(Virtual)
-	if Virtual.RBP_targetGlow then return end
-	Virtual.RBP_targetGlow = Virtual.RBP_healthBar:CreateTexture(nil, "OVERLAY")
-	Virtual.RBP_targetGlow:Hide()
-	UpdateTargetGlow(Virtual)
+	if dbp.showTargetHighlight then
+		local highlight = Virtual.RBP_targetHighlight
+		if not highlight then
+			highlight = Virtual.RBP_healthBar:CreateTexture(nil, "ARTWORK")
+			highlight:SetAllPoints(Virtual.RBP_healthBar)
+			highlight:SetBlendMode("ADD")
+			Virtual.RBP_targetHighlight = highlight
+		end
+		highlight:SetTexture(Virtual.RBP_healthBarTexPath)
+		highlight:SetVertexColor(unpack(dbp.targetHighlight_Color))
+		highlight:SetAlpha(dbp.targetHighlight_Alpha)
+	end
+	UpdateTargetGlowVisibility(Virtual)
 end
 
 local function UpdateMouseoverGlow(Virtual)
@@ -1692,8 +1699,8 @@ local function DelayedUpdate(Virtual, fromOnShow)
 	if not wasTarget ~= not Virtual.RBP_isTarget and Virtual.RBP_levelIdx then
 		SetFrameLevel(Virtual, Virtual.RBP_levelIdx * PlateLevels)
 	end
+	UpdateTargetGlowVisibility(Virtual)
 	if Virtual.RBP_isTarget then
-		Virtual.RBP_targetGlow:Show()		
 		if Virtual.RBP_totemPlate_targetGlow then
 			Virtual.RBP_totemPlate_targetGlow:Show()
 		end
@@ -1702,8 +1709,7 @@ local function DelayedUpdate(Virtual, fromOnShow)
 			UpdateCastBarSkin(Virtual)
 		end
 	else
-		Virtual.RBP_targetGlow:Hide()
-		if Virtual.RBP_totemPlate_targetGlow then 
+		if Virtual.RBP_totemPlate_targetGlow then
 			Virtual.RBP_totemPlate_targetGlow:Hide()
 		end
 	end
@@ -1804,7 +1810,7 @@ local function SetupRefinedPlate(Virtual)
 	SetupNameText(Virtual)
 	UpdateLevelText(Virtual)
 	SetupArenaIDText(Virtual)
-	SetupTargetGlow(Virtual)
+	UpdateTargetGlow(Virtual)
 	SetupHealthText(Virtual)
 	SetupHealthBarTex(Virtual)
 	SetupHealthBarBg(Virtual)
