@@ -1660,6 +1660,7 @@ end
 local function DelayedUpdate(Virtual, fromOnShow)
 	local Plate = Virtual.RealPlate
 	local dbp = RBP.dbp
+	local wasTarget = Virtual.RBP_isTarget
 	if hasModernEngine then
 		if fromOnShow then
 			RBP.targetedPlate = C_NamePlate.GetNamePlateForUnit("target")		
@@ -1670,6 +1671,9 @@ local function DelayedUpdate(Virtual, fromOnShow)
 		if Virtual.RBP_isTarget then
 			RBP.targetedPlate = Plate
 		end
+	end
+	if not wasTarget ~= not Virtual.RBP_isTarget and Virtual.RBP_levelIdx then
+		SetFrameLevel(Virtual, Virtual.RBP_levelIdx * PlateLevels)
 	end
 	if Virtual.RBP_isTarget then
 		Virtual.RBP_targetGlow:Show()		
