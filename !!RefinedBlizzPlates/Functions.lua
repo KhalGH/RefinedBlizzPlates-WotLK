@@ -444,10 +444,10 @@ local function UpdateHealthTextValue(healthBar, value)
 		end
 		Virtual.RBP_healthText:SetText(text)
 		if Virtual.RBP_healthBarIsShown then
-			if Virtual.RBP_healthBarTexCrop then
-				Virtual.RBP_healthBarTex:SetTexCoord(0, percent, 0, 1)
-			else
-				Virtual.RBP_healthBarTex:SetTexCoord(0, 1, 0, 1)
+			local crop = Virtual.RBP_healthBarTexCrop and percent or 1
+			Virtual.RBP_healthBarTex:SetTexCoord(0, crop, 0, 1)
+			if Virtual.RBP_isTarget and Virtual.RBP_targetHighlight then
+				Virtual.RBP_targetHighlight:SetTexCoord(0, crop, 0, 1)
 			end
 		end
 		Virtual.RBP_lowHp = Virtual.RBP_lowHpColoring and percent <= dbp.lowHpColor_threshold
@@ -524,6 +524,8 @@ local function UpdateHealthBarTex(Virtual)
 		tex = RBP.LSM:Fetch("statusbar", dbp.healthBar_friendlyPlayerTex)
 	elseif Virtual.RBP_classKey then
 		tex = RBP.LSM:Fetch("statusbar", dbp.healthBar_hostilePlayerTex)
+	elseif Virtual.RBP_isFriendly then
+		tex = RBP.LSM:Fetch("statusbar", dbp.healthBar_friendlyNPCTex)
 	else
 		tex = RBP.LSM:Fetch("statusbar", dbp.healthBar_npcTex)
 	end
@@ -573,7 +575,7 @@ local function UpdateTargetGlow(Virtual)
 		local highlight = Virtual.RBP_targetHighlight
 		if not highlight then
 			highlight = Virtual.RBP_healthBar:CreateTexture(nil, "ARTWORK")
-			highlight:SetAllPoints(Virtual.RBP_healthBar)
+			highlight:SetAllPoints(Virtual.RBP_ogHealthBarTex)
 			highlight:SetBlendMode("ADD")
 			Virtual.RBP_targetHighlight = highlight
 		end
@@ -1701,6 +1703,9 @@ local function DelayedUpdate(Virtual, fromOnShow)
 	end
 	UpdateTargetGlowVisibility(Virtual)
 	if Virtual.RBP_isTarget then
+		if not wasTarget and Virtual.RBP_targetHighlight then
+			Virtual.RBP_targetHighlight:SetTexCoord(Virtual.RBP_healthBarTex:GetTexCoord())
+		end
 		if Virtual.RBP_totemPlate_targetGlow then
 			Virtual.RBP_totemPlate_targetGlow:Show()
 		end
