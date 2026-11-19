@@ -66,7 +66,7 @@ Built around the default nameplates, enhancing them with visual refinements, use
 </details>
 
 ## Installation  
-1. [Download](https://github.com/KhalGH/RefinedBlizzPlates-WotLK/releases/download/v1.13.3/RefinedBlizzPlates-v1.13.3.zip) the addon
+1. [Download](https://github.com/KhalGH/RefinedBlizzPlates-WotLK/releases/download/v1.13.4/RefinedBlizzPlates-v1.13.4.zip) the addon
 2. Extract the **!!RefinedBlizzPlates** folder into `World of Warcraft/Interface/AddOns/`.
 3. Restart the game and enable the addon.  
 
@@ -79,6 +79,6 @@ The addon supports features from certain client modifications that are popular i
 **Disclaimer**: Some servers may have specific rules regarding the use of client modifications. Please check your server's policy to ensure they are allowed before using them.
 
 ## Information  
-- **Addon Version:** 1.13.3  
+- **Addon Version:** 1.13.4  
 - **Game Version:** 3.3.5a (WotLK)  
 - **Author:** Khal  
