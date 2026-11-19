@@ -443,11 +443,10 @@ local function UpdateHealthTextValue(healthBar, value)
 			end
 		end
 		Virtual.RBP_healthText:SetText(text)
-		if Virtual.RBP_healthBarIsShown then
-			local crop = Virtual.RBP_healthBarTexCrop and percent or 1
-			Virtual.RBP_healthBarTex:SetTexCoord(0, crop, 0, 1)
+		if Virtual.RBP_healthBarTexCrop and Virtual.RBP_healthBarIsShown then
+			Virtual.RBP_healthBarTex:SetTexCoord(0, percent, 0, 1)
 			if Virtual.RBP_isTarget and Virtual.RBP_targetHighlight then
-				Virtual.RBP_targetHighlight:SetTexCoord(0, crop, 0, 1)
+				Virtual.RBP_targetHighlight:SetTexCoord(0, percent, 0, 1)
 			end
 		end
 		Virtual.RBP_lowHp = Virtual.RBP_lowHpColoring and percent <= dbp.lowHpColor_threshold
@@ -2554,6 +2553,10 @@ local function ResetRefinedPlate(Virtual)
 	Virtual.RBP_healthBarIsShown = nil
 	Virtual.RBP_nameTextIsYellow = nil
 	Virtual.RBP_healthBarTexCrop = nil
+	Virtual.RBP_healthBarTex:SetTexCoord(0, 1, 0, 1)
+	if Virtual.RBP_targetHighlight then
+		Virtual.RBP_targetHighlight:SetTexCoord(0, 1, 0, 1)
+	end
 	Virtual.RBP_raidIconIndex = nil
 	Virtual.RBP_lowHpColoring = nil
 	Virtual.RBP_aggroColoring = nil
@@ -3022,6 +3025,10 @@ function RBP:UpdateAllHealthBars()
 			Virtual.RBP_healthBarTexCrop = true
 		else
 			Virtual.RBP_healthBarTexCrop = nil
+			Virtual.RBP_healthBarTex:SetTexCoord(0, 1, 0, 1)
+			if Virtual.RBP_targetHighlight then
+				Virtual.RBP_targetHighlight:SetTexCoord(0, 1, 0, 1)
+			end
 		end
 		UpdateHealthTextValue(Virtual.RBP_healthBar)
 	end
