@@ -73,8 +73,8 @@ local Styles = {
 		castGlowWf = 1.852, castGlowHf = 2, castGlowX = 0, castGlowY = 0,
 		castBarW = 96.01, castBarH = 8.99,
 		castBoxX = -9.397, castBoxY = -14.7, castBoxWf = 0.926, castBoxHf = 1,
-		normal = {barX = -3.8, barY = 4.5, iconX = 11.93, iconY = 8.58, iconSize = 12.91},
-		shield = {barX = -3, barY = 0.5, iconX = 10.6, iconY = 4.5, iconSize = 13.73},
+		normal = {barX = -3.8, barY = 4.5, iconX = 12.04, iconY = 8.5, iconSize = 13.2},
+		shield = {barX = -3, barY = 0.5, iconX = 11.22, iconY = 5.06, iconSize = 13.73},
 		castTextX = -7, castTimerX = -2.5, castTextY = 0.82,
 		icons = {
 			raid = {
@@ -92,11 +92,11 @@ local Styles = {
 					Left  = {point = "LEFT",  relPoint = "LEFT",  x = -12.665, y = 0.245},
 					Right = {point = "RIGHT", relPoint = "RIGHT", x = 12.665,  y = 0.245},
 				},
-				Minimalist = {
+				Small = {
 					Left  = {point = "LEFT",  relPoint = "LEFT",  x = -14.708, y = 0},
 					Right = {point = "RIGHT", relPoint = "RIGHT", x = 14.708,  y = 0},
 				},
-				Default = {
+				Classic = {
 					Left  = {point = "LEFT",  relPoint = "LEFT",  x = -14.708, y = -1.226},
 					Right = {point = "RIGHT", relPoint = "RIGHT", x = 14.708,  y = -1.226},
 				},
@@ -117,8 +117,8 @@ local Styles = {
 		castGlowWf = 2.034, castGlowHf = 2, castGlowX = 0, castGlowY = 0,
 		castBarW = 105.41, castBarH = 8.99,
 		castBoxX = -0.831, castBoxY = -14.7, castBoxWf = 1.017, castBoxHf = 1,
-		normal = {barX = -3.8, barY = 4.5, iconX = 13.16, iconY = 8.58, iconSize = 13.73},
-		shield = {barX = -3, barY = 0.5, iconX = 11.8, iconY = 4.5, iconSize = 13.73},
+		normal = {barX = -3.8, barY = 4.5, iconX = 13.22, iconY = 8.5, iconSize = 14.5},
+		shield = {barX = -3, barY = 0.5, iconX = 12.27, iconY = 5.06, iconSize = 13.73},
 		castTextX = -7, castTimerX = -2.5, castTextY = 0.57,
 		icons = {
 			raid = {
@@ -136,11 +136,11 @@ local Styles = {
 					Left  = {point = "LEFT",  relPoint = "LEFT",  x = -12.665, y = 0.245},
 					Right = {point = "RIGHT", relPoint = "RIGHT", x = 29.824,  y = 0.245},
 				},
-				Minimalist = {
+				Small = {
 					Left  = {point = "LEFT",  relPoint = "LEFT",  x = -14.708, y = 0},
 					Right = {point = "RIGHT", relPoint = "RIGHT", x = 32.276,  y = 0},
 				},
-				Default = {
+				Classic = {
 					Left  = {point = "LEFT",   relPoint = "LEFT",   x = -14.708, y = -1.226},
 					Right = {point = "CENTER", relPoint = "CENTER", x = 56.064,  y = -8.192, plateX = true, plateY = true},
 				},
@@ -176,14 +176,15 @@ local Styles = {
 		mouseoverGlowBoth = ASSETS .. "PlateRegions\\Modern-HealthBar-MouseoverGlow_Both",
 		castBorder = ASSETS .. "PlateRegions\\Modern-CastBar-Border",
 		shieldBorder = ASSETS .. "PlateRegions\\Modern-CastBar-ShieldBorder",
-		shieldX = 0, shieldY = -10, shieldWf = 0.926, shieldHf = 1, shieldCoord = {0, 1, 0, 1},
+		shieldX = 0, shieldY = -10, shieldWf = 1, shieldHf = 1, shieldCoord = {0, 1, 0, 1},
 		castGlow = ASSETS .. "PlateRegions\\Modern-CastBar-Glow",
-		castGlowWf = 1.852, castGlowHf = 2, castGlowX = 0, castGlowY = 0,
-		castBarW = 96.01, castBarH = 10,
-		castBoxX = -9.397, castBoxY = -12.7, castBoxWf = 0.926, castBoxHf = 1,
-		normal = {barX = -3.3, barY = 3, iconX = 11.1, iconY = 7.9, iconSize = 12.9},
-		shield = {barX = -3.6, barY = 1, iconX = 11, iconY = 6, iconSize = 12},
+		castGlowWf = 2, castGlowHf = 2, castGlowX = 0, castGlowY = 0,
+		castBarW = 95, castBarH = 10,
+		castBoxX = -5, castBoxY = -13, castBoxWf = 1, castBoxHf = 1,
+		normal = {barX = -12.5, barY = 3, iconX = 12, iconY = 8, iconSize = 12.6},
+		shield = {barX = -12.5, barY = 1, iconX = 12, iconY = 6, iconSize = 11.2},
 		castTextX = -7, castTimerX = -1.5, castTextY = 0.7,
+		iconCoord = {0.06, 0.94, 0.06, 0.94},
 	},
 }
 Styles.Clean.icons = Styles.Refined.icons
@@ -225,7 +226,6 @@ local function PlaceOnHealthBar(region, Virtual, spec, offsetX, offsetY)
 	region:SetPoint(spec.point, Virtual.RBP_healthBar, spec.relPoint, x, y)
 end
 
-------------------------- Customization Functions -------------------------
 local function InitBarTextures(Virtual)
 	Virtual.RBP_healthBar:SetFrameLevel(Virtual:GetFrameLevel())
 	Virtual.RBP_castBar:SetFrameLevel(Virtual:GetFrameLevel())
@@ -1100,38 +1100,33 @@ local function SetupRaidTargetIcon(Virtual)
 	PlaceOnHealthBar(Virtual.RBP_raidTargetIcon, Virtual, raid[dbp.raidTargetIcon_anchor] or raid.Right, dbp.raidTargetIcon_offsetX, dbp.raidTargetIcon_offsetY)
 end
 
-local function SetupEliteIcon(Virtual)
-	local dbp = RBP.dbp
-	local isLeft = dbp.eliteIcon_anchor == "Left"
-	local elite = RBP.healthStyle.icons.elite
-	local spec = elite[dbp.eliteIcon_style] or elite.Default
-	Virtual.RBP_eliteIcon:SetVertexColor(unpack(dbp.eliteIcon_color))
-	if dbp.eliteIcon_style == "Modern" then
-		Virtual.RBP_eliteIcon:SetTexture(ASSETS .. "PlateRegions\\EliteIcon-Modern")
-		Virtual.RBP_eliteIcon:SetSize(29.416 * dbp.eliteIcon_widthScale * RBP.NP_SCALE, 29.416 * dbp.eliteIcon_heightScale * RBP.NP_SCALE)
-		if isLeft then
-			Virtual.RBP_eliteIcon:SetTexCoord(0.9, 0.1, 0.9, 0.9, 0.1, 0.1, 0.1, 0.9)
+local SetupEliteIcon
+do
+	local EliteIcons = {
+		Classic   = {tex = ASSETS .. "PlateRegions\\EliteIcon-Classic",  w = 37.63,  h = 27.52,  l = 0,   r = 0.578125, t = 0,   b = 0.84375, anchor = "Classic"},
+		Modern    = {tex = ASSETS .. "PlateRegions\\EliteIcon-Modern",   w = 29.416, h = 29.416, l = 0.1, r = 0.9,      t = 0.1, b = 0.9,     anchor = "Modern"},
+		Midnight  = {tex = ASSETS .. "PlateRegions\\EliteIcon-Midnight", w = 13.074, h = 13.074, l = 0,   r = 1,        t = 0,   b = 1,       anchor = "Small"},
+		Midnight2 = {tex = ASSETS .. "PlateRegions\\EliteIcon-Midnight", w = 13.074, h = 13.074, l = 1,   r = 0,        t = 0,   b = 1,       anchor = "Small"},
+		Legion    = {tex = ASSETS .. "PlateRegions\\EliteIcon-Legion",   w = 13.074, h = 13.074, l = 0,   r = 1,        t = 0,   b = 1,       anchor = "Small"},
+		Legion2   = {tex = ASSETS .. "PlateRegions\\EliteIcon-Legion",   w = 13.074, h = 13.074, l = 1,   r = 0,        t = 0,   b = 1,       anchor = "Small"},
+		Star      = {tex = ASSETS .. "PlateRegions\\EliteIcon-Star",     w = 13.074, h = 13.074, l = 0,   r = 1,        t = 0,   b = 1,       anchor = "Small"},
+	}
+	function SetupEliteIcon(Virtual)
+		local dbp = RBP.dbp
+		local eliteIcon = Virtual.RBP_eliteIcon
+		local icon = EliteIcons[dbp.eliteIcon_style] or EliteIcons.Classic
+		local spec = RBP.healthStyle.icons.elite[icon.anchor]
+		eliteIcon:SetVertexColor(unpack(dbp.eliteIcon_color))
+		eliteIcon:SetTexture(icon.tex)
+		eliteIcon:SetSize(icon.w * dbp.eliteIcon_widthScale * RBP.NP_SCALE, icon.h * dbp.eliteIcon_heightScale * RBP.NP_SCALE)
+		if dbp.eliteIcon_anchor == "Left" then
+			eliteIcon:SetTexCoord(icon.r, icon.l, icon.t, icon.b)
+			PlaceOnHealthBar(eliteIcon, Virtual, spec.Left, dbp.eliteIcon_offsetX, dbp.eliteIcon_offsetY)
 		else
-			Virtual.RBP_eliteIcon:SetTexCoord(0.1, 0.1, 0.1, 0.9, 0.9, 0.1, 0.9, 0.9)
-		end
-	elseif dbp.eliteIcon_style == "Minimalist" then
-		Virtual.RBP_eliteIcon:SetTexture(ASSETS .. "PlateRegions\\EliteIcon-Small")
-		Virtual.RBP_eliteIcon:SetSize(13.074 * dbp.eliteIcon_widthScale * RBP.NP_SCALE, 13.074 * dbp.eliteIcon_heightScale * RBP.NP_SCALE)
-		if isLeft then
-			Virtual.RBP_eliteIcon:SetTexCoord(1, 0, 1, 1, 0, 0, 0, 1)
-		else
-			Virtual.RBP_eliteIcon:SetTexCoord(0, 0, 0, 1, 1, 0, 1, 1)
-		end
-	else
-		Virtual.RBP_eliteIcon:SetTexture(ASSETS .. "PlateRegions\\EliteIcon-Classic")
-		Virtual.RBP_eliteIcon:SetSize(37.63 * dbp.eliteIcon_widthScale * RBP.NP_SCALE, 27.52 * dbp.eliteIcon_heightScale * RBP.NP_SCALE)
-		if isLeft then
-			Virtual.RBP_eliteIcon:SetTexCoord(0.578125, 0, 0.578125, 0.84375, 0, 0, 0, 0.84375)
-		else
-			Virtual.RBP_eliteIcon:SetTexCoord(0, 0, 0, 0.84375, 0.578125, 0, 0.578125, 0.84375)
+			eliteIcon:SetTexCoord(icon.l, icon.r, icon.t, icon.b)
+			PlaceOnHealthBar(eliteIcon, Virtual, spec.Right, dbp.eliteIcon_offsetX, dbp.eliteIcon_offsetY)
 		end
 	end
-	PlaceOnHealthBar(Virtual.RBP_eliteIcon, Virtual, spec[isLeft and "Left" or "Right"], dbp.eliteIcon_offsetX, dbp.eliteIcon_offsetY)
 end
 
 local function SetupClassIcon(Virtual)
@@ -2991,7 +2986,6 @@ MainUpdater:SetScript("OnUpdate", function(self, elapsed)
 	end
 end)
 
----------------------------------------- Settings Update Functions ----------------------------------------
 function RBP:UpdateAllVirtualsScale()
 	for _, Virtual in pairs(VirtualPlates) do
 		UpdateLocalScale(Virtual)

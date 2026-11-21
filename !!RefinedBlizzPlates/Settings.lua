@@ -114,7 +114,7 @@ RBP.dbp.targetGlow_Gradient = true
 RBP.dbp.targetGlow_Color = {1, 1, 0}
 RBP.dbp.targetGlow_Alpha = 1
 RBP.dbp.targetHighlight_Color = {1, 1, 1}
-RBP.dbp.targetHighlight_Alpha = 0.4
+RBP.dbp.targetHighlight_Alpha = 0.2
 RBP.dbp.showMouseoverGlowBorder = true
 RBP.dbp.mouseoverGlow_Color = {1, 1, 1}
 RBP.dbp.mouseoverGlow_Alpha = 1
@@ -211,7 +211,7 @@ RBP.dbp.castTimerText_color = {1, 1, 1} -- white
 -- Cast Glow (Shows when nameplate unit is targetting you, requires nontarget castbar patch)
 RBP.dbp.enableCastGlow = true
 -- Elite Icon
-RBP.dbp.eliteIcon_style = "Default"
+RBP.dbp.eliteIcon_style = "Classic"
 RBP.dbp.eliteIcon_widthScale = 1
 RBP.dbp.eliteIcon_heightScale = 1
 RBP.dbp.eliteIcon_anchor = "Left"
@@ -2556,10 +2556,15 @@ RBP.MainOptionTable = {
 					type = "select", 
 					name = L["Style"],
 					values = {
-						["Default"] = L["Classic"],
-						["Modern"] = L["Modern"],
-						["Minimalist"] = L["Small"],
+						["Classic"] = "Classic",
+						["Modern"] = "Modern",
+						["Midnight"] = "Midnight",
+						["Midnight2"] = "Midnight 2",
+						["Legion"] = "Legion",
+						["Legion2"] = "Legion 2",
+						["Star"] = "Star",
 					},
+					sorting = {"Classic", "Modern", "Star", "Legion", "Legion2", "Midnight", "Midnight2"},
 					set = function(info, val)
 						RBP.dbp[info[#info]] = val
 						RBP:UpdateAllIcons()
