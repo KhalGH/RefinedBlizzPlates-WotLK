@@ -68,13 +68,14 @@ local Styles = {
 		mouseoverGlowBoth = ASSETS .. "PlateRegions\\Refined-HealthBar-MouseoverGlow_Both",
 		castBorder = ASSETS .. "PlateRegions\\Refined-CastBar-Border",
 		shieldBorder = ASSETS .. "PlateRegions\\Refined-CastBar-ShieldBorder",
-		shieldX = 0.572, shieldY = -11.439, shieldWf = 0.926, shieldHf = 1, shieldCoord = {0, 1, 0, 1},
+		shieldX = 0, shieldY = -11.439, shieldWf = 1, shieldHf = 1, shieldCoord = {0, 1, 0, 1},
 		castGlow = ASSETS .. "PlateRegions\\Refined-CastBar-Glow",
-		castGlowWf = 1.852, castGlowHf = 2, castGlowX = 0, castGlowY = 0,
-		castBarW = 96.01, castBarH = 8.99,
-		castBoxX = -9.397, castBoxY = -14.7, castBoxWf = 0.926, castBoxHf = 1,
-		normal = {barX = -3.8, barY = 4.5, iconX = 12.04, iconY = 8.5, iconSize = 13.2},
-		shield = {barX = -3, barY = 0.5, iconX = 11.22, iconY = 5.06, iconSize = 13.73},
+		shieldGlow = ASSETS .. "PlateRegions\\Refined-CastBar-ShieldGlow",
+		castGlowWf = 2, castGlowHf = 2, castGlowX = 0, castGlowY = 0,
+		castBarW = 96, castBarH = 8.99,
+		castBoxX = -5, castBoxY = -14.7, castBoxWf = 1, castBoxHf = 1,
+		normal = {barX = -12.5, barY = 4.5, iconX = 12.5, iconY = 8.5, iconSize = 13.2},
+		shield = {barX = -11.5, barY = 0.5, iconX = 11.5, iconY = 5.06, iconSize = 13.73},
 		castTextX = -7, castTimerX = -2.5, castTextY = 0.82,
 		icons = {
 			raid = {
@@ -110,15 +111,16 @@ local Styles = {
 		targetGlowBorderGradient = ASSETS .. "PlateRegions\\Classic-HealthBar-TargetGlow_Border_Gradient",
 		mouseoverGlowHighlight = ASSETS .. "PlateRegions\\Refined-HealthBar-MouseoverGlow_Highlight",
 		mouseoverGlowBoth = ASSETS .. "PlateRegions\\Classic-HealthBar-MouseoverGlow_Both",
-		castBorder = ASSETS .. "PlateRegions\\Refined-CastBar-Border",
-		shieldBorder = ASSETS .. "PlateRegions\\Refined-CastBar-ShieldBorder",
-		shieldX = 0.572, shieldY = -11.439, shieldWf = 1.017, shieldHf = 1, shieldCoord = {0, 1, 0, 1},
-		castGlow = ASSETS .. "PlateRegions\\Refined-CastBar-Glow",
-		castGlowWf = 2.034, castGlowHf = 2, castGlowX = 0, castGlowY = 0,
-		castBarW = 105.41, castBarH = 8.99,
-		castBoxX = -0.831, castBoxY = -14.7, castBoxWf = 1.017, castBoxHf = 1,
-		normal = {barX = -3.8, barY = 4.5, iconX = 13.22, iconY = 8.5, iconSize = 14.5},
-		shield = {barX = -3, barY = 0.5, iconX = 12.27, iconY = 5.06, iconSize = 13.73},
+		castBorder = ASSETS .. "PlateRegions\\Classic-CastBar-Border",
+		shieldBorder = ASSETS .. "PlateRegions\\Classic-CastBar-ShieldBorder",
+		shieldX = 0, shieldY = -11.439, shieldWf = 1, shieldHf = 1, shieldCoord = {0, 1, 0, 1},
+		castGlow = ASSETS .. "PlateRegions\\Classic-CastBar-Glow",
+		shieldGlow = ASSETS .. "PlateRegions\\Classic-CastBar-ShieldGlow",
+		castGlowWf = 2, castGlowHf = 2, castGlowX = 0, castGlowY = 0,
+		castBarW = 107, castBarH = 8.99,
+		castBoxX = 0, castBoxY = -14.7, castBoxWf = 1, castBoxHf = 1,
+		normal = {barX = -3.5, barY = 4.5, iconX = 10.5, iconY = 8.5, iconSize = 13.2},
+		shield = {barX = -3.5, barY = 0.5, iconX = 11.5, iconY = 5.06, iconSize = 13.73},
 		castTextX = -7, castTimerX = -2.5, castTextY = 0.57,
 		icons = {
 			raid = {
@@ -158,6 +160,7 @@ local Styles = {
 		shieldBorder = ASSETS .. "PlateRegions\\Clean-CastBar-ShieldBorder",
 		shieldX = 0, shieldY = 0, shieldWf = 1, shieldHf = 1, shieldCoord = {1, 0, 0, 1},
 		castGlow = ASSETS .. "PlateRegions\\Clean-CastBar-Glow",
+		shieldGlow = ASSETS .. "PlateRegions\\Clean-CastBar-Glow",
 		castGlowWf = 2, castGlowHf = 2, castGlowX = 0, castGlowY = 0,
 		castBarW = 92, castBarH = 10,
 		castBoxX = 0, castBoxY = -12, castBoxWf = 1, castBoxHf = 1,
@@ -178,6 +181,7 @@ local Styles = {
 		shieldBorder = ASSETS .. "PlateRegions\\Modern-CastBar-ShieldBorder",
 		shieldX = 0, shieldY = -10, shieldWf = 1, shieldHf = 1, shieldCoord = {0, 1, 0, 1},
 		castGlow = ASSETS .. "PlateRegions\\Modern-CastBar-Glow",
+		shieldGlow = ASSETS .. "PlateRegions\\Modern-CastBar-ShieldGlow",
 		castGlowWf = 2, castGlowHf = 2, castGlowX = 0, castGlowY = 0,
 		castBarW = 95, castBarH = 10,
 		castBoxX = -5, castBoxY = -13, castBoxWf = 1, castBoxHf = 1,
@@ -633,6 +637,9 @@ local function UpdateCastBarArt(Virtual)
 		Virtual.RBP_castGlow:SetTexture(style.castGlow)
 		Virtual.RBP_castGlow:SetPoint("CENTER", Virtual.RBP_castBarBorder, style.castGlowX * S, style.castGlowY * S)
 		Virtual.RBP_castGlow:SetSize(RBP.NP_WIDTH * style.castGlowWf, RBP.NP_HEIGHT * style.castGlowHf)
+		Virtual.RBP_shieldCastGlow:SetTexture(style.shieldGlow)
+		Virtual.RBP_shieldCastGlow:SetPoint("CENTER", Virtual.RBP_shieldCastBarBorder, style.castGlowX * S, style.castGlowY * S)
+		Virtual.RBP_shieldCastGlow:SetSize(RBP.NP_WIDTH * style.castGlowWf, RBP.NP_HEIGHT * style.castGlowHf)
 	end
 end
 
@@ -795,30 +802,43 @@ local function SetupCastGlow(Virtual)
 	if Virtual.RBP_castGlow then return end
 	Virtual.RBP_castGlow = Virtual:CreateTexture(nil, "OVERLAY")
 	Virtual.RBP_castGlow:SetVertexColor(0.25, 0.75, 0.25)
+	Virtual.RBP_shieldCastGlow = Virtual:CreateTexture(nil, "OVERLAY")
+	Virtual.RBP_shieldCastGlow:SetVertexColor(0.25, 0.75, 0.25)
 	UpdateCastBarArt(Virtual)
 	local dbp = RBP.dbp
 	Virtual.RBP_castGlow:Hide()
+	Virtual.RBP_shieldCastGlow:Hide()
 	if dbp.enableCastGlow then
 		Virtual.RBP_castBar:HookScript("OnShow", function()
 			local unit = Virtual.namePlateUnitToken or Virtual.RBP_unitToken
-			if unit and UnitIsUnit(unit.."target", "player") and not UnitIsUnit("target", unit) and Virtual.RBP_ogCastBarBorder:IsShown() then
-				if UnitCanAttack("player", unit) then
-					Virtual.RBP_castGlow:SetVertexColor(1, 0, 0)
-				else
-					Virtual.RBP_castGlow:SetVertexColor(0.25, 0.75, 0.25)
+			if unit and UnitIsUnit(unit.."target", "player") and not UnitIsUnit("target", unit) then
+				local glow
+				if Virtual.RBP_ogShieldCastBarBorder:IsShown() then
+					glow = Virtual.RBP_shieldCastGlow
+				elseif Virtual.RBP_ogCastBarBorder:IsShown() then
+					glow = Virtual.RBP_castGlow
 				end
-				Virtual.RBP_castGlow:Show()
-				Virtual.RBP_castGlowIsShown = true
+				if glow then
+					if UnitCanAttack("player", unit) then
+						glow:SetVertexColor(1, 0, 0)
+					else
+						glow:SetVertexColor(0.25, 0.75, 0.25)
+					end
+					glow:Show()
+					Virtual.RBP_castGlowIsShown = true
+				end
 			end
 		end)
 		Virtual.RBP_castBar:HookScript("OnValueChanged", function()
 			if Virtual.RBP_castGlowIsShown and Virtual.RBP_isTarget then
 				Virtual.RBP_castGlow:Hide()
+				Virtual.RBP_shieldCastGlow:Hide()
 				Virtual.RBP_castGlowIsShown = nil
 			end
 		end)
 		Virtual.RBP_castBar:HookScript("OnHide", function()
 			Virtual.RBP_castGlow:Hide()
+			Virtual.RBP_shieldCastGlow:Hide()
 			Virtual.RBP_castGlowIsShown = nil
 		end)
 	end

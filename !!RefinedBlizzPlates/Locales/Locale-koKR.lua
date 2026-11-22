@@ -416,6 +416,7 @@ L["Adjusts the visual vertical position (does not affect the clickbox)."] = "시
 L["Gray Out by Health %"] = "체력 %에 따라 회색 처리"
 L["Progressively grays the name from right to left based on remaining health."] = "남은 체력에 따라 이름을 오른쪽에서 왼쪽으로 점진적으로 회색 처리합니다."
 L["Use class color"] = "직업 색상 사용"
+L["Only applies to players in your party or raid, or when the nameplate provides a unit ID."] = "파티원 또는 공격대원이거나 이름표가 unit ID를 제공하는 경우에만 적용됩니다."
 L["NPC Name Text"] = "NPC 이름 텍스트"
 L["Player Health Text"] = "플레이어 생명력 텍스트"
 L["Sets the anchor point relative to the name text."] = "이름 텍스트를 기준으로 앵커 위치를 설정합니다."

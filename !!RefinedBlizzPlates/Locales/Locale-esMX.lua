@@ -414,6 +414,7 @@ L["Adjusts the visual vertical position (does not affect the clickbox)."] = "Aju
 L["Gray Out by Health %"] = "Grisado según Salud %"
 L["Progressively grays the name from right to left based on remaining health."] = "Grisa progresivamente el nombre según la salud restante."
 L["Use class color"] = "Usar color de clase"
+L["Only applies to players in your party or raid, or when the nameplate provides a unit ID."] = "Solo se aplica a miembros de grupo o banda, o cuando la placa proporciona un unit ID."
 L["NPC Name Text"] = "Texto del Nombre (NPC)"
 L["Player Health Text"] = "Texto de salud de jugadores"
 L["Sets the anchor point relative to the name text."] = "Establece el punto de anclaje con respecto al texto del nombre."

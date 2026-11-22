@@ -414,6 +414,7 @@ L["Adjusts the visual vertical position (does not affect the clickbox)."] = true
 L["Gray Out by Health %"] = true
 L["Progressively grays the name from right to left based on remaining health."] = true
 L["Use class color"] = true
+L["Only applies to players in your party or raid, or when the nameplate provides a unit ID."] = true
 L["NPC Name Text"] = true
 L["Player Health Text"] = true
 L["Sets the anchor point relative to the name text."] = true

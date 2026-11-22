@@ -1413,6 +1413,7 @@ RBP.MainOptionTable = {
 						["Clean"] = "Clean",
 						["Modern"] = "Modern",
 					},
+					sorting = {"Blizzard", "Refined", "Modern", "Clean"},
 					set = function(info, val)
 						RBP.dbp[info[#info]] = val
 						RBP:ApplyStyle()
@@ -2085,7 +2086,7 @@ RBP.MainOptionTable = {
 						["Clean"] = "Clean",
 						["Modern"] = "Modern",
 					},
-					sorting = {"Same", "Blizzard", "Clean", "Modern", "Refined"},
+					sorting = {"Same", "Blizzard", "Refined", "Modern", "Clean"},
 					set = function(info, val)
 						RBP.dbp[info[#info]] = val
 						RBP:ApplyStyle()
@@ -3057,6 +3058,7 @@ RBP.MainOptionTable = {
 					order = 32,
 					type = "toggle",
 					name = L["Use class color"],
+					desc = L["Only applies to players in your party or raid, or when the nameplate provides a unit ID."],
 					disabled = function() return not RBP.dbp.barlessPlate_showText or IsBarlessPlateDisabled() end,
 				},
 				lineBreak13 = {order = 33, type = "description", name = ""},
