@@ -66,16 +66,16 @@ local Styles = {
 		targetGlowBorderGradient = ASSETS .. "PlateRegions\\Refined-HealthBar-TargetGlow_Border_Gradient",
 		mouseoverGlowHighlight = ASSETS .. "PlateRegions\\Refined-HealthBar-MouseoverGlow_Highlight",
 		mouseoverGlowBoth = ASSETS .. "PlateRegions\\Refined-HealthBar-MouseoverGlow_Both",
-		castBorder = ASSETS .. "PlateRegions\\Refined-CastBar-Border",
-		shieldBorder = ASSETS .. "PlateRegions\\Refined-CastBar-ShieldBorder",
+		castBorder = ASSETS .. "PlateRegions\\Refined-CastBar-Border_Wide",
+		shieldBorder = ASSETS .. "PlateRegions\\Refined-CastBar-ShieldBorder_Wide",
 		shieldX = 0, shieldY = -11.439, shieldWf = 1, shieldHf = 1, shieldCoord = {0, 1, 0, 1},
-		castGlow = ASSETS .. "PlateRegions\\Refined-CastBar-Glow",
-		shieldGlow = ASSETS .. "PlateRegions\\Refined-CastBar-ShieldGlow",
+		castGlow = ASSETS .. "PlateRegions\\Refined-CastBar-Glow_Wide",
+		shieldGlow = ASSETS .. "PlateRegions\\Refined-CastBar-ShieldGlow_Wide",
 		castGlowWf = 2, castGlowHf = 2, castGlowX = 0, castGlowY = 0,
-		castBarW = 96, castBarH = 8.99,
-		castBoxX = -5, castBoxY = -14.7, castBoxWf = 1, castBoxHf = 1,
-		normal = {barX = -12.5, barY = 4.5, iconX = 12.5, iconY = 8.5, iconSize = 13.2},
-		shield = {barX = -11.5, barY = 0.5, iconX = 11.5, iconY = 5.06, iconSize = 13.73},
+		castBarW = 98, castBarH = 8.99,
+		castBoxX = -6, castBoxY = -14.7, castBoxWf = 1, castBoxHf = 1,
+		normal = {barX = -10.5, barY = 4.5, iconX = 12.5, iconY = 8.5, iconSize = 13.2},
+		shield = {barX = -9.5, barY = 0.5, iconX = 11.5, iconY = 5.06, iconSize = 13.73},
 		castTextX = -7, castTimerX = -2.5, castTextY = 0.82,
 		icons = {
 			raid = {
@@ -177,22 +177,62 @@ local Styles = {
 		targetGlowBorderGradient = ASSETS .. "PlateRegions\\Modern-HealthBar-TargetGlow_Border_Gradient",
 		mouseoverGlowHighlight = ASSETS .. "PlateRegions\\Refined-HealthBar-MouseoverGlow_Highlight",
 		mouseoverGlowBoth = ASSETS .. "PlateRegions\\Modern-HealthBar-MouseoverGlow_Both",
-		castBorder = ASSETS .. "PlateRegions\\Modern-CastBar-Border",
-		shieldBorder = ASSETS .. "PlateRegions\\Modern-CastBar-ShieldBorder",
+		castBorder = ASSETS .. "PlateRegions\\Modern-CastBar-Border_Wide",
+		shieldBorder = ASSETS .. "PlateRegions\\Modern-CastBar-ShieldBorder_Wide",
 		shieldX = 0, shieldY = -10, shieldWf = 1, shieldHf = 1, shieldCoord = {0, 1, 0, 1},
-		castGlow = ASSETS .. "PlateRegions\\Modern-CastBar-Glow",
-		shieldGlow = ASSETS .. "PlateRegions\\Modern-CastBar-ShieldGlow",
+		castGlow = ASSETS .. "PlateRegions\\Modern-CastBar-Glow_Wide",
+		shieldGlow = ASSETS .. "PlateRegions\\Modern-CastBar-ShieldGlow_Wide",
 		castGlowWf = 2, castGlowHf = 2, castGlowX = 0, castGlowY = 0,
-		castBarW = 95, castBarH = 10,
-		castBoxX = -5, castBoxY = -13, castBoxWf = 1, castBoxHf = 1,
-		normal = {barX = -12.5, barY = 3, iconX = 12, iconY = 8, iconSize = 12.6},
-		shield = {barX = -12.5, barY = 1, iconX = 12, iconY = 6, iconSize = 11.2},
+		castBarW = 97, castBarH = 10,
+		castBoxX = -6, castBoxY = -13, castBoxWf = 1, castBoxHf = 1,
+		normal = {barX = -10.5, barY = 3, iconX = 12, iconY = 8, iconSize = 12.6},
+		shield = {barX = -10.5, barY = 1, iconX = 12, iconY = 6, iconSize = 11.2},
 		castTextX = -7, castTimerX = -1.5, castTextY = 0.7,
 		iconCoord = {0.06, 0.94, 0.06, 0.94},
 	},
 }
 Styles.Clean.icons = Styles.Refined.icons
 Styles.Modern.icons = Styles.Refined.icons
+Styles.Refined.layouts = {
+	Compact = setmetatable({
+		castBorder = ASSETS .. "PlateRegions\\Refined-CastBar-Border_Compact",
+		shieldBorder = ASSETS .. "PlateRegions\\Refined-CastBar-ShieldBorder_Compact",
+		castGlow = ASSETS .. "PlateRegions\\Refined-CastBar-Glow_Compact",
+		shieldGlow = ASSETS .. "PlateRegions\\Refined-CastBar-ShieldGlow_Compact",
+		castBarW = 90, castBoxX = -2,
+		normal = {barX = -18.5, barY = 4.5, iconX = 12.5, iconY = 8.5, iconSize = 13.2},
+		shield = {barX = -17.5, barY = 0.5, iconX = 11.5, iconY = 5.06, iconSize = 13.73},
+	}, {__index = Styles.Refined}),
+	IconOutside = setmetatable({
+		castBorder = ASSETS .. "PlateRegions\\Refined-CastBar-Border_IconOutside",
+		shieldBorder = ASSETS .. "PlateRegions\\Refined-CastBar-ShieldBorder_IconOutside",
+		castGlow = ASSETS .. "PlateRegions\\Refined-CastBar-Glow_IconOutside",
+		shieldGlow = ASSETS .. "PlateRegions\\Refined-CastBar-ShieldGlow_IconOutside",
+		castBarW = 104, castBoxX = -16,
+		normal = {barX = -4.5, barY = 4.5, iconX = 12.5, iconY = 8.5, iconSize = 13.2},
+		shield = {barX = -3.5, barY = 0.5, iconX = 11.5, iconY = 5.06, iconSize = 13.73},
+	}, {__index = Styles.Refined}),
+}
+Styles.Modern.layouts = {
+	Compact = setmetatable({
+		castBorder = ASSETS .. "PlateRegions\\Modern-CastBar-Border_Compact",
+		shieldBorder = ASSETS .. "PlateRegions\\Modern-CastBar-ShieldBorder_Compact",
+		castGlow = ASSETS .. "PlateRegions\\Modern-CastBar-Glow_Compact",
+		shieldGlow = ASSETS .. "PlateRegions\\Modern-CastBar-ShieldGlow_Compact",
+		castBarW = 89, castBoxX = -2,
+		normal = {barX = -18.5, barY = 3, iconX = 12, iconY = 8, iconSize = 12.6},
+		shield = {barX = -18.5, barY = 1, iconX = 12, iconY = 6, iconSize = 11.2},
+	}, {__index = Styles.Modern}),
+	IconOutside = setmetatable({
+		castBorder = ASSETS .. "PlateRegions\\Modern-CastBar-Border_IconOutside",
+		shieldBorder = ASSETS .. "PlateRegions\\Modern-CastBar-ShieldBorder_IconOutside",
+		castGlow = ASSETS .. "PlateRegions\\Modern-CastBar-Glow_IconOutside",
+		shieldGlow = ASSETS .. "PlateRegions\\Modern-CastBar-ShieldGlow_IconOutside",
+		castBarW = 104, castBoxX = -17,
+		normal = {barX = -3.5, barY = 3, iconX = 12, iconY = 8, iconSize = 12.6},
+		shield = {barX = -3.5, barY = 1, iconX = 12, iconY = 6, iconSize = 11.2},
+	}, {__index = Styles.Modern}),
+}
 
 local FixedAnchors = {
 	boss = {
@@ -217,7 +257,8 @@ function RBP:UpdateStyleCache()
 	local healthKey = Styles[dbp.healthBar_border] and dbp.healthBar_border or "Refined"
 	local castKey = dbp.castBar_style ~= "Same" and Styles[dbp.castBar_style] and dbp.castBar_style or healthKey
 	self.healthStyle = Styles[healthKey]
-	self.castStyle = Styles[castKey]
+	local castStyle = Styles[castKey]
+	self.castStyle = castStyle.layouts and castStyle.layouts[dbp.castBar_layout] or castStyle
 	self.castStyleKey = castKey
 end
 RBP:UpdateStyleCache()
@@ -1152,8 +1193,11 @@ end
 local function SetupClassIcon(Virtual)
 	local dbp = RBP.dbp
 	if not Virtual.RBP_classIcon then
-		Virtual.RBP_classIcon = Virtual.RBP_healthBar:CreateTexture(nil, "ARTWORK")
-		Virtual.RBP_classIcon:Hide()
+		Virtual.RBP_classIconFrame = CreateFrame("Frame", nil, Virtual.RBP_healthBar)
+		Virtual.RBP_classIconFrame:SetAllPoints(Virtual.RBP_healthBar)
+		Virtual.RBP_classIconFrame:SetFrameLevel(Virtual.RBP_healthBar:GetFrameLevel() + 1)
+		Virtual.RBP_classIcon = Virtual.RBP_classIconFrame:CreateTexture(nil, "BORDER")
+		Virtual.RBP_classIconFrame:Hide()
 	end
 	local class = RBP.healthStyle.icons.class
 	Virtual.RBP_classIcon:SetSize(dbp.classIcon_size * RBP.NP_SCALE, dbp.classIcon_size * RBP.NP_SCALE)
@@ -1173,9 +1217,9 @@ local function UpdateClassIcon(Virtual)
 	end
 	if iconClass then
 		Virtual.RBP_classIcon:SetTexture(ASSETS .. "Classes\\" .. iconClass)
-		Virtual.RBP_classIcon:Show()
+		Virtual.RBP_classIconFrame:Show()
 	else
-		Virtual.RBP_classIcon:Hide()
+		Virtual.RBP_classIconFrame:Hide()
 	end
 end
 
@@ -2246,6 +2290,7 @@ end
 local function RefreshFrameLevels(Virtual)
 	local base = Virtual:GetFrameLevel()
 	SyncFrameLevel(Virtual.RBP_healthBar, base)
+	SyncFrameLevel(Virtual.RBP_classIconFrame, base + 1)
 	SyncFrameLevel(Virtual.RBP_castBar, base)
 	SyncFrameLevel(Virtual.RBP_regionsWrapper, base)
 	SyncFrameLevel(Virtual.RBP_totemPlate, base)
@@ -2562,7 +2607,7 @@ local function ResetRefinedPlate(Virtual)
         Virtual.PB_parentFrame:SetAlpha(1)
     end
     Virtual.PB_stopIconUpdate = nil
-	Virtual.RBP_classIcon:Hide()
+	Virtual.RBP_classIconFrame:Hide()
 	Virtual.RBP_ArenaIDText:Hide()
 	Virtual.RBP_isShown = nil
 	Virtual.RBP_healthBarIsShown = nil
